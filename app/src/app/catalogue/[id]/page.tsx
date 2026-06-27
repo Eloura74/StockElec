@@ -63,7 +63,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Catégorie</label>
-              <select name="categorie" defaultValue={article.categorie} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <select name="categorie" defaultValue={article.categorie || ""} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option>Appareillage</option>
                 <option>Câblage</option>
                 <option>Tableau</option>
@@ -75,7 +75,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Unité</label>
-                <input name="unite" type="text" defaultValue={article.unite} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <input name="unite" type="text" defaultValue={article.unite || ""} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Seuil Alerte</label>
@@ -84,7 +84,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Prix unitaire (€)</label>
-              <input name="prixUnitaire" type="number" step="0.01" defaultValue={article.prixUnitaire} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <input name="prixUnitaire" type="number" step="0.01" defaultValue={article.prixUnitaire || 0} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
             <button type="submit" className="w-full flex justify-center items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
               <Save className="h-4 w-4" /> Enregistrer les modifications
@@ -101,13 +101,10 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
             </div>
             <div className="rounded-xl border bg-white p-4 shadow-sm">
               <p className="text-sm font-medium text-gray-500">Stock sur Chantiers</p>
-              <p className="text-2xl font-bold text-orange-600">{stockInfo.stockChantiers} {article.unite}</p>
+              <p className="text-2xl font-bold text-gray-900">{stockInfo.stockChantiersTotal} {article.unite || 'u'}</p>
             </div>
-            <div className="rounded-xl border bg-white p-4 shadow-sm">
-              <p className="text-sm font-medium text-gray-500">Valeur totale</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {((stockInfo.stockDepot + stockInfo.stockChantiers) * article.prixUnitaire).toFixed(2)} €
-              </p>
+            <div className="mt-4 rounded bg-gray-50 p-4">
+              <p className="text-sm text-gray-600">Valeur totale en stock : <span className="font-semibold text-gray-900">{((stockInfo.stockDepot + stockInfo.stockChantiersTotal) * (article.prixUnitaire || 0)).toFixed(2)} €</span></p>
             </div>
           </div>
 

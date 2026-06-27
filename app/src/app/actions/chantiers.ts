@@ -32,7 +32,6 @@ export async function deleteChantier(id: string) {
 export async function updateChantier(formData: FormData) {
   const id = formData.get("id") as string
   const nom = formData.get("nom") as string
-  const adresse = formData.get("adresse") as string
   const statut = formData.get("statut") as string
 
   if (id) {
@@ -40,7 +39,6 @@ export async function updateChantier(formData: FormData) {
       where: { id },
       data: {
         nom,
-        adresse,
         statut
       }
     })
