@@ -18,32 +18,34 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex h-screen w-64 flex-col border-r bg-gray-50/40 dark:bg-gray-900/40 px-4 py-6 shadow-sm">
-        <div className="flex items-center gap-2 px-2 pb-6">
-          <HardHat className="h-6 w-6 text-blue-600" />
-          <span className="text-lg font-bold tracking-tight">StockPro</span>
+      <div className="hidden md:block">
+        <div className="flex h-screen w-64 flex-col border-r bg-gray-50/40 dark:bg-gray-900/40 px-4 py-6 shadow-sm">
+          <div className="flex items-center gap-2 px-2 pb-6">
+            <HardHat className="h-6 w-6 text-blue-600" />
+            <span className="text-lg font-bold tracking-tight">StockPro</span>
+          </div>
+          
+          <nav className="flex flex-1 flex-col gap-1 text-sm font-medium">
+            {links.map((link) => {
+              const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== "/");
+              const Icon = link.icon;
+              return (
+                <Link 
+                  key={link.href}
+                  href={link.href} 
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
+                    isActive 
+                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" 
+                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-50"
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  {link.label}
+                </Link>
+              )
+            })}
+          </nav>
         </div>
-        
-        <nav className="flex flex-1 flex-col gap-1 text-sm font-medium">
-          {links.map((link) => {
-            const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== "/");
-            const Icon = link.icon;
-            return (
-              <Link 
-                key={link.href}
-                href={link.href} 
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-                  isActive 
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" 
-                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-50"
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                {link.label}
-              </Link>
-            )
-          })}
-        </nav>
       </div>
 
       {/* Mobile Bottom Navigation */}
