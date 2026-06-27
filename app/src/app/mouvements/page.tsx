@@ -16,7 +16,7 @@ export default async function MouvementsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Formulaire de saisie rapide */}
+        {/* Formulaire */}
         <div className="lg:col-span-1">
           <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
             <div className="border-b bg-gray-50/50 px-4 py-3 font-medium">

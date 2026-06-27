@@ -47,7 +47,7 @@ export default async function ReassortPage() {
                 <h2 className="text-lg font-bold text-gray-800">{fournisseur}</h2>
                 <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{items.length} références à commander</span>
               </div>
-              <div className="p-6">
+              <div className="overflow-x-auto p-6">
                 <table className="w-full text-sm text-left">
                   <thead>
                     <tr className="border-b text-gray-500">

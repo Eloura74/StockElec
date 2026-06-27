@@ -32,7 +32,7 @@ export default async function CataloguePage() {
                 <input required name="designation" type="text" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: Vis béton 6x60" />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Catégorie</label>
                   <select name="categorie" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white">
@@ -48,7 +48,7 @@ export default async function CataloguePage() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Unité</label>
                   <input name="unite" type="text" defaultValue="u" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />

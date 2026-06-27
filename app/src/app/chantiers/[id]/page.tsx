@@ -88,7 +88,7 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
 
         {/* Historique & Stats */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-xl border bg-white p-4 shadow-sm flex items-center gap-4">
               <div className="bg-orange-100 p-3 rounded-lg text-orange-600"><Package className="w-6 h-6"/></div>
               <div>

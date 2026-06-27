@@ -55,7 +55,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* KPIs */}
         <div className="rounded-xl border bg-white p-6 shadow-sm">
           <div className="flex items-center gap-4">
@@ -120,7 +120,7 @@ export default async function Home() {
 
       <DashboardCharts mouvementsRecents={recentMouvements} articles={articles} />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
         {/* Alertes de stock */}
         <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
           <div className="border-b bg-gray-50/50 px-6 py-4 flex items-center justify-between">

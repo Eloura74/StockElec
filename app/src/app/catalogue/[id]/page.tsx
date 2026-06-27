@@ -72,7 +72,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                 <option>Consommable</option>
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Unité</label>
                 <input name="unite" type="text" defaultValue={article.unite || ""} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
@@ -94,7 +94,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
 
         {/* Historique & Stats */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className={`rounded-xl border p-4 shadow-sm ${stockInfo.enAlerte ? 'bg-red-50 border-red-200' : 'bg-white'}`}>
               <p className="text-sm font-medium text-gray-500">Stock Dépôt Actuel</p>
               <p className={`text-2xl font-bold ${stockInfo.enAlerte ? 'text-red-600' : 'text-gray-900'}`}>{stockInfo.stockDepot} {article.unite}</p>
