@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Article {
+  id                  String      @id @default(cuid())
+  reference           String      @unique
+  designation         String
+  categorie           String?
+  unite               String?     @default("u")
+  stockMinimum        Int         @default(0)
+  prixUnitaire        Float?      @default(0.0)
+  referenceFournisseur String?
+  retourAttendu       Boolean     @default(false)
+  
+  // Computed via queries, but we can store initial stock
+  stockInitial        Int         @default(0)
+  
+  mouvements          Mouvement[]
+  
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+}
+
+model Chantier {
+  id                  String      @id @default(cuid())
+  nom                 String      @unique
+  statut              String      @default("Actif") // Actif, Terminé
+  
+  mouvements          Mouvement[]
+  
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+}
+
+model Mouvement {
+  id                  String      @id @default(cuid())
+  date                DateTime    @default(now())
+  type                String      // "Achat", "Depart", "Retour", "Consomme", "Perdu", "Correction"
+  quantite            Int
+  utilisateur         String?
+  observation         String?
+  
+  articleId           String
+  article             Article     @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  
+  chantierId          String?
+  chantier            Chantier?   @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  
+  createdAt           DateTime    @default(now())
+}
