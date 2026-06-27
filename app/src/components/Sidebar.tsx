@@ -9,7 +9,7 @@ export function Sidebar() {
 
   const links = [
     { href: "/", label: "Tableau de bord", icon: Home },
-    { href: "/catalogue", label: "Catalogue", icon: Package },
+    { href: "/catalogue", label: "Mon Stock", icon: Package },
     { href: "/chantiers", label: "Chantiers", icon: HardHat },
     { href: "/mouvements", label: "Mouvements", icon: FileText },
     { href: "/reassort", label: "Réassort", icon: ArrowRightLeft },

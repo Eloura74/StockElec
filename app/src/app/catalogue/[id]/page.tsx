@@ -57,9 +57,15 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
               <label className="block text-sm font-medium text-gray-700">Référence Interne</label>
               <input name="reference" type="text" defaultValue={article.reference} required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Réf. Fournisseur</label>
-              <input name="referenceFournisseur" type="text" defaultValue={article.referenceFournisseur || ''} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Réf. Fournisseur</label>
+                <input name="referenceFournisseur" type="text" defaultValue={article.referenceFournisseur || ''} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Qté par lot (Achat)</label>
+                <input name="quantiteParBoite" type="number" defaultValue={article.quantiteParBoite || 1} min="1" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" title="Combien d'unités dans une boîte commandée ?" />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Catégorie</label>

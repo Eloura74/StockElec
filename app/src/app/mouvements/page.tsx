@@ -62,8 +62,8 @@ export default async function MouvementsPage() {
                   <input required name="quantite" type="number" min="1" defaultValue="1" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Saisi par</label>
-                  <input name="utilisateur" type="text" placeholder="Ton nom" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+                  <label className="block text-sm font-medium text-gray-900 font-bold">👤 Saisi par (OBLIGATOIRE)</label>
+                  <input required name="utilisateur" type="text" placeholder="Ton prénom" className="mt-1 block w-full rounded-md border-2 border-orange-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-orange-500" />
                 </div>
               </div>
 

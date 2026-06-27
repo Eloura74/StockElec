@@ -18,6 +18,7 @@ export async function createArticle(formData: FormData) {
   const stockMinimum = parseInt(formData.get("stockMinimum") as string || "0")
   const stockInitial = parseInt(formData.get("stockInitial") as string || "0")
   const prixUnitaire = parseFloat(formData.get("prixUnitaire") as string || "0")
+  const quantiteParBoite = parseInt(formData.get("quantiteParBoite") as string || "1")
   const retourAttendu = formData.get("retourAttendu") === "on"
   const referenceFournisseur = formData.get("referenceFournisseur") as string || null
 
@@ -29,6 +30,7 @@ export async function createArticle(formData: FormData) {
       unite,
       stockInitial,
       stockMinimum,
+      quantiteParBoite,
       prixUnitaire,
       referenceFournisseur,
       retourAttendu,
@@ -52,6 +54,7 @@ export async function updateArticle(formData: FormData) {
   const categorie = formData.get("categorie") as string
   const unite = formData.get("unite") as string
   const stockMinimum = parseInt(formData.get("stockMinimum") as string || "0")
+  const quantiteParBoite = parseInt(formData.get("quantiteParBoite") as string || "1")
   const prixUnitaire = parseFloat(formData.get("prixUnitaire") as string || "0")
   const referenceFournisseur = formData.get("referenceFournisseur") as string || null
 
@@ -64,6 +67,7 @@ export async function updateArticle(formData: FormData) {
         categorie,
         unite,
         stockMinimum,
+        quantiteParBoite,
         prixUnitaire,
         referenceFournisseur,
       }

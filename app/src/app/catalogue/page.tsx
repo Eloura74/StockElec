@@ -11,7 +11,7 @@ export default async function CataloguePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Catalogue Articles</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Mon Stock</h1>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -59,9 +59,15 @@ export default async function CataloguePage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Réf. Fournisseur (optionnel)</label>
-                <input name="referenceFournisseur" type="text" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Qté par lot (Achat)</label>
+                  <input name="quantiteParBoite" type="number" defaultValue="1" min="1" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" title="Combien d'unités dans une boîte commandée ?" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Réf. Fournisseur</label>
+                  <input name="referenceFournisseur" type="text" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                </div>
               </div>
 
               <div>
@@ -89,8 +95,7 @@ export default async function CataloguePage() {
               <table className="min-w-full divide-y divide-gray-200 text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Référence</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Désignation</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500">Article</th>
                     <th className="px-4 py-3 text-left font-medium text-gray-500">Réf. Fourn.</th>
                     <th className="px-4 py-3 text-center font-medium text-gray-500">Stock Dépôt</th>
                     <th className="px-4 py-3 text-center font-medium text-gray-500">En Chantier</th>
@@ -111,7 +116,6 @@ export default async function CataloguePage() {
                       const enAlerte = stockInfo.enAlerte
                       return (
                         <tr key={article.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">{article.reference}</td>
                           <td className="px-4 py-3">
                               <div className="text-sm font-medium text-gray-900">
                                 <Link href={`/catalogue/${article.id}`} className="hover:text-blue-600 hover:underline">
