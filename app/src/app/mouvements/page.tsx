@@ -3,6 +3,7 @@ import { getArticles } from "@/app/actions/articles"
 import { getChantiers } from "@/app/actions/chantiers"
 import { FileText, ArrowRightLeft, Trash2 } from "lucide-react"
 import { DeleteButton } from "@/components/DeleteButton"
+import { MouvementForm } from "@/components/MouvementForm"
 
 export default async function MouvementsPage() {
   const mouvements = await getMouvements()
@@ -16,68 +17,9 @@ export default async function MouvementsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Formulaire */}
+        {/* Formulaire Client Component */}
         <div className="lg:col-span-1">
-          <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="border-b bg-gray-50/50 px-4 py-3 font-medium">
-              Saisir un mouvement
-            </div>
-            <form action={createMouvement} className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Type de mouvement</label>
-                <select name="type" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white">
-                  <option value="Depart">Départ vers Chantier</option>
-                  <option value="Retour">Retour de Chantier</option>
-                  <option value="Achat">Achat / Entrée Dépôt</option>
-                  <option value="Consomme">Consommé / Posé</option>
-                  <option value="Perte">Perdu / Cassé</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Article</label>
-                <select required name="articleId" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white">
-                  <option value="">-- Sélectionner --</option>
-                  {articles.map(a => (
-                    <option key={a.id} value={a.id}>[{a.reference}] {a.designation}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Chantier (si applicable)</label>
-                  <select name="chantierId" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white">
-                    <option value="">-- Aucun / Dépôt --</option>
-                    {chantiers.map(c => (
-                      <option key={c.id} value={c.id}>{c.nom}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Quantité</label>
-                  <input required name="quantite" type="number" min="1" defaultValue="1" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 font-bold">👤 Saisi par (OBLIGATOIRE)</label>
-                  <input required name="utilisateur" type="text" placeholder="Ton prénom" className="mt-1 block w-full rounded-md border-2 border-orange-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-orange-500" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Observation</label>
-                <textarea name="observation" rows={2} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" placeholder="Optionnel..."></textarea>
-              </div>
-              
-              <button type="submit" className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                <ArrowRightLeft className="h-4 w-4" />
-                Valider le mouvement
-              </button>
-            </form>
-          </div>
+          <MouvementForm articles={articles} chantiers={chantiers} />
         </div>
 
         {/* Historique des mouvements */}

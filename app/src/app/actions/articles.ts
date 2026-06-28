@@ -22,6 +22,7 @@ export async function createArticle(formData: FormData) {
   const retourAttendu = formData.get("retourAttendu") === "on"
   const referenceFournisseur = formData.get("referenceFournisseur") as string || null
   const fournisseur = formData.get("fournisseur") as string || null
+  const codeBarre = formData.get("codeBarre") as string || null
 
   await prisma.article.create({
     data: {
@@ -35,6 +36,7 @@ export async function createArticle(formData: FormData) {
       prixUnitaire,
       referenceFournisseur,
       fournisseur,
+      codeBarre,
       retourAttendu,
     }
   })
@@ -60,6 +62,7 @@ export async function updateArticle(formData: FormData) {
   const prixUnitaire = parseFloat(formData.get("prixUnitaire") as string || "0")
   const referenceFournisseur = formData.get("referenceFournisseur") as string || null
   const fournisseur = formData.get("fournisseur") as string || null
+  const codeBarre = formData.get("codeBarre") as string || null
 
   if (id) {
     await prisma.article.update({
@@ -74,6 +77,7 @@ export async function updateArticle(formData: FormData) {
         prixUnitaire,
         referenceFournisseur,
         fournisseur,
+        codeBarre,
       }
     })
     revalidatePath("/catalogue")

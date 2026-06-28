@@ -19,6 +19,7 @@ model Article {
   quantiteParBoite     Int         @default(1)
   stockMinimum         Int         @default(0)
   prixUnitaire         Float?      @default(0.0)
+  codeBarre            String?     @unique
   referenceFournisseur String?   // Ex: REX-1234
   fournisseur          String?   // Ex: Rexel
   retourAttendu        Boolean     @default(false)

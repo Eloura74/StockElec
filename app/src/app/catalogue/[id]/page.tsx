@@ -3,6 +3,7 @@ import { updateArticle, deleteArticle } from "@/app/actions/articles"
 import { entrerStockRapide } from "@/app/actions/mouvements"
 import { calculerStockArticle } from "@/lib/stockUtils"
 import { ArrowLeft, Edit, Save, Trash2 } from "lucide-react"
+import { ScannerInput } from "@/components/ScannerInput"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { DeleteButton } from "@/components/DeleteButton"
@@ -95,6 +96,13 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
             <div>
               <label className="block text-sm font-medium text-gray-700">Prix unitaire (€)</label>
               <input name="prixUnitaire" type="number" step="0.01" defaultValue={article.prixUnitaire || 0} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            </div>
+            <div>
+              <ScannerInput 
+                name="codeBarre" 
+                label="Code-Barres (EAN)" 
+                defaultValue={article.codeBarre || ''}
+              />
             </div>
             <button type="submit" className="w-full flex justify-center items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
               <Save className="h-4 w-4" /> Enregistrer les modifications

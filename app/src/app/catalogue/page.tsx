@@ -2,6 +2,7 @@ import { getArticles, createArticle, deleteArticle } from "@/app/actions/article
 import { entrerStockRapide } from "@/app/actions/mouvements"
 import { Plus, AlertTriangle, Trash2 } from "lucide-react"
 import { DeleteButton } from "@/components/DeleteButton"
+import { ScannerInput } from "@/components/ScannerInput"
 import { calculerStockArticle } from "@/lib/stockUtils"
 import Link from "next/link"
 
@@ -74,9 +75,17 @@ export default async function CataloguePage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Prix unitaire (€)</label>
-                <input name="prixUnitaire" type="number" step="0.01" defaultValue="0" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Prix unitaire (€)</label>
+                  <input name="prixUnitaire" type="number" step="0.01" defaultValue="0" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <ScannerInput 
+                    name="codeBarre" 
+                    label="Code-Barres (EAN)" 
+                  />
+                </div>
               </div>
               
               <div className="flex items-center gap-2 pt-2">
