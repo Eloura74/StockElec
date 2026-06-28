@@ -25,7 +25,10 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
         Html5QrcodeSupportedFormats.UPC_A,
         Html5QrcodeSupportedFormats.UPC_E,
         Html5QrcodeSupportedFormats.QR_CODE
-      ]
+      ],
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true
+      }
     })
     scannerRef.current = html5QrCode
 
@@ -34,8 +37,9 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
         await html5QrCode.start(
           { facingMode: "environment" }, // Caméra arrière
           {
-            fps: 10,
-            qrbox: { width: 250, height: 150 }, // Boîte rectangulaire pour les codes-barres
+            fps: 30,
+            qrbox: { width: 300, height: 150 }, // Plus large pour les EAN
+            aspectRatio: 1.0
           },
           (decodedText) => {
             // Succès
