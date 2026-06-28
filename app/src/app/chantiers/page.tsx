@@ -41,7 +41,7 @@ export default async function ChantiersPage() {
         {/* Liste des chantiers */}
         <div className="lg:col-span-2">
           <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
                 <thead className="bg-gray-50">
                   <tr>
@@ -103,6 +103,55 @@ export default async function ChantiersPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Vue Mobile (Cartes) */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {chantiers.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">Aucun chantier enregistré.</div>
+              ) : (
+                chantiers.map((chantier: any) => {
+                  const resteChantier = calculerResteSurChantier(chantier.mouvements)
+                  const materielDeploye = (Object.values(resteChantier) as number[]).reduce((acc: number, val: number) => acc + val, 0)
+                  
+                  return (
+                    <div key={chantier.id} className="p-4 bg-white space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className="rounded-full bg-gray-100 p-2">
+                            <HardHat className="h-5 w-5 text-gray-500" />
+                          </div>
+                          <div>
+                            <Link href={`/chantiers/${chantier.id}`} className="font-bold text-gray-900 hover:text-blue-600">
+                              {chantier.nom}
+                            </Link>
+                            <div className="text-xs text-gray-500">{chantier.adresse || 'Pas d\'adresse'}</div>
+                          </div>
+                        </div>
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          chantier.statut === 'Actif' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {chantier.statut}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <div className="text-xs text-gray-500 font-medium">Matériel sur site</div>
+                        <div className="font-bold text-blue-600">{materielDeploye} unités</div>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-1">
+                        <Link href={`/chantiers/${chantier.id}`} className="rounded p-1.5 text-blue-500 bg-blue-50 hover:bg-blue-100">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </Link>
+                        <form action={deleteChantier.bind(null, chantier.id)}>
+                          <DeleteButton message="Supprimer ce chantier va aussi supprimer son historique de mouvements. Continuer ?" />
+                        </form>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
             </div>
           </div>
         </div>

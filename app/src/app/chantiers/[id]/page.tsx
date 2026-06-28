@@ -134,7 +134,7 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
             <div className="border-b px-6 py-4 bg-gray-50">
               <h2 className="text-lg font-semibold text-gray-800">Historique des Mouvements</h2>
             </div>
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead className="bg-white">
                   <tr>
@@ -169,6 +169,34 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Vue Mobile (Historique Mouvements) */}
+            <div className="md:hidden divide-y divide-gray-100 border-t border-gray-100">
+              {chantier.mouvements.length === 0 ? (
+                <div className="p-6 text-center text-gray-500">Aucun mouvement enregistré.</div>
+              ) : (
+                chantier.mouvements.map((mvt: any) => (
+                  <div key={mvt.id} className="p-4 bg-white space-y-2">
+                    <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
+                      <span>{new Date(mvt.date).toLocaleDateString('fr-FR')} à {new Date(mvt.date).getHours()}:{new Date(mvt.date).getMinutes().toString().padStart(2, '0')}</span>
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 font-bold text-[10px] uppercase
+                        ${mvt.type === 'Depart' ? 'bg-blue-100 text-blue-800' : ''}
+                        ${mvt.type === 'Retour' ? 'bg-emerald-100 text-emerald-800' : ''}
+                        ${mvt.type === 'Consomme' ? 'bg-red-100 text-red-800' : ''}
+                      `}>
+                        {mvt.type}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                      <div className="font-medium text-gray-900">{mvt.article.designation}</div>
+                      <div className={`font-bold text-lg ${mvt.type === 'Depart' ? 'text-blue-600' : mvt.type === 'Retour' ? 'text-emerald-600' : 'text-red-600'}`}>
+                        {mvt.type === 'Depart' ? '+' : '-'}{mvt.quantite}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
