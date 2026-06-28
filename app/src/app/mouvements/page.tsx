@@ -83,7 +83,7 @@ export default async function MouvementsPage() {
         {/* Historique des mouvements */}
         <div className="lg:col-span-2">
           <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
                 <thead className="bg-gray-50">
                   <tr>
@@ -137,6 +137,59 @@ export default async function MouvementsPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Vue Mobile (Cartes) */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {mouvements.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">Aucun mouvement enregistré.</div>
+              ) : (
+                mouvements.map((mvt) => (
+                  <div key={mvt.id} className="p-4 bg-white space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div className="text-xs text-gray-500 font-medium">
+                        {mvt.date.toLocaleDateString("fr-FR")} à {mvt.date.getHours()}:{mvt.date.getMinutes().toString().padStart(2, '0')}
+                      </div>
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        mvt.type === 'Depart' ? 'bg-orange-100 text-orange-800' : 
+                        mvt.type === 'Retour' ? 'bg-blue-100 text-blue-800' : 
+                        mvt.type === 'Achat' ? 'bg-green-100 text-green-800' : 
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {mvt.type.toUpperCase()}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                      <div>
+                        <div className="font-bold text-gray-900 text-sm">{mvt.article.designation}</div>
+                        <div className="text-xs text-gray-500">{mvt.article.reference}</div>
+                      </div>
+                      <div className="text-xl font-bold">
+                        <span className={mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' ? 'text-orange-600' : 'text-green-600'}>
+                          {mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' ? '-' : '+'}{mvt.quantite}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center text-sm">
+                      <div className="flex flex-col gap-0.5 text-xs text-gray-600">
+                        {mvt.chantier && (
+                          <span className="flex items-center gap-1"><span className="font-semibold text-gray-900">Chantier:</span> {mvt.chantier.nom}</span>
+                        )}
+                        {mvt.utilisateur && (
+                          <span className="flex items-center gap-1"><span className="font-semibold text-gray-900">Par:</span> {mvt.utilisateur}</span>
+                        )}
+                      </div>
+                      <div>
+                        <form action={deleteMouvement.bind(null, mvt.id)}>
+                          <DeleteButton message="Supprimer ce mouvement ?" />
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

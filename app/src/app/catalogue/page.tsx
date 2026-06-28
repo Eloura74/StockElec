@@ -91,7 +91,7 @@ export default async function CataloguePage() {
         {/* Liste des articles */}
         <div className="lg:col-span-2">
           <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
                 <thead className="bg-gray-50">
                   <tr>
@@ -161,6 +161,67 @@ export default async function CataloguePage() {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Vue Mobile (Cartes) */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {articles.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">Aucun article dans le catalogue.</div>
+              ) : (
+                articles.map((article: any) => {
+                  const stockInfo = calculerStockArticle(article, article.mouvements)
+                  const enAlerte = stockInfo.enAlerte
+                  return (
+                    <div key={article.id} className="p-4 bg-white space-y-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <div>
+                          <Link href={`/catalogue/${article.id}`} className="font-bold text-gray-900 hover:text-blue-600 block">
+                            {article.designation}
+                          </Link>
+                          <div className="text-xs text-gray-500 mt-0.5">{article.reference} {article.referenceFournisseur ? `• Fourn: ${article.referenceFournisseur}` : ''}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <div className="flex-1">
+                          <div className="text-gray-500 text-xs mb-1">Stock Dépôt</div>
+                          <div className={`font-bold text-lg ${enAlerte ? 'text-red-600' : 'text-green-600'}`}>
+                            {stockInfo.stockDepot} <span className="text-sm font-normal">{article.unite}</span>
+                            {enAlerte && <AlertTriangle className="inline-block ml-1 h-4 w-4" />}
+                          </div>
+                        </div>
+                        <div className="flex-1 border-l border-gray-200 pl-4">
+                          <div className="text-gray-500 text-xs mb-1">En Chantier</div>
+                          <div className="font-medium text-gray-700">
+                            {stockInfo.stockChantiersTotal} <span className="text-sm font-normal">{article.unite}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="text-xs text-gray-400">
+                          Seuil alerte: {article.stockMinimum}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <form action={entrerStockRapide} className="flex items-center gap-1">
+                            <input type="hidden" name="articleId" value={article.id} />
+                            <input type="number" name="quantite" defaultValue="1" min="1" className="w-14 rounded border px-2 py-1 text-xs" />
+                            <button type="submit" title="Ajouter du stock" className="rounded bg-green-100 p-1.5 text-green-700 hover:bg-green-200">
+                              +
+                            </button>
+                          </form>
+                          <Link href={`/catalogue/${article.id}`} className="rounded p-1.5 text-blue-500 bg-blue-50 hover:bg-blue-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          </Link>
+                          <form action={deleteArticle.bind(null, article.id)}>
+                            <DeleteButton message="Supprimer cet article ?" />
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
             </div>
           </div>
         </div>

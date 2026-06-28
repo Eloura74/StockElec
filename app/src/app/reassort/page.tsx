@@ -61,7 +61,7 @@ export default async function ReassortPage() {
                   </div>
                   <ReassortButtons fournisseur={fournisseur} items={reassortItems} />
                 </div>
-                <div className="overflow-x-auto p-6">
+                <div className="hidden md:block overflow-x-auto p-6">
                   <table className="w-full text-sm text-left">
                     <thead>
                       <tr className="border-b text-gray-500">
@@ -95,6 +95,46 @@ export default async function ReassortPage() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Vue Mobile (Cartes) */}
+                <div className="md:hidden divide-y divide-gray-100 border-t border-gray-100">
+                  {reassortItems.map((item: any) => (
+                    <div key={item.articleId} className="p-4 bg-white space-y-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <div>
+                          <div className="font-bold text-gray-900">{item.designation}</div>
+                          <div className="text-xs text-gray-500 mt-0.5">{item.reference}</div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <div>
+                          <div className="text-gray-500 text-xs mb-1">Stock Dépôt</div>
+                          <div className="font-bold text-red-600">
+                            {items.find((i: any) => i.article.id === item.articleId).stockInfo.stockDepot} {item.unite}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-gray-500 text-xs mb-1">Seuil Alerte</div>
+                          <div className="font-medium text-gray-700">
+                            {items.find((i: any) => i.article.id === item.articleId).article.stockMinimum}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                        <div>
+                          <div className="text-blue-800 text-xs font-semibold mb-1">À Commander</div>
+                          <div className="text-xs text-gray-500">Conditionnement par {item.quantiteParBoite}</div>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-blue-700 text-lg">{item.boitesACommander} boîtes</span>
+                          <div className="text-xs text-blue-600">soit {item.boitesACommander * item.quantiteParBoite} {item.unite}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )
