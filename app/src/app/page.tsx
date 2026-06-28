@@ -35,6 +35,16 @@ export default async function Home() {
   const articlesCount = articles.length;
   const chantiersActifsCount = await prisma.chantier.count({ where: { statut: 'Actif' } });
   
+  // Trier les articles pour le Top 3 immobilisations
+  const topImmobilisations = [...articles]
+    .map(article => ({
+      article,
+      valeur: (calculerStockArticle(article, article.mouvements).stockDepot) * (article.prixUnitaire || 0)
+    }))
+    .filter(item => item.valeur > 0)
+    .sort((a, b) => b.valeur - a.valeur)
+    .slice(0, 3);
+  
   const recentMouvements = await prisma.mouvement.findMany({
     take: 5,
     orderBy: { createdAt: 'desc' },
@@ -57,62 +67,62 @@ export default async function Home() {
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* KPIs */}
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <div className="rounded-xl border bg-gradient-to-br from-white to-blue-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-blue-100 p-3 text-blue-600">
+            <div className="rounded-xl bg-blue-100 p-3 text-blue-600 shadow-inner">
               <Package className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Total Articles</p>
-              <h2 className="text-2xl font-bold text-gray-900">{articlesCount}</h2>
+              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Articles</p>
+              <h2 className="text-2xl font-black text-gray-900 mt-1">{articlesCount}</h2>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <div className="rounded-xl border bg-gradient-to-br from-white to-emerald-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-emerald-100 p-3 text-emerald-600">
+            <div className="rounded-xl bg-emerald-100 p-3 text-emerald-600 shadow-inner">
               <Truck className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Chantiers Actifs</p>
-              <h2 className="text-2xl font-bold text-gray-900">{chantiersActifsCount}</h2>
+              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Chantiers Actifs</p>
+              <h2 className="text-2xl font-black text-gray-900 mt-1">{chantiersActifsCount}</h2>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <div className="rounded-xl border bg-gradient-to-br from-white to-orange-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-orange-100 p-3 text-orange-600">
+            <div className="rounded-xl bg-orange-100 p-3 text-orange-600 shadow-inner">
               <Package className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Valeur au Dépôt</p>
-              <h2 className="text-2xl font-bold text-gray-900">{valeurTotaleDépôt.toFixed(2)} €</h2>
+              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Valeur au Dépôt</p>
+              <h2 className="text-2xl font-black text-gray-900 mt-1">{valeurTotaleDépôt.toFixed(2)} €</h2>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <div className="rounded-xl border bg-gradient-to-br from-white to-purple-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-purple-100 p-3 text-purple-600">
+            <div className="rounded-xl bg-purple-100 p-3 text-purple-600 shadow-inner">
               <Wrench className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Valeur en Chantier</p>
-              <h2 className="text-2xl font-bold text-gray-900">{valeurTotaleChantiers.toFixed(2)} €</h2>
+              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Valeur Chantier</p>
+              <h2 className="text-2xl font-black text-gray-900 mt-1">{valeurTotaleChantiers.toFixed(2)} €</h2>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <div className="rounded-xl border bg-gradient-to-br from-white to-red-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-red-100 p-3 text-red-600">
+            <div className="rounded-xl bg-red-100 p-3 text-red-600 shadow-inner">
               <AlertTriangle className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Alertes Stock</p>
-              <h2 className="text-2xl font-bold text-gray-900">{articlesEnAlerte}</h2>
+              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Alertes Stock</p>
+              <h2 className="text-2xl font-black text-gray-900 mt-1">{articlesEnAlerte}</h2>
             </div>
           </div>
         </div>
@@ -120,7 +130,34 @@ export default async function Home() {
 
       <DashboardCharts mouvementsRecents={recentMouvements} articles={articles} />
 
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+        {/* Top 3 Immobilisations */}
+        <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+          <div className="border-b bg-gray-50/50 px-6 py-4 flex items-center justify-between">
+            <h3 className="font-semibold text-gray-900">Capital Immobilisé (Top 3)</h3>
+          </div>
+          <div className="p-6 space-y-4">
+            {topImmobilisations.map((item, index) => (
+              <div key={item.article.id} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-700 font-bold text-sm">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 line-clamp-1 text-sm">{item.article.designation}</p>
+                    <p className="text-xs text-gray-500">{item.article.reference}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-gray-900">{item.valeur.toFixed(2)} €</p>
+                </div>
+              </div>
+            ))}
+            {topImmobilisations.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-4">Aucune donnée financière.</p>
+            )}
+          </div>
+        </div>
         {/* Alertes de stock */}
         <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
           <div className="border-b bg-gray-50/50 px-6 py-4 flex items-center justify-between">

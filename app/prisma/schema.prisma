@@ -39,6 +39,8 @@ model Chantier {
   statut              String      @default("Actif") // Actif, Terminé
   
   mouvements          Mouvement[]
+  outillages          Outillage[]
+  mouvementsOutillage MouvementOutillage[]
   
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
@@ -59,4 +61,35 @@ model Mouvement {
   chantier            Chantier?   @relation(fields: [chantierId], references: [id], onDelete: Cascade)
   
   createdAt           DateTime    @default(now())
+}
+
+model Outillage {
+  id            String    @id @default(cuid())
+  nom           String    // ex: "Perforateur Hilti TE 6"
+  marque        String?
+  reference     String?   @unique // Numéro de série ou code-barres
+  dateAchat     DateTime?
+  valeur        Float?    @default(0.0)
+  
+  statut        String    @default("Disponible") // Disponible, En Chantier, En Réparation, Perdu
+  chantierId    String?   
+  chantier      Chantier? @relation(fields: [chantierId], references: [id])
+  utilisateur   String?   // Qui a l'outil ?
+  
+  mouvements    MouvementOutillage[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model MouvementOutillage {
+  id            String    @id @default(cuid())
+  outillageId   String
+  outillage     Outillage @relation(fields: [outillageId], references: [id], onDelete: Cascade)
+  type          String    // "Emprunt", "Retour", "Réparation", "Perte"
+  chantierId    String?
+  chantier      Chantier? @relation(fields: [chantierId], references: [id])
+  utilisateur   String
+  date          DateTime  @default(now())
+  observation   String?
 }
