@@ -7,6 +7,7 @@ import { marquerFournisseurCommeCommande } from "@/app/actions/reassort"
 type ReassortItem = {
   articleId: string
   reference: string
+  referenceFournisseur?: string
   designation: string
   unite: string
   quantiteParBoite: number
@@ -18,14 +19,16 @@ export function ReassortButtons({ fournisseur, items }: { fournisseur: string, i
   const [loading, setLoading] = useState(false)
 
   const handleExportCSV = () => {
-    const headers = ["Fournisseur", "Reference", "Designation", "Quantite (Boites)", "Unites Totales", "Taille Boite"]
+    const headers = ["Fournisseur", "Ref_Fournisseur", "Ref_Interne", "Designation", "Unite", "Quantite_Boites", "Unites_Totales"]
+    
     const rows = items.map(item => [
       fournisseur,
+      item.referenceFournisseur || "",
       item.reference,
       `"${item.designation.replace(/"/g, '""')}"`,
-      item.boitesACommander,
-      item.qteRecommandee,
-      item.quantiteParBoite
+      item.unite,
+      item.boitesACommander.toString(),
+      (item.boitesACommander * item.quantiteParBoite).toString()
     ])
 
     const csvContent = [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n")

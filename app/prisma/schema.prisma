@@ -19,8 +19,9 @@ model Article {
   quantiteParBoite     Int         @default(1)
   stockMinimum         Int         @default(0)
   prixUnitaire         Float?      @default(0.0)
-  referenceFournisseur String?
-  retourAttendu       Boolean     @default(false)
+  referenceFournisseur String?   // Ex: REX-1234
+  fournisseur          String?   // Ex: Rexel
+  retourAttendu        Boolean     @default(false)
   
   // Computed via queries, but we can store initial stock
   stockInitial        Int         @default(0)

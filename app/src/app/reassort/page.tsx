@@ -12,9 +12,9 @@ export default async function ReassortPage() {
     return { article, stockInfo }
   }).filter(item => item.stockInfo.enAlerte)
 
-  // Grouper par fournisseur
+  // Grouper par fournisseur (le nom du fournisseur)
   const parFournisseur = aCommander.reduce((acc: any, item) => {
-    const fn = item.article.referenceFournisseur || "Fournisseur Inconnu"
+    const fn = item.article.fournisseur || "Fournisseur Inconnu"
     if (!acc[fn]) acc[fn] = []
     acc[fn].push(item)
     return acc
@@ -44,6 +44,7 @@ export default async function ReassortPage() {
               return {
                 articleId: item.article.id,
                 reference: item.article.reference,
+                referenceFournisseur: item.article.referenceFournisseur || '',
                 designation: item.article.designation,
                 unite: item.article.unite,
                 quantiteParBoite,
@@ -66,6 +67,7 @@ export default async function ReassortPage() {
                     <thead>
                       <tr className="border-b text-gray-500">
                         <th className="pb-3 font-medium">Référence Interne</th>
+                        <th className="pb-3 font-medium">Réf. Fournisseur</th>
                         <th className="pb-3 font-medium">Désignation</th>
                         <th className="pb-3 font-medium text-center">Stock Actuel</th>
                         <th className="pb-3 font-medium text-center">Seuil</th>
@@ -77,6 +79,7 @@ export default async function ReassortPage() {
                       {reassortItems.map((item: any) => (
                         <tr key={item.articleId} className="hover:bg-gray-50">
                           <td className="py-3 font-medium text-gray-900">{item.reference}</td>
+                          <td className="py-3 text-gray-500">{item.referenceFournisseur || '-'}</td>
                           <td className="py-3 text-gray-600">{item.designation}</td>
                           <td className="py-3 text-center text-red-600 font-bold">
                             {items.find((i: any) => i.article.id === item.articleId).stockInfo.stockDepot} {item.unite}
@@ -104,7 +107,10 @@ export default async function ReassortPage() {
                       <div className="flex justify-between items-start gap-2">
                         <div>
                           <div className="font-bold text-gray-900">{item.designation}</div>
-                          <div className="text-xs text-gray-500 mt-0.5">{item.reference}</div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {item.reference} 
+                            {item.referenceFournisseur && <span className="ml-2 px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">Réf Fourn: {item.referenceFournisseur}</span>}
+                          </div>
                         </div>
                       </div>
 

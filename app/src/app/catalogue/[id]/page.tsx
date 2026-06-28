@@ -57,10 +57,14 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
               <label className="block text-sm font-medium text-gray-700">Référence Interne</label>
               <input name="reference" type="text" defaultValue={article.reference} required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Réf. Fournisseur</label>
-                <input name="referenceFournisseur" type="text" defaultValue={article.referenceFournisseur || ''} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <label className="block text-sm font-medium text-gray-700">Fournisseur (Nom)</label>
+                <input name="fournisseur" type="text" defaultValue={article.fournisseur || ''} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: Rexel" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Réf. Fournisseur (Code)</label>
+                <input name="referenceFournisseur" type="text" defaultValue={article.referenceFournisseur || ''} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: REX-12345" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Qté par lot (Achat)</label>
