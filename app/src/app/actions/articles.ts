@@ -21,8 +21,8 @@ export async function createArticle(formData: FormData) {
   const quantiteParBoite = parseInt(formData.get("quantiteParBoite") as string || "1")
   const retourAttendu = formData.get("retourAttendu") === "on"
   const referenceFournisseur = formData.get("referenceFournisseur") as string || null
-  const fournisseur = formData.get("fournisseur") as string || null
-  const codeBarre = formData.get("codeBarre") as string || null
+  const fournisseur = (formData.get("fournisseur") as string)?.trim() || null
+  const codeBarre = (formData.get("codeBarre") as string)?.trim() || null
 
   await prisma.article.create({
     data: {
@@ -42,6 +42,8 @@ export async function createArticle(formData: FormData) {
   })
 
   revalidatePath("/catalogue")
+  revalidatePath("/mouvements")
+  revalidatePath("/reassort")
 }
 
 export async function deleteArticle(id: string) {
@@ -49,6 +51,8 @@ export async function deleteArticle(id: string) {
     where: { id }
   })
   revalidatePath("/catalogue")
+  revalidatePath("/mouvements")
+  revalidatePath("/reassort")
 }
 
 export async function updateArticle(formData: FormData) {
@@ -60,9 +64,9 @@ export async function updateArticle(formData: FormData) {
   const stockMinimum = parseInt(formData.get("stockMinimum") as string || "0")
   const quantiteParBoite = parseInt(formData.get("quantiteParBoite") as string || "1")
   const prixUnitaire = parseFloat(formData.get("prixUnitaire") as string || "0")
-  const referenceFournisseur = formData.get("referenceFournisseur") as string || null
-  const fournisseur = formData.get("fournisseur") as string || null
-  const codeBarre = formData.get("codeBarre") as string || null
+  const referenceFournisseur = (formData.get("referenceFournisseur") as string)?.trim() || null
+  const fournisseur = (formData.get("fournisseur") as string)?.trim() || null
+  const codeBarre = (formData.get("codeBarre") as string)?.trim() || null
 
   if (id) {
     await prisma.article.update({
@@ -82,6 +86,7 @@ export async function updateArticle(formData: FormData) {
     })
     revalidatePath("/catalogue")
     revalidatePath(`/catalogue/${id}`)
+    revalidatePath("/mouvements")
     revalidatePath("/reassort")
     revalidatePath("/")
   }

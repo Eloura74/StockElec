@@ -18,7 +18,8 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
     setScanError(null)
 
     // Chercher l'article par codeBarre
-    const article = articles.find(a => a.codeBarre === code)
+    const trimmedCode = code.trim()
+    const article = articles.find(a => a.codeBarre === trimmedCode)
     if (article) {
       setSelectedArticleId(article.id)
       // On pourrait aussi jouer un petit son de succès ici
