@@ -1,8 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { BarcodeScanner } from './BarcodeScanner'
+import dynamic from 'next/dynamic'
 import { Camera } from 'lucide-react'
+
+// Dynamic import with SSR false to prevent 'window is not defined' during build
+const BarcodeScanner = dynamic(() => import('./BarcodeScanner').then(mod => mod.BarcodeScanner), { ssr: false })
 
 interface ScannerInputProps {
   name: string

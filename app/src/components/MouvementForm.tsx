@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { ArrowRightLeft, Camera } from 'lucide-react'
 import { createMouvement } from '@/app/actions/mouvements'
-import { BarcodeScanner } from './BarcodeScanner'
+
+// Dynamic import with SSR false to prevent 'window is not defined' during build
+const BarcodeScanner = dynamic(() => import('./BarcodeScanner').then(mod => mod.BarcodeScanner), { ssr: false })
 
 export function MouvementForm({ articles, chantiers }: { articles: any[], chantiers: any[] }) {
   const [isScanning, setIsScanning] = useState(false)
