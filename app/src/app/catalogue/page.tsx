@@ -5,14 +5,26 @@ import { DeleteButton } from "@/components/DeleteButton"
 import { ScannerInput } from "@/components/ScannerInput"
 import { calculerStockArticle } from "@/lib/stockUtils"
 import Link from "next/link"
+import { SearchInput } from "@/components/SearchInput"
 
-export default async function CataloguePage() {
-  const articles = await getArticles()
+export default async function CataloguePage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q } = await searchParams
+  let articles = await getArticles()
+  
+  if (q) {
+    const query = q.toLowerCase()
+    articles = articles.filter((article: any) => 
+      article.designation.toLowerCase().includes(query) || 
+      article.reference.toLowerCase().includes(query) ||
+      (article.referenceFournisseur && article.referenceFournisseur.toLowerCase().includes(query))
+    )
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight">Mon Stock</h1>
+        <SearchInput />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
