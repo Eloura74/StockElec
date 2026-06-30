@@ -4,6 +4,7 @@ import { ArrowLeft, Edit, Save, Trash2, Package, CheckCircle2, TrendingDown } fr
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { DeleteButton } from "@/components/DeleteButton"
+import { CloturerButton } from "@/components/CloturerButton"
 
 export default async function ChantierDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -73,17 +74,7 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
         <div className="flex gap-2">
           {chantier.statut === 'Actif' && (
             <form action={cloturerChantier.bind(null, chantier.id)}>
-              <button 
-                type="submit" 
-                onClick={(e) => {
-                  if(!confirm("Clôturer ce chantier ? Tout le matériel non consommé sera automatiquement retourné au Dépôt.")) {
-                    e.preventDefault();
-                  }
-                }}
-                className="flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 shadow-sm transition-colors"
-              >
-                <CheckCircle2 className="w-4 h-4" /> Clôturer
-              </button>
+              <CloturerButton />
             </form>
           )}
           <form action={deleteChantier.bind(null, chantier.id)}>
