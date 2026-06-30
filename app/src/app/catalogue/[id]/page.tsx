@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma"
 import { updateArticle, deleteArticle } from "@/app/actions/articles"
 import { entrerStockRapide } from "@/app/actions/mouvements"
 import { calculerStockArticle } from "@/lib/stockUtils"
-import { ArrowLeft, Edit, Save, Trash2 } from "lucide-react"
+import { ArrowLeft, Edit, Save, Trash2, PackagePlus, ArrowRightLeft, PackageMinus, RefreshCw } from "lucide-react"
 import { ScannerInput } from "@/components/ScannerInput"
 import Link from "next/link"
 import { redirect } from "next/navigation"
@@ -135,43 +135,86 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                 <button type="submit" className="rounded bg-emerald-600 px-3 py-1 text-sm font-medium text-white hover:bg-emerald-700">Entrée rapide</button>
               </form>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-white">
-                  <tr>
-                    <th className="px-6 py-3 font-medium text-gray-500">Date</th>
-                    <th className="px-6 py-3 font-medium text-gray-500">Type</th>
-                    <th className="px-6 py-3 font-medium text-gray-500">Qté</th>
-                    <th className="px-6 py-3 font-medium text-gray-500">Chantier</th>
-                    <th className="px-6 py-3 font-medium text-gray-500">Obs.</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {article.mouvements.length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500">Aucun mouvement pour le moment.</td></tr>
-                  ) : (
-                    article.mouvements.map((mvt: any) => (
-                      <tr key={mvt.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-3 text-gray-600">{new Date(mvt.date).toLocaleDateString('fr-FR')}</td>
-                        <td className="px-6 py-3">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                            ${mvt.type === 'Achat' || mvt.type === 'Retour' ? 'bg-emerald-100 text-emerald-800' : ''}
-                            ${mvt.type === 'Depart' ? 'bg-blue-100 text-blue-800' : ''}
-                            ${mvt.type === 'Consomme' || mvt.type === 'Perte' ? 'bg-red-100 text-red-800' : ''}
-                          `}>
-                            {mvt.type}
-                          </span>
-                        </td>
-                        <td className="px-6 py-3 font-medium">
-                           {mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' ? '-' : '+'}{mvt.quantite}
-                        </td>
-                        <td className="px-6 py-3 text-gray-600">{mvt.chantier?.nom || '-'}</td>
-                        <td className="px-6 py-3 text-gray-500 truncate max-w-xs">{mvt.observation}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+            <div className="p-6">
+              {article.mouvements.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">Aucun mouvement pour le moment.</div>
+              ) : (
+                <div className="relative border-l border-gray-200 ml-3 space-y-8">
+                  {article.mouvements.map((mvt: any, index: number) => {
+                    let Icon = ArrowRightLeft
+                    let colorClass = "bg-gray-100 text-gray-500"
+                    let iconBgClass = "bg-gray-100"
+                    
+                    if (mvt.type === 'Achat') {
+                      Icon = PackagePlus
+                      colorClass = "text-emerald-700 bg-emerald-50 border-emerald-200"
+                      iconBgClass = "bg-emerald-100 text-emerald-600"
+                    } else if (mvt.type === 'Depart') {
+                      Icon = ArrowRightLeft
+                      colorClass = "text-orange-700 bg-orange-50 border-orange-200"
+                      iconBgClass = "bg-orange-100 text-orange-600"
+                    } else if (mvt.type === 'Retour') {
+                      Icon = RefreshCw
+                      colorClass = "text-blue-700 bg-blue-50 border-blue-200"
+                      iconBgClass = "bg-blue-100 text-blue-600"
+                    } else if (mvt.type === 'Consomme' || mvt.type === 'Perte') {
+                      Icon = PackageMinus
+                      colorClass = "text-red-700 bg-red-50 border-red-200"
+                      iconBgClass = "bg-red-100 text-red-600"
+                    } else if (mvt.type === 'Correction') {
+                      Icon = Edit
+                      colorClass = "text-purple-700 bg-purple-50 border-purple-200"
+                      iconBgClass = "bg-purple-100 text-purple-600"
+                    }
+
+                    return (
+                      <div key={mvt.id} className="relative pl-6">
+                        {/* Circle dot on the timeline */}
+                        <div className={`absolute -left-4 top-1 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white ${iconBgClass}`}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        
+                        <div className={`rounded-lg border p-4 shadow-sm ${colorClass}`}>
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-lg">
+                                  {mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' ? '-' : '+'}
+                                  {mvt.quantite}
+                                </span>
+                                <span className="font-semibold">{mvt.type}</span>
+                              </div>
+                              <div className="mt-1 text-sm font-medium">
+                                Saisi par : <span className="underline decoration-dashed">{mvt.utilisateur || 'Anonyme'}</span>
+                              </div>
+                              {mvt.chantier && (
+                                <div className="mt-1 text-sm">
+                                  📍 Chantier : <span className="font-semibold">{mvt.chantier.nom}</span>
+                                </div>
+                              )}
+                              {mvt.observation && (
+                                <div className="mt-2 text-sm italic opacity-80">
+                                  "{mvt.observation}"
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-xs font-medium opacity-60 sm:text-right">
+                              {new Date(mvt.date).toLocaleDateString('fr-FR', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -74,3 +74,25 @@ export async function entrerStockRapide(formData: FormData) {
     await entrerStock(articleId, quantite)
   }
 }
+
+export async function corrigerStock(formData: FormData) {
+  const articleId = formData.get("articleId") as string
+  const ecart = parseInt(formData.get("ecart") as string)
+  
+  if (articleId && ecart !== 0 && !isNaN(ecart)) {
+    await prisma.mouvement.create({
+      data: {
+        type: "Correction",
+        quantite: ecart, // Can be positive or negative
+        articleId,
+        observation: "Inventaire : Ajustement automatique",
+        utilisateur: "Système"
+      }
+    })
+    
+    revalidatePath("/inventaire")
+    revalidatePath("/catalogue")
+    revalidatePath("/reassort")
+    revalidatePath("/")
+  }
+}

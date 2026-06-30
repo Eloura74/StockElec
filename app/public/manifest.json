@@ -1,24 +1,21 @@
 {
-  "name": "StockPro - QuentinElec",
+  "name": "StockPro - Gestion Stock Quentin Elec",
   "short_name": "StockPro",
-  "description": "Application de gestion de stock et chantiers",
+  "description": "Application de gestion de stock, d'inventaire et d'outillage",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#f8fafc",
-  "orientation": "portrait-primary",
+  "theme_color": "#4f46e5",
   "icons": [
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }

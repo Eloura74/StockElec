@@ -1,7 +1,6 @@
 import prisma from "@/lib/prisma"
-import { updateChantier, deleteChantier } from "@/app/actions/chantiers"
-import { calculerResteSurChantier } from "@/lib/stockUtils"
-import { ArrowLeft, Edit, Save, Trash2, Package } from "lucide-react"
+import { updateChantier, deleteChantier, cloturerChantier } from "@/app/actions/chantiers"
+import { ArrowLeft, Edit, Save, Trash2, Package, CheckCircle2, TrendingDown } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { DeleteButton } from "@/components/DeleteButton"
@@ -45,16 +44,48 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
     valeurTotale += m.quantite * m.article.prixUnitaire;
   });
 
+  let valeurConsommee = 0;
+  let valeurPerdue = 0;
+
+  chantier.mouvements.forEach((mvt: any) => {
+    const cout = mvt.quantite * mvt.article.prixUnitaire;
+    if (mvt.type === 'Consomme') {
+      valeurConsommee += cout;
+    } else if (mvt.type === 'Perte') {
+      valeurPerdue += cout;
+    }
+  });
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/chantiers" className="text-gray-500 hover:text-gray-900">
             <ArrowLeft className="h-6 w-6" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Détails du chantier : {chantier.nom}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            Détails du chantier : {chantier.nom}
+            {chantier.statut === 'Terminé' && (
+              <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full font-bold uppercase tracking-wider">Clôturé</span>
+            )}
+          </h1>
         </div>
         <div className="flex gap-2">
+          {chantier.statut === 'Actif' && (
+            <form action={cloturerChantier.bind(null, chantier.id)}>
+              <button 
+                type="submit" 
+                onClick={(e) => {
+                  if(!confirm("Clôturer ce chantier ? Tout le matériel non consommé sera automatiquement retourné au Dépôt.")) {
+                    e.preventDefault();
+                  }
+                }}
+                className="flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 shadow-sm transition-colors"
+              >
+                <CheckCircle2 className="w-4 h-4" /> Clôturer
+              </button>
+            </form>
+          )}
           <form action={deleteChantier.bind(null, chantier.id)}>
             <DeleteButton message="Supprimer définitivement ce chantier et tout son historique ?" />
           </form>
@@ -88,47 +119,71 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
 
         {/* Historique & Stats */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-xl border bg-white p-4 shadow-sm flex items-center gap-4">
-              <div className="bg-orange-100 p-3 rounded-lg text-orange-600"><Package className="w-6 h-6"/></div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Matériel déployé (reste sur site)</p>
-                <p className="text-2xl font-bold text-gray-900">{materielDeploye.reduce((acc, m) => acc + m.quantite, 0)} unités</p>
+          {chantier.statut === 'Terminé' ? (
+            <div className="rounded-xl border bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100 p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-emerald-900 mb-6 flex items-center gap-2">
+                <CheckCircle2 className="w-6 h-6 text-emerald-600"/> Bilan Financier du Chantier
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white/60 p-4 rounded-lg border border-emerald-100/50">
+                  <p className="text-sm font-medium text-emerald-800/70 mb-1">Matériel Consommé</p>
+                  <p className="text-2xl font-bold text-emerald-900">{valeurConsommee.toFixed(2)} €</p>
+                </div>
+                <div className="bg-white/60 p-4 rounded-lg border border-emerald-100/50">
+                  <p className="text-sm font-medium text-emerald-800/70 mb-1">Matériel Perdu/Cassé</p>
+                  <p className="text-2xl font-bold text-red-600">{valeurPerdue.toFixed(2)} €</p>
+                </div>
+                <div className="bg-emerald-600 p-4 rounded-lg text-white shadow-md">
+                  <p className="text-sm font-medium text-emerald-100 mb-1">Coût Total Réel</p>
+                  <p className="text-3xl font-bold">{(valeurConsommee + valeurPerdue).toFixed(2)} €</p>
+                </div>
               </div>
             </div>
-            <div className="rounded-xl border bg-white p-4 shadow-sm">
-              <p className="text-sm font-medium text-gray-500">Valeur totale sur site</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {valeurTotale.toFixed(2)} €
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="border-b px-6 py-4 bg-gray-50">
-              <h2 className="text-lg font-semibold text-gray-800">Matériel Actuellement sur ce Chantier</h2>
-            </div>
-            <div className="p-6">
-              {materielDeploye.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center">Aucun matériel actuellement sur ce chantier.</p>
-              ) : (
-                <div className="space-y-4">
-                  {materielDeploye.map(m => (
-                    <div key={m.article.id} className="flex justify-between items-center border-b pb-2 last:border-0">
-                      <div>
-                        <p className="font-medium text-gray-900">{m.article.designation}</p>
-                        <p className="text-xs text-gray-500">{m.article.reference}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-orange-600">{m.quantite} {m.article.unite}</p>
-                        <p className="text-xs text-gray-500">Soit {(m.quantite * m.article.prixUnitaire).toFixed(2)} €</p>
-                      </div>
-                    </div>
-                  ))}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-xl border bg-white p-4 shadow-sm flex items-center gap-4">
+                <div className="bg-orange-100 p-3 rounded-lg text-orange-600"><Package className="w-6 h-6"/></div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Matériel déployé (reste sur site)</p>
+                  <p className="text-2xl font-bold text-gray-900">{materielDeploye.reduce((acc, m) => acc + m.quantite, 0)} unités</p>
                 </div>
-              )}
+              </div>
+              <div className="rounded-xl border bg-white p-4 shadow-sm">
+                <p className="text-sm font-medium text-gray-500">Valeur totale sur site</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {valeurTotale.toFixed(2)} €
+                </p>
+              </div>
             </div>
-          </div>
+          )}
+
+          {chantier.statut === 'Actif' && (
+            <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+              <div className="border-b px-6 py-4 bg-gray-50">
+                <h2 className="text-lg font-semibold text-gray-800">Matériel Actuellement sur ce Chantier</h2>
+              </div>
+              <div className="p-6">
+                {materielDeploye.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center">Aucun matériel actuellement sur ce chantier.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {materielDeploye.map(m => (
+                      <div key={m.article.id} className="flex justify-between items-center border-b pb-2 last:border-0">
+                        <div>
+                          <p className="font-medium text-gray-900">{m.article.designation}</p>
+                          <p className="text-xs text-gray-500">{m.article.reference}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-orange-600">{m.quantite} {m.article.unite}</p>
+                          <p className="text-xs text-gray-500">Soit {(m.quantite * m.article.prixUnitaire).toFixed(2)} €</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
             <div className="border-b px-6 py-4 bg-gray-50">

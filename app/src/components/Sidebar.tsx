@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench } from "lucide-react";
+import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench, PackageSearch } from "lucide-react";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -12,6 +12,7 @@ export function Sidebar() {
     { href: "/catalogue", label: "Mon Stock", icon: Package },
     { href: "/chantiers", label: "Chantiers", icon: HardHat },
     { href: "/outillage", label: "Outillage", icon: Wrench },
+    { href: "/inventaire", label: "Inventaire", icon: PackageSearch },
     { href: "/mouvements", label: "Mouvements", icon: FileText },
     { href: "/reassort", label: "Réassort", icon: ArrowRightLeft },
   ];

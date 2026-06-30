@@ -21,6 +21,7 @@ export function calculerStockArticle(article: Article, mouvements: Mouvement[]):
   mouvements.forEach(mvt => {
     switch (mvt.type) {
       case "Achat":
+      case "Correction":
         stockDepot += mvt.quantite
         break
       case "Depart":
