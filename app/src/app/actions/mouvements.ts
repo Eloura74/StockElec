@@ -35,9 +35,9 @@ export async function createMouvement(formData: FormData) {
       observation
     }
   })
-
   revalidatePath("/mouvements")
   revalidatePath("/catalogue")
+  revalidatePath("/reassort")
   revalidatePath("/")
 }
 
@@ -47,6 +47,7 @@ export async function deleteMouvement(id: string) {
   })
   revalidatePath("/mouvements")
   revalidatePath("/catalogue")
+  revalidatePath("/reassort")
   revalidatePath("/")
 }
 
@@ -61,7 +62,7 @@ export async function entrerStock(articleId: string, quantite: number) {
     }
   })
   revalidatePath("/catalogue")
-  revalidatePath("/catalogue")
+  revalidatePath("/reassort")
   revalidatePath("/")
 }
 
