@@ -111,7 +111,7 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
         {/* Historique & Stats */}
         <div className="lg:col-span-2 space-y-6">
           {chantier.statut === 'Terminé' ? (
-            <div className="rounded-xl border bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100 p-6 shadow-sm">
+            <div className="rounded-xl border bg-linear-to-br from-emerald-50 to-teal-50 border-emerald-100 p-6 shadow-sm">
               <h2 className="text-xl font-bold text-emerald-900 mb-6 flex items-center gap-2">
                 <CheckCircle2 className="w-6 h-6 text-emerald-600"/> Bilan Financier du Chantier
               </h2>

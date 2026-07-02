@@ -277,7 +277,7 @@ export function InventaireForm({ articles }: { articles: any[] }) {
 
             <form onSubmit={handleSubmitCorrection} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-900 font-bold mb-1">Quantité Physique Réelle</label>
+                <label className="block text-sm text-gray-900 font-bold mb-1">Quantité Physique Réelle</label>
                 <input 
                   required 
                   type="number" 

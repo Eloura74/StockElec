@@ -38,7 +38,7 @@ export async function createArticle(formData: FormData) {
       fournisseur,
       codeBarre,
       retourAttendu,
-    }
+    } as any
   })
 
   revalidatePath("/catalogue")
@@ -82,7 +82,7 @@ export async function updateArticle(formData: FormData) {
         referenceFournisseur,
         fournisseur,
         codeBarre,
-      }
+      } as any
     })
     revalidatePath("/catalogue")
     revalidatePath(`/catalogue/${id}`)
@@ -109,7 +109,7 @@ export async function creerArticleEtStock(formData: FormData) {
       stockInitial: 0,
       categorie: "À classer",
       unite: "u"
-    }
+    } as any
   })
 
   if (quantiteReelle > 0) {

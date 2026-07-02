@@ -67,7 +67,7 @@ export default async function Home() {
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* KPIs */}
-        <div className="rounded-xl border bg-gradient-to-br from-white to-blue-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border bg-linear-to-br from-white to-blue-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="rounded-xl bg-blue-100 p-3 text-blue-600 shadow-inner">
               <Package className="h-6 w-6" />
@@ -79,7 +79,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-gradient-to-br from-white to-emerald-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border bg-linear-to-br from-white to-emerald-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="rounded-xl bg-emerald-100 p-3 text-emerald-600 shadow-inner">
               <Truck className="h-6 w-6" />
@@ -91,7 +91,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-gradient-to-br from-white to-orange-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border bg-linear-to-br from-white to-orange-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="rounded-xl bg-orange-100 p-3 text-orange-600 shadow-inner">
               <Package className="h-6 w-6" />
@@ -103,7 +103,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-gradient-to-br from-white to-purple-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border bg-linear-to-br from-white to-purple-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="rounded-xl bg-purple-100 p-3 text-purple-600 shadow-inner">
               <Wrench className="h-6 w-6" />
@@ -115,7 +115,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-gradient-to-br from-white to-red-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border bg-linear-to-br from-white to-red-50/30 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="rounded-xl bg-red-100 p-3 text-red-600 shadow-inner">
               <AlertTriangle className="h-6 w-6" />
