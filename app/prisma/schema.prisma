@@ -93,3 +93,12 @@ model MouvementOutillage {
   date          DateTime  @default(now())
   observation   String?
 }
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // En clair car c'est une app interne très simple, ou hashé si on préfère.
+  role      String   @default("CHEF_EQUIPE") // "GERANT" ou "CHEF_EQUIPE"
+  createdAt DateTime @default(now())
+}
+
