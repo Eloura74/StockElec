@@ -36,25 +36,25 @@ export default async function DepartMatinPage() {
       stockMinimum: a.stockMinimum,
       stockActuel: stock 
     }
-  }).filter(a => a.stockActuel > 0) // On ne montre que ce qui est en stock au dépôt
+  })
 
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-zinc-950 flex flex-col">
       {/* Header Mobile / Tablette (Pas de sidebar) */}
-      <header className="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
+      <header className="bg-zinc-900 border-b border-white/10 text-white p-4 flex justify-between items-center shadow-lg">
         <div>
-          <h1 className="text-xl font-black">Départ Chantier</h1>
-          <p className="text-sm text-blue-100">Connecté : {session.username}</p>
+          <h1 className="text-xl font-black tracking-tight">Départ Chantier</h1>
+          <p className="text-sm text-zinc-400 font-medium">Connecté : <span className="text-indigo-400">{session.username}</span></p>
         </div>
         <form action={logout}>
-          <button type="submit" className="bg-blue-700 hover:bg-blue-800 p-2 rounded-full transition-colors">
-            <LogOut className="w-5 h-5" />
+          <button type="submit" className="bg-zinc-800 hover:bg-zinc-700 ring-1 ring-white/10 p-2.5 rounded-xl transition-all shadow-sm">
+            <LogOut className="w-5 h-5 text-zinc-300" />
           </button>
         </form>
       </header>
 
-      <main className="flex-1 p-4 sm:p-6 lg:max-w-4xl lg:mx-auto w-full">
+      <main className="flex-1 p-4 sm:p-6 lg:max-w-4xl lg:mx-auto w-full selection:bg-indigo-500/30">
         <DepartMatinClient chantiers={chantiers} articles={articlesWithStock} username={session.username} />
       </main>
     </div>
