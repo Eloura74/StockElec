@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench, PackageSearch, Users, LogOut } from "lucide-react";
+import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench, PackageSearch, Users, LogOut, Scan, Wand2 } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 
 export function Sidebar() {
@@ -14,6 +14,8 @@ export function Sidebar() {
     { href: "/chantiers", label: "Chantiers", icon: HardHat },
     { href: "/outillage", label: "Outillage", icon: Wrench },
     { href: "/inventaire", label: "Inventaire", icon: PackageSearch },
+    { href: "/inventaire-rapide", label: "Scan & Go", icon: Scan },
+    { href: "/reception-magique", label: "Réception Auto", icon: Wand2 },
     { href: "/mouvements", label: "Mouvements", icon: FileText },
     { href: "/reassort", label: "Réassort", icon: ArrowRightLeft },
     { href: "/equipe", label: "Équipe", icon: Users },

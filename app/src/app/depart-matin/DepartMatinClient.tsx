@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Plus, Trash2, CheckCircle2, ScanBarcode, Box, Truck } from "lucide-react"
+import { Plus, Minus, Search, ScanBarcode, Box, Truck, CheckCircle2, RotateCcw, Trash2 } from "lucide-react"
 import { validerDepartMatin } from "@/app/actions/depart"
+import { validerRetourChantier } from "@/app/actions/retour"
 import { BarcodeScanner } from "@/components/BarcodeScanner"
 
 type Article = { id: string, designation: string, reference: string, codeBarre: string | null, stockActuel: number, stockMinimum: number }
@@ -16,7 +17,7 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
-  const [mode, setMode] = useState<"DEPART" | "VERIF">("DEPART")
+  const [mode, setMode] = useState<"DEPART" | "VERIF" | "RETOUR">("DEPART")
 
   const filteredArticles = articles.filter(a => 
     a.designation.toLowerCase().includes(search.toLowerCase()) || 
@@ -36,7 +37,7 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
   const handleScan = (decodedText: string) => {
     const found = articles.find(a => a.codeBarre === decodedText || a.reference === decodedText)
     if (found) {
-      if (mode === "DEPART") {
+      if (mode === "DEPART" || mode === "RETOUR") {
         addToPanier(found)
       } else {
         setSearch(found.reference)
@@ -59,20 +60,34 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
     if (panier.length === 0) return alert("Votre liste est vide.")
     
     setIsSubmitting(true)
-    const lignes = panier.map(p => ({ articleId: p.article.id, quantite: p.quantite }))
-    
-    const res = await validerDepartMatin({ chantierId, username, observation, lignes })
-    if (res?.error) {
-      alert(res.error)
-      setIsSubmitting(false)
-    } else {
-      setSuccess(true)
-      setPanier([])
-      setChantierId("")
-      setObservation("")
-      setIsSubmitting(false)
-      setTimeout(() => setSuccess(false), 4000)
+    try {
+      const data = {
+        chantierId,
+        username,
+        lignes: panier.map(item => ({ articleId: item.article.id, quantite: item.quantite })),
+        observation
+      }
+      
+      let res;
+      if (mode === "DEPART") {
+        res = await validerDepartMatin(data)
+      } else {
+        res = await validerRetourChantier(data)
+      }
+
+      if (res.success) {
+        setSuccess(true)
+        setPanier([])
+        setChantierId("")
+        setObservation("")
+        setTimeout(() => setSuccess(false), 5000)
+      } else {
+        alert("Erreur: " + res.error)
+      }
+    } catch (e: any) {
+      alert("Erreur de connexion")
     }
+    setIsSubmitting(false)
   }
 
   if (isScanning) {
@@ -93,21 +108,27 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
       <div className="flex bg-gray-200 p-1 rounded-xl">
         <button 
           onClick={() => setMode("DEPART")}
-          className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${mode === "DEPART" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+          className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${mode === "DEPART" ? "bg-white text-emerald-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
         >
-          Départ Chantier
+          Départ
+        </button>
+        <button 
+          onClick={() => setMode("RETOUR")}
+          className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${mode === "RETOUR" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+        >
+          Retour
         </button>
         <button 
           onClick={() => setMode("VERIF")}
-          className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${mode === "VERIF" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+          className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${mode === "VERIF" ? "bg-white text-orange-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
         >
-          Vérifier un Stock
+          Stock
         </button>
       </div>
 
-      {success && mode === "DEPART" && (
-        <div className="bg-emerald-100 border border-emerald-200 text-emerald-800 p-4 rounded-xl flex items-center gap-3 font-bold shadow-sm animate-pulse">
-          <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" /> 
+      {success && (mode === "DEPART" || mode === "RETOUR") && (
+        <div className={`border p-4 rounded-xl flex items-center gap-3 font-bold shadow-sm animate-pulse ${mode === 'DEPART' ? 'bg-emerald-100 border-emerald-200 text-emerald-800' : 'bg-blue-100 border-blue-200 text-blue-800'}`}>
+          <CheckCircle2 className={`w-6 h-6 shrink-0 ${mode === 'DEPART' ? 'text-emerald-600' : 'text-blue-600'}`} /> 
           Tout est enregistré ! Bon courage sur le chantier {username} !
         </div>
       )}
@@ -166,11 +187,12 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
       )}
 
       {/* 1. Choix du Chantier */}
-      {mode === "DEPART" && (
+      {(mode === "DEPART" || mode === "RETOUR") && (
         <>
           <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
         <h2 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-          <Truck className="w-5 h-5 text-blue-600"/> 1. Pour quel chantier ?
+          {mode === "DEPART" ? <Truck className="w-5 h-5 text-emerald-600"/> : <RotateCcw className="w-5 h-5 text-blue-600"/>} 
+          1. {mode === "DEPART" ? "Pour quel chantier ?" : "De quel chantier viens-tu ?"}
         </h2>
         <select 
           className="w-full border-gray-300 rounded-xl p-4 bg-gray-50 text-gray-900 text-lg font-medium focus:ring-blue-500 focus:border-blue-500 transition-shadow"
@@ -301,9 +323,13 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
         <button
           onClick={handleValider}
           disabled={isSubmitting || panier.length === 0 || !chantierId}
-          className="w-full bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-black text-xl p-5 rounded-2xl shadow-xl shadow-emerald-600/20 disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2 border border-emerald-400"
+          className={`w-full text-white font-black text-xl p-5 rounded-2xl shadow-xl disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2 border ${
+            mode === 'DEPART' 
+            ? 'bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-emerald-600/20 border-emerald-400'
+            : 'bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-blue-600/20 border-blue-400'
+          }`}
         >
-          {isSubmitting ? "Enregistrement en cours..." : "✅ Valider mon départ"}
+          {isSubmitting ? "Enregistrement en cours..." : (mode === "DEPART" ? "✅ Valider mon départ" : "↩️ Valider mon retour")}
         </button>
       </div>
       </>
