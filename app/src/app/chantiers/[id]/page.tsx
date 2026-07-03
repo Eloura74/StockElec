@@ -186,18 +186,23 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
                   <tr>
                     <th className="px-6 py-3 font-medium text-gray-500">Date</th>
                     <th className="px-6 py-3 font-medium text-gray-500">Article</th>
+                    <th className="px-6 py-3 font-medium text-gray-500">Par</th>
                     <th className="px-6 py-3 font-medium text-gray-500">Type</th>
                     <th className="px-6 py-3 font-medium text-gray-500">Qté</th>
+                    <th className="px-6 py-3 font-medium text-gray-500">Obs.</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {chantier.mouvements.length === 0 ? (
-                    <tr><td colSpan={4} className="px-6 py-8 text-center text-gray-500">Aucun mouvement.</td></tr>
+                    <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">Aucun mouvement.</td></tr>
                   ) : (
                     chantier.mouvements.map((mvt: any) => (
                       <tr key={mvt.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-3 text-gray-600">{new Date(mvt.date).toLocaleDateString('fr-FR')}</td>
+                        <td className="px-6 py-3 text-gray-600">{new Date(mvt.date).toLocaleDateString('fr-FR')} à {new Date(mvt.date).getHours()}:{new Date(mvt.date).getMinutes().toString().padStart(2, '0')}</td>
                         <td className="px-6 py-3 font-medium text-gray-900">{mvt.article.designation}</td>
+                        <td className="px-6 py-3">
+                          {mvt.utilisateur ? <span className="text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded-md">{mvt.utilisateur}</span> : '-'}
+                        </td>
                         <td className="px-6 py-3">
                           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
                             ${mvt.type === 'Depart' ? 'bg-blue-100 text-blue-800' : ''}
@@ -207,8 +212,11 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
                             {mvt.type}
                           </span>
                         </td>
-                        <td className="px-6 py-3 font-medium">
-                           {mvt.type === 'Depart' ? '+' : '-'}{mvt.quantite}
+                        <td className="px-6 py-3 font-black text-gray-700">
+                          {mvt.type === 'Depart' ? '+' : '-'}{mvt.quantite}
+                        </td>
+                        <td className="px-6 py-3 text-sm text-gray-500 italic max-w-xs truncate" title={mvt.observation || ""}>
+                          {mvt.observation || '-'}
                         </td>
                       </tr>
                     ))

@@ -16,6 +16,7 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
+  const [mode, setMode] = useState<"DEPART" | "VERIF">("DEPART")
 
   const filteredArticles = articles.filter(a => 
     a.designation.toLowerCase().includes(search.toLowerCase()) || 
@@ -35,8 +36,12 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
   const handleScan = (decodedText: string) => {
     const found = articles.find(a => a.codeBarre === decodedText || a.reference === decodedText)
     if (found) {
-      addToPanier(found)
-      // On peut fermer le scanner ou le laisser ouvert. Souvent on le laisse ouvert pour scanner à la chaîne.
+      if (mode === "DEPART") {
+        addToPanier(found)
+      } else {
+        setSearch(found.reference)
+        setIsScanning(false)
+      }
     } else {
       alert("Code barre introuvable en stock : " + decodedText)
     }
@@ -84,15 +89,86 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
   return (
     <div className="space-y-6">
       
-      {success && (
+      {/* Sélecteur de Mode */}
+      <div className="flex bg-gray-200 p-1 rounded-xl">
+        <button 
+          onClick={() => setMode("DEPART")}
+          className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${mode === "DEPART" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+        >
+          Départ Chantier
+        </button>
+        <button 
+          onClick={() => setMode("VERIF")}
+          className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${mode === "VERIF" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+        >
+          Vérifier un Stock
+        </button>
+      </div>
+
+      {success && mode === "DEPART" && (
         <div className="bg-emerald-100 border border-emerald-200 text-emerald-800 p-4 rounded-xl flex items-center gap-3 font-bold shadow-sm animate-pulse">
           <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" /> 
           Tout est enregistré ! Bon courage sur le chantier {username} !
         </div>
       )}
 
+      {mode === "VERIF" && (
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+              <Box className="w-5 h-5 text-blue-600"/> Que cherches-tu ?
+            </h2>
+            <button 
+              onClick={() => setIsScanning(true)}
+              className="flex items-center gap-2 bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-2 rounded-lg font-bold text-sm transition-colors"
+            >
+              <ScanBarcode className="w-5 h-5" /> Scanner
+            </button>
+          </div>
+          
+          <div className="relative mt-2">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Ex: câble, disjoncteur..."
+              className="block w-full pl-12 rounded-xl border-gray-300 p-4 bg-gray-50 focus:bg-white focus:ring-blue-500 focus:border-blue-500 text-lg transition-colors"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+
+          {search && (
+            <div className="mt-4 space-y-3">
+              {filteredArticles.length === 0 ? (
+                <div className="p-4 text-gray-500 text-center font-medium bg-gray-50 rounded-xl">Aucun produit trouvé en stock.</div>
+              ) : (
+                filteredArticles.map(a => (
+                  <div key={a.id} className="p-4 bg-gray-50 border border-gray-200 rounded-xl flex justify-between items-center">
+                    <div>
+                      <div className="font-bold text-gray-900 text-lg">{a.designation}</div>
+                      <div className="text-sm text-gray-500">{a.reference}</div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-xs text-gray-500 mb-1">En Stock</span>
+                      <span className={`font-black text-xl px-3 py-1 rounded-lg ${
+                        a.stockActuel <= 0 ? 'bg-red-100 text-red-700' :
+                        a.stockActuel <= a.stockMinimum ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'
+                      }`}>{a.stockActuel}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 1. Choix du Chantier */}
-      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+      {mode === "DEPART" && (
+        <>
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
         <h2 className="font-bold text-gray-900 text-lg flex items-center gap-2">
           <Truck className="w-5 h-5 text-blue-600"/> 1. Pour quel chantier ?
         </h2>
@@ -230,6 +306,8 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
           {isSubmitting ? "Enregistrement en cours..." : "✅ Valider mon départ"}
         </button>
       </div>
+      </>
+      )}
 
     </div>
   )

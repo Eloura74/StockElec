@@ -29,18 +29,19 @@ export default async function MouvementsPage() {
               <table className="min-w-full divide-y divide-gray-200 text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Date</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500 rounded-l-xl">Date</th>
                     <th className="px-4 py-3 text-left font-medium text-gray-500">Type</th>
                     <th className="px-4 py-3 text-left font-medium text-gray-500">Article</th>
                     <th className="px-4 py-3 text-center font-medium text-gray-500">Qté</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Chantier</th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500">Chantier / Utilisateur</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500">Obs.</th>
+                    <th className="px-4 py-3 text-right font-medium text-gray-500 rounded-r-xl">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {mouvements.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
                         Aucun mouvement enregistré.
                       </td>
                     </tr>
@@ -60,14 +61,21 @@ export default async function MouvementsPage() {
                             {mvt.type}
                           </span>
                         </td>
-                        <td className="px-4 py-3 font-medium text-gray-900">
-                          {mvt.article.reference}
+                        <td className="px-4 py-3">
+                          <div className="font-bold text-gray-900">{mvt.article.designation}</div>
+                          <div className="text-xs text-gray-500">{mvt.article.reference}</div>
                         </td>
-                        <td className="px-4 py-3 text-center font-bold">
-                          {mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' ? '-' : '+'}{mvt.quantite}
+                        <td className="px-4 py-3 text-center font-black text-lg">
+                          <span className={mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' || mvt.type === 'Correction_Moins' ? 'text-orange-600' : 'text-emerald-600'}>
+                            {mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' || mvt.type === 'Correction_Moins' ? '-' : '+'}{mvt.quantite}
+                          </span>
                         </td>
-                        <td className="px-4 py-3 text-gray-500">
-                          {mvt.chantier?.nom || '-'}
+                        <td className="px-4 py-3">
+                          {mvt.chantier?.nom && <div className="font-medium text-gray-900">{mvt.chantier.nom}</div>}
+                          {mvt.utilisateur && <div className="text-xs text-blue-600 bg-blue-50 inline-block px-2 py-0.5 rounded mt-1">Par: {mvt.utilisateur}</div>}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-500 max-w-[150px] truncate" title={mvt.observation || ""}>
+                          {mvt.observation || '-'}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <form action={deleteMouvement.bind(null, mvt.id)}>
@@ -102,33 +110,31 @@ export default async function MouvementsPage() {
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <div>
-                        <div className="font-bold text-gray-900 text-sm">{mvt.article.designation}</div>
+                    <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100 mt-2">
+                      <div className="flex-1 overflow-hidden">
+                        <div className="font-bold text-gray-900 text-sm truncate">{mvt.article.designation}</div>
                         <div className="text-xs text-gray-500">{mvt.article.reference}</div>
                       </div>
-                      <div className="text-xl font-bold">
-                        <span className={mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' ? 'text-orange-600' : 'text-green-600'}>
-                          {mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' ? '-' : '+'}{mvt.quantite}
-                        </span>
+                      <div className={`text-xl font-bold shrink-0 ml-3 ${mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' || mvt.type === 'Correction_Moins' ? 'text-orange-600' : 'text-emerald-600'}`}>
+                        {mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' || mvt.type === 'Correction_Moins' ? '-' : '+'}{mvt.quantite}
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center text-sm">
-                      <div className="flex flex-col gap-0.5 text-xs text-gray-600">
-                        {mvt.chantier && (
-                          <span className="flex items-center gap-1"><span className="font-semibold text-gray-900">Chantier:</span> {mvt.chantier.nom}</span>
-                        )}
-                        {mvt.utilisateur && (
-                          <span className="flex items-center gap-1"><span className="font-semibold text-gray-900">Par:</span> {mvt.utilisateur}</span>
-                        )}
+                    <div className="flex justify-between items-center text-xs mt-2">
+                      <div className="flex flex-col gap-1">
+                        {mvt.chantier?.nom && <span className="font-medium text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md">📍 {mvt.chantier.nom}</span>}
+                        {mvt.utilisateur && <span className="font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">👤 {mvt.utilisateur}</span>}
                       </div>
-                      <div>
-                        <form action={deleteMouvement.bind(null, mvt.id)}>
-                          <DeleteButton message="Supprimer ce mouvement ?" />
-                        </form>
-                      </div>
+                      <form action={deleteMouvement.bind(null, mvt.id)}>
+                        <DeleteButton message="Supprimer ce mouvement ?" />
+                      </form>
                     </div>
+
+                    {mvt.observation && (
+                      <div className="text-xs text-gray-500 italic mt-2 bg-gray-50 p-2 rounded border border-gray-100">
+                        "{mvt.observation}"
+                      </div>
+                    )}
                   </div>
                 ))
               )}
