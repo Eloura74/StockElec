@@ -22,13 +22,20 @@ export default async function DepartMatinPage() {
   })
 
   // Calcul du stock actuel
-  const articlesWithStock = allArticles.map(a => {
+  const articlesWithStock = allArticles.map((a: any) => {
     let stock = a.stockInitial
     for (const m of a.mouvements) {
       if (['Achat', 'Retour', 'Correction_Plus'].includes(m.type)) stock += m.quantite
       if (['Depart', 'Consomme', 'Perdu', 'Correction_Moins'].includes(m.type)) stock -= m.quantite
     }
-    return { id: a.id, designation: a.designation, reference: a.reference, stockActuel: stock }
+    return { 
+      id: a.id, 
+      designation: a.designation, 
+      reference: a.reference, 
+      codeBarre: a.codeBarre,
+      stockMinimum: a.stockMinimum,
+      stockActuel: stock 
+    }
   }).filter(a => a.stockActuel > 0) // On ne montre que ce qui est en stock au dépôt
 
 

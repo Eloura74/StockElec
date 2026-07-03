@@ -7,10 +7,11 @@ import { revalidatePath } from "next/cache"
 type DepartInput = {
   chantierId: string,
   username: string,
+  observation?: string,
   lignes: { articleId: string, quantite: number }[]
 }
 
-export async function validerDepartMatin({ chantierId, username, lignes }: DepartInput) {
+export async function validerDepartMatin({ chantierId, username, observation, lignes }: DepartInput) {
   const session = await getSession()
   if (!session) return { error: "Non autorisé" }
 
@@ -32,7 +33,8 @@ export async function validerDepartMatin({ chantierId, username, lignes }: Depar
             type: 'Depart',
             quantite: ligne.quantite,
             chantierId: chantierId,
-            utilisateur: username // Le nom du Chef d'équipe !
+            utilisateur: username, // Le nom du Chef d'équipe !
+            observation: observation || null
           }
         })
       }
