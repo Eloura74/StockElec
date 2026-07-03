@@ -38,11 +38,11 @@ export default async function EquipePage() {
             }} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Identifiant (Nom du chef)</label>
-                <input required type="text" name="username" placeholder="ex: max" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-gray-50" />
+                <input required type="text" name="username" placeholder="ex: max" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-gray-50 text-gray-900" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
-                <input required type="text" name="password" placeholder="ex: 1234" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-gray-50" />
+                <input required type="text" name="password" placeholder="ex: 1234" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border bg-gray-50 text-gray-900" />
               </div>
               <button type="submit" className="w-full flex justify-center items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-700 transition-colors">
                 Créer le compte

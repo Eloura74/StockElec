@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench, PackageSearch, Users } from "lucide-react";
+import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench, PackageSearch, Users, LogOut } from "lucide-react";
+import { logout } from "@/app/actions/auth";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -48,6 +49,18 @@ export function Sidebar() {
               )
             })}
           </nav>
+          
+          <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-800">
+            <form action={logout}>
+              <button 
+                type="submit" 
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors dark:text-red-400 dark:hover:bg-red-900/30"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="font-medium text-sm">Déconnexion</span>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 

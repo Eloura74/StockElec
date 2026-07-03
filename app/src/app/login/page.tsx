@@ -53,7 +53,7 @@ export default function LoginPage() {
                   name="username"
                   type="text"
                   placeholder="ex: cedricelec ou max"
-                  className="block w-full pl-10 rounded-lg border-gray-300 px-4 py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                  className="block w-full pl-10 rounded-lg border-gray-300 px-4 py-3 bg-gray-50 text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors"
                 />
               </div>
             </div>
@@ -69,7 +69,7 @@ export default function LoginPage() {
                   name="password"
                   type="password"
                   placeholder="••••••••"
-                  className="block w-full pl-10 rounded-lg border-gray-300 px-4 py-3 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                  className="block w-full pl-10 rounded-lg border-gray-300 px-4 py-3 bg-gray-50 text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors"
                 />
               </div>
             </div>
