@@ -10,7 +10,7 @@ export default async function DepartMatinPage() {
   if (!session) redirect('/login')
 
   const chantiers = await prisma.chantier.findMany({
-    where: { statut: 'En cours' },
+    where: { statut: 'Actif' },
     orderBy: { nom: 'asc' }
   })
 
