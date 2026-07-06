@@ -74,7 +74,7 @@ export default async function MouvementsPage() {
                           {mvt.chantier?.nom && <div className="font-medium text-gray-900 dark:text-zinc-50">{mvt.chantier.nom}</div>}
                           {mvt.utilisateur && <div className="text-xs text-blue-600 bg-blue-50 inline-block px-2 py-0.5 rounded mt-1">Par: {mvt.utilisateur}</div>}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500 dark:text-zinc-400 max-w-[150px] truncate" title={mvt.observation || ""}>
+                        <td className="px-4 py-3 text-sm text-gray-500 dark:text-zinc-400 max-w-[150px]" title={mvt.observation || ""}>
                           {mvt.observation || '-'}
                         </td>
                         <td className="px-4 py-3 text-right">
@@ -112,7 +112,7 @@ export default async function MouvementsPage() {
 
                     <div className="flex justify-between items-center bg-gray-50 dark:bg-zinc-950 p-3 rounded-lg border border-gray-100 dark:border-zinc-800 mt-2">
                       <div className="flex-1 overflow-hidden">
-                        <div className="font-bold text-gray-900 dark:text-zinc-50 text-sm truncate">{mvt.article.designation}</div>
+                        <div className="font-bold text-gray-900 dark:text-zinc-50 text-sm">{mvt.article.designation}</div>
                         <div className="text-xs text-gray-500 dark:text-zinc-400">{mvt.article.reference}</div>
                       </div>
                       <div className={`text-xl font-bold shrink-0 ml-3 ${mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte' || mvt.type === 'Correction_Moins' ? 'text-orange-600' : 'text-emerald-600'}`}>

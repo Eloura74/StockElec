@@ -94,7 +94,7 @@ export function CommandeFournisseurCard({
         </button>
       </div>
 
-      <div className="p-0">
+      <div className="p-0 overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead className="bg-gray-50 dark:bg-zinc-950/50 text-gray-500 dark:text-zinc-400 text-xs uppercase border-b">
             <tr>

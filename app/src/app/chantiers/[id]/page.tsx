@@ -215,7 +215,7 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
                         <td className="px-6 py-3 font-black text-gray-700 dark:text-zinc-200">
                           {mvt.type === 'Depart' ? '+' : '-'}{mvt.quantite}
                         </td>
-                        <td className="px-6 py-3 text-sm text-gray-500 dark:text-zinc-400 italic max-w-xs truncate" title={mvt.observation || ""}>
+                        <td className="px-6 py-3 text-sm text-gray-500 dark:text-zinc-400 italic max-w-xs" title={mvt.observation || ""}>
                           {mvt.observation || '-'}
                         </td>
                       </tr>

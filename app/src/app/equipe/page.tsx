@@ -57,7 +57,7 @@ export default async function EquipePage() {
 
         {/* Liste des comptes */}
         <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-zinc-900 rounded-xl border shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl border shadow-sm overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-zinc-800">
               <thead className="bg-gray-50 dark:bg-zinc-950">
                 <tr>

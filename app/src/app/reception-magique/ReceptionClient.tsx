@@ -195,7 +195,7 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
                       )}
                     </td>
                     <td className="px-4 py-3 font-mono text-gray-900 dark:text-zinc-50">{row.reference}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-zinc-300 truncate max-w-xs">{row.designation}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-zinc-300 max-w-xs">{row.designation}</td>
                     <td className="px-4 py-3 text-center font-bold text-gray-900 dark:text-zinc-50">+{row.quantite}</td>
                   </tr>
                 ))}
