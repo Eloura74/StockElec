@@ -57,8 +57,8 @@ export function DashboardCharts({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       {/* Graphique : Sorties récentes */}
-      <div className="rounded-xl border bg-white p-6 shadow-sm">
-        <h3 className="font-semibold text-gray-900 mb-4">Matériel sorti (7 derniers jours)</h3>
+      <div className="rounded-xl border bg-white dark:bg-zinc-900 p-6 shadow-sm">
+        <h3 className="font-semibold text-gray-900 dark:text-zinc-50 mb-4">Matériel sorti (7 derniers jours)</h3>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={sortiesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -76,8 +76,8 @@ export function DashboardCharts({
       </div>
 
       {/* Graphique : Répartition valeur */}
-      <div className="rounded-xl border bg-white p-6 shadow-sm">
-        <h3 className="font-semibold text-gray-900 mb-4">Répartition de la valeur en stock</h3>
+      <div className="rounded-xl border bg-white dark:bg-zinc-900 p-6 shadow-sm">
+        <h3 className="font-semibold text-gray-900 dark:text-zinc-50 mb-4">Répartition de la valeur en stock</h3>
         <div className="h-64 w-full flex items-center justify-center">
           {pieData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -102,12 +102,12 @@ export function DashboardCharts({
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-gray-400 text-sm">Aucune valeur en stock</p>
+            <p className="text-gray-400 dark:text-zinc-500 text-sm">Aucune valeur en stock</p>
           )}
         </div>
         <div className="flex flex-wrap justify-center gap-4 mt-2">
           {pieData.map((entry, index) => (
-            <div key={entry.name} className="flex items-center gap-1 text-xs text-gray-600">
+            <div key={entry.name} className="flex items-center gap-1 text-xs text-gray-600 dark:text-zinc-300">
               <span className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
               {entry.name}
             </div>

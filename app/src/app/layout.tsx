@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 import { getSession } from "@/lib/auth";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,12 +34,19 @@ export default async function RootLayout({
   const showSidebar = session?.role === 'GERANT';
 
   return (
-    <html lang="fr">
-      <body className={`${inter.className} flex h-screen bg-white text-gray-900 antialiased overflow-hidden`}>
-        {showSidebar && <Sidebar />}
-        <main className={`flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 bg-gray-50/20 ${!showSidebar ? 'p-0 md:p-0' : ''}`}>
-          {children}
-        </main>
+    <html lang="fr" suppressHydrationWarning>
+      <body className={`${inter.className} flex h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-zinc-50 antialiased overflow-hidden transition-colors`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {showSidebar && <Sidebar />}
+          <main className={`flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 bg-gray-50/20 dark:bg-zinc-900/20 ${!showSidebar ? 'p-0 md:p-0' : ''}`}>
+            {children}
+          </main>
+        </ThemeProvider>
       </body>
     </html>
   );

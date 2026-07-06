@@ -69,13 +69,13 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
+      <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="font-bold text-gray-900">Scanner un article</h3>
+          <h3 className="font-bold text-gray-900 dark:text-zinc-50">Scanner un article</h3>
           <button 
             onClick={onClose}
-            className="p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200"
+            className="p-2 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 rounded-full hover:bg-gray-200"
           >
             <X className="w-5 h-5" />
           </button>
@@ -93,7 +93,7 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-gray-50 text-center text-sm text-gray-500">
+        <div className="p-4 bg-gray-50 dark:bg-zinc-950 text-center text-sm text-gray-500 dark:text-zinc-400">
           Placez le code-barres au centre de la zone de détection.
         </div>
       </div>

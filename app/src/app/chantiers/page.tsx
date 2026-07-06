@@ -20,14 +20,14 @@ export default async function ChantiersPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Formulaire d'ajout */}
         <div className="lg:col-span-1">
-          <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="border-b bg-gray-50/50 px-4 py-3 font-medium">
+          <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+            <div className="border-b bg-gray-50 dark:bg-zinc-950/50 px-4 py-3 font-medium">
               Nouveau chantier
             </div>
             <form action={createChantier} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Nom du chantier</label>
-                <input required name="nom" type="text" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: Rénovation Appartement Paris 15" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Nom du chantier</label>
+                <input required name="nom" type="text" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: Rénovation Appartement Paris 15" />
               </div>
               
               <button type="submit" className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
@@ -40,22 +40,22 @@ export default async function ChantiersPage() {
 
         {/* Liste des chantiers */}
         <div className="lg:col-span-2">
-          <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+          <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
             <div className="hidden md:block overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-sm">
+                <thead className="bg-gray-50 dark:bg-zinc-950">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Nom du Chantier</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Adresse</th>
-                    <th className="px-4 py-3 text-center font-medium text-gray-500">Statut</th>
-                    <th className="px-4 py-3 text-center font-medium text-gray-500">Matériel sur site</th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-zinc-400">Nom du Chantier</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-zinc-400">Adresse</th>
+                    <th className="px-4 py-3 text-center font-medium text-gray-500 dark:text-zinc-400">Statut</th>
+                    <th className="px-4 py-3 text-center font-medium text-gray-500 dark:text-zinc-400">Matériel sur site</th>
+                    <th className="px-4 py-3 text-right font-medium text-gray-500 dark:text-zinc-400">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-gray-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                   {chantiers.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan={5} className="px-4 py-8 text-center text-gray-500 dark:text-zinc-400">
                         Aucun chantier enregistré.
                       </td>
                     </tr>
@@ -65,21 +65,21 @@ export default async function ChantiersPage() {
                       const materielDeploye = (Object.values(resteChantier) as number[]).reduce((acc: number, val: number) => acc + val, 0)
                       
                       return (
-                        <tr key={chantier.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">
+                        <tr key={chantier.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-950">
+                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-zinc-50">
                             <div className="flex items-center gap-3">
-                              <div className="rounded-full bg-gray-100 p-2">
-                                <HardHat className="h-5 w-5 text-gray-500" />
+                              <div className="rounded-full bg-gray-100 dark:bg-zinc-800 p-2">
+                                <HardHat className="h-5 w-5 text-gray-500 dark:text-zinc-400" />
                               </div>
-                              <Link href={`/chantiers/${chantier.id}`} className="font-medium text-gray-900 hover:text-blue-600 hover:underline">
+                              <Link href={`/chantiers/${chantier.id}`} className="font-medium text-gray-900 dark:text-zinc-50 hover:text-blue-600 hover:underline">
                                 {chantier.nom}
                               </Link>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-gray-500">{chantier.adresse || '-'}</td>
+                          <td className="px-4 py-3 text-gray-500 dark:text-zinc-400">{chantier.adresse || '-'}</td>
                           <td className="px-4 py-3 text-center">
                             <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              chantier.statut === 'Actif' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                              chantier.statut === 'Actif' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-zinc-100'
                             }`}>
                               {chantier.statut}
                             </span>
@@ -108,35 +108,35 @@ export default async function ChantiersPage() {
             {/* Vue Mobile (Cartes) */}
             <div className="md:hidden divide-y divide-gray-100">
               {chantiers.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">Aucun chantier enregistré.</div>
+                <div className="p-8 text-center text-gray-500 dark:text-zinc-400">Aucun chantier enregistré.</div>
               ) : (
                 chantiers.map((chantier: any) => {
                   const resteChantier = calculerResteSurChantier(chantier.mouvements)
                   const materielDeploye = (Object.values(resteChantier) as number[]).reduce((acc: number, val: number) => acc + val, 0)
                   
                   return (
-                    <div key={chantier.id} className="p-4 bg-white space-y-3">
+                    <div key={chantier.id} className="p-4 bg-white dark:bg-zinc-900 space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-3">
-                          <div className="rounded-full bg-gray-100 p-2">
-                            <HardHat className="h-5 w-5 text-gray-500" />
+                          <div className="rounded-full bg-gray-100 dark:bg-zinc-800 p-2">
+                            <HardHat className="h-5 w-5 text-gray-500 dark:text-zinc-400" />
                           </div>
                           <div>
-                            <Link href={`/chantiers/${chantier.id}`} className="font-bold text-gray-900 hover:text-blue-600">
+                            <Link href={`/chantiers/${chantier.id}`} className="font-bold text-gray-900 dark:text-zinc-50 hover:text-blue-600">
                               {chantier.nom}
                             </Link>
-                            <div className="text-xs text-gray-500">{chantier.adresse || 'Pas d\'adresse'}</div>
+                            <div className="text-xs text-gray-500 dark:text-zinc-400">{chantier.adresse || 'Pas d\'adresse'}</div>
                           </div>
                         </div>
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                          chantier.statut === 'Actif' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                          chantier.statut === 'Actif' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-zinc-100'
                         }`}>
                           {chantier.statut}
                         </span>
                       </div>
 
-                      <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                        <div className="text-xs text-gray-500 font-medium">Matériel sur site</div>
+                      <div className="flex justify-between items-center bg-gray-50 dark:bg-zinc-950 p-3 rounded-lg border border-gray-100 dark:border-zinc-800">
+                        <div className="text-xs text-gray-500 dark:text-zinc-400 font-medium">Matériel sur site</div>
                         <div className="font-bold text-blue-600">{materielDeploye} unités</div>
                       </div>
 

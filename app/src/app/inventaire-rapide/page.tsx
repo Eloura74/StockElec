@@ -38,8 +38,8 @@ export default async function InventaireRapidePage() {
   return (
     <main className="p-4 sm:p-8 max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Inventaire Rapide</h1>
-        <p className="text-gray-500 mt-2">Scannez ou cherchez un produit pour corriger son stock réel.</p>
+        <h1 className="text-3xl font-black text-gray-900 dark:text-zinc-50 tracking-tight">Inventaire Rapide</h1>
+        <p className="text-gray-500 dark:text-zinc-400 mt-2">Scannez ou cherchez un produit pour corriger son stock réel.</p>
       </div>
       <InventaireClient articles={articles} />
     </main>

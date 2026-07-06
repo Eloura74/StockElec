@@ -26,8 +26,8 @@ export default async function ReceptionMagiquePage() {
   return (
     <main className="p-4 sm:p-8 max-w-5xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Réception Magique</h1>
-        <p className="text-gray-500 mt-2">Importez un Bon de Livraison ou une Facture (Excel / CSV) fourni par votre grossiste. Le système lira les références et préparera les stocks.</p>
+        <h1 className="text-3xl font-black text-gray-900 dark:text-zinc-50 tracking-tight">Réception Magique</h1>
+        <p className="text-gray-500 dark:text-zinc-400 mt-2">Importez un Bon de Livraison ou une Facture (Excel / CSV) fourni par votre grossiste. Le système lira les références et préparera les stocks.</p>
       </div>
       
       <ReceptionClient knownReferences={Array.from(knownReferences)} />

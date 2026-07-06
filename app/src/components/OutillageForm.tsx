@@ -30,50 +30,50 @@ export function OutillageForm({ outillage = null }: { outillage?: any }) {
     <div className="max-w-2xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/outillage" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <ArrowLeft className="h-5 w-5 text-gray-600" />
+          <Link href="/outillage" className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 dark:bg-zinc-800 rounded-full transition-colors">
+            <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-zinc-300" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50">
             {outillage ? "Modifier l'outil" : "Ajouter un outil"}
           </h1>
         </div>
       </div>
 
-      <form action={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+      <form action={handleSubmit} className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 p-6 space-y-6">
         {outillage && <input type="hidden" name="id" value={outillage.id} />}
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="col-span-1 md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Nom de la machine *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Nom de la machine *</label>
             <input 
               required
               name="nom" 
               type="text" 
               defaultValue={outillage?.nom} 
               placeholder="ex: Perforateur Hilti TE 6"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" 
+              className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" 
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Marque</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Marque</label>
             <input 
               name="marque" 
               type="text" 
               defaultValue={outillage?.marque || ''} 
               placeholder="ex: Hilti, Makita..."
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" 
+              className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" 
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Valeur estimée (€)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Valeur estimée (€)</label>
             <input 
               name="valeur" 
               type="number" 
               step="0.01" 
               defaultValue={outillage?.valeur || 0} 
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" 
+              className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" 
             />
           </div>
 
@@ -84,7 +84,7 @@ export function OutillageForm({ outillage = null }: { outillage?: any }) {
               defaultValue={outillage?.reference || ''}
               placeholder="Scannez l'étiquette ou tapez le numéro"
             />
-            <p className="text-xs text-gray-500 mt-1">Collez une étiquette code-barres sur l'outil pour l'emprunter en 1 seconde avec l'appareil photo.</p>
+            <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1">Collez une étiquette code-barres sur l'outil pour l'emprunter en 1 seconde avec l'appareil photo.</p>
           </div>
         </div>
 

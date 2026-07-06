@@ -23,16 +23,16 @@ export default async function ReassortPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Réassort & Commandes</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50">Réassort & Commandes</h1>
       </div>
 
       {Object.keys(parFournisseur).length === 0 ? (
-        <div className="rounded-xl border bg-white p-12 text-center shadow-sm">
+        <div className="rounded-xl border bg-white dark:bg-zinc-900 p-12 text-center shadow-sm">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
             <ShoppingCart className="h-6 w-6 text-emerald-600" />
           </div>
-          <h3 className="mt-4 text-lg font-medium text-gray-900">Tout est en ordre !</h3>
-          <p className="mt-2 text-gray-500">Aucun article n'est actuellement sous son seuil d'alerte.</p>
+          <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-zinc-50">Tout est en ordre !</h3>
+          <p className="mt-2 text-gray-500 dark:text-zinc-400">Aucun article n'est actuellement sous son seuil d'alerte.</p>
         </div>
       ) : (
         <div className="space-y-8">

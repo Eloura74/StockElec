@@ -9,7 +9,7 @@ export function OutillageCard({ outil }: { outil: any }) {
 
   return (
     <Link href={`/outillage/${outil.id}`}>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5 hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
         
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
@@ -21,8 +21,8 @@ export function OutillageCard({ outil }: { outil: any }) {
               <Wrench className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 leading-tight">{outil.nom}</h3>
-              <p className="text-sm text-gray-500 mt-1">{outil.marque || 'Sans marque'} {outil.reference ? `• Réf: ${outil.reference}` : ''}</p>
+              <h3 className="font-bold text-gray-900 dark:text-zinc-50 leading-tight">{outil.nom}</h3>
+              <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">{outil.marque || 'Sans marque'} {outil.reference ? `• Réf: ${outil.reference}` : ''}</p>
             </div>
           </div>
         </div>

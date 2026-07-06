@@ -29,22 +29,22 @@ export function ScannerInput({ name, defaultValue = "", placeholder = "ex: 36611
 
   return (
     <div>
-      {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
+      {label && <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">{label}</label>}
       <div className="mt-1 flex rounded-md shadow-sm">
         <input
           type="text"
           name={name}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="block w-full rounded-none rounded-l-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="block w-full rounded-none rounded-l-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder={placeholder}
         />
         <button
           type="button"
           onClick={() => setIsScanning(true)}
-          className="relative -ml-px inline-flex items-center space-x-2 rounded-r-md border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="relative -ml-px inline-flex items-center space-x-2 rounded-r-md border border-gray-300 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950 px-4 py-2 text-sm font-medium text-gray-700 dark:text-zinc-200 hover:bg-gray-100 dark:hover:bg-zinc-800 dark:bg-zinc-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
-          <Camera className="h-4 w-4 text-gray-400" />
+          <Camera className="h-4 w-4 text-gray-400 dark:text-zinc-500" />
           <span>Scanner</span>
         </button>
       </div>

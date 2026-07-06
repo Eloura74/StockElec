@@ -105,22 +105,22 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
     <div className="space-y-6">
       
       {/* Sélecteur de Mode */}
-      <div className="flex bg-zinc-900/50 p-1.5 rounded-2xl ring-1 ring-white/5 shadow-inner">
+      <div className="flex bg-slate-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl ring-1 ring-slate-200 dark:ring-white/5 shadow-inner">
         <button 
           onClick={() => setMode("DEPART")}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "DEPART" ? "bg-zinc-800 text-white shadow-md ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300"}`}
+          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "DEPART" ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10" : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"}`}
         >
           Départ
         </button>
         <button 
           onClick={() => setMode("RETOUR")}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "RETOUR" ? "bg-zinc-800 text-white shadow-md ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300"}`}
+          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "RETOUR" ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10" : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"}`}
         >
           Retour
         </button>
         <button 
           onClick={() => setMode("VERIF")}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "VERIF" ? "bg-zinc-800 text-white shadow-md ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300"}`}
+          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "VERIF" ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10" : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"}`}
         >
           Stock
         </button>
@@ -134,14 +134,14 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
       )}
 
       {mode === "VERIF" && (
-        <div className="bg-zinc-900 p-5 sm:p-6 rounded-3xl border border-white/5 shadow-xl space-y-4">
+        <div className="bg-white dark:bg-zinc-900 p-5 sm:p-6 rounded-3xl border border-slate-100 dark:border-white/5 shadow-sm dark:shadow-xl space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-white text-lg flex items-center gap-2">
-              <Box className="w-5 h-5 text-indigo-400"/> Que cherches-tu ?
+            <h2 className="font-semibold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+              <Box className="w-5 h-5 text-indigo-500 dark:text-indigo-400"/> Que cherches-tu ?
             </h2>
             <button 
               onClick={() => setIsScanning(true)}
-              className="flex items-center gap-2 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 ring-1 ring-indigo-500/30 px-4 py-2 rounded-xl font-medium text-sm transition-colors"
+              className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 ring-1 ring-indigo-500/20 dark:ring-indigo-500/30 px-4 py-2 rounded-xl font-medium text-sm transition-colors"
             >
               <ScanBarcode className="w-5 h-5" /> Scanner
             </button>
@@ -149,12 +149,12 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
           
           <div className="relative mt-2">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-zinc-500" />
+              <Search className="h-5 w-5 text-slate-400 dark:text-zinc-500" />
             </div>
             <input
               type="text"
               placeholder="Ex: câble, disjoncteur..."
-              className="block w-full pl-12 rounded-2xl border-0 ring-1 ring-inset ring-white/10 p-4 bg-zinc-950 text-white placeholder:text-zinc-600 focus:bg-zinc-900 focus:ring-2 focus:ring-inset focus:ring-indigo-500 text-lg transition-all"
+              className="block w-full pl-12 rounded-2xl border-0 ring-1 ring-inset ring-slate-200 dark:ring-white/10 p-4 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:bg-white dark:focus:bg-zinc-900 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-indigo-500 text-lg transition-all"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -163,19 +163,19 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
           {search && (
             <div className="mt-4 space-y-3">
               {filteredArticles.length === 0 ? (
-                <div className="p-4 text-zinc-500 text-center font-medium bg-zinc-950/50 rounded-2xl ring-1 ring-white/5">Aucun produit trouvé en stock.</div>
+                <div className="p-4 text-slate-500 dark:text-zinc-500 text-center font-medium bg-slate-50 dark:bg-zinc-950/50 rounded-2xl ring-1 ring-slate-100 dark:ring-white/5">Aucun produit trouvé en stock.</div>
               ) : (
                 filteredArticles.map(a => (
-                  <div key={a.id} className="p-4 bg-zinc-800 border border-white/5 shadow-sm rounded-2xl flex justify-between items-center">
+                  <div key={a.id} className="p-4 bg-white dark:bg-zinc-800 border border-slate-100 dark:border-white/5 shadow-sm rounded-2xl flex justify-between items-center">
                     <div>
-                      <div className="font-semibold text-white text-lg">{a.designation}</div>
-                      <div className="text-sm text-zinc-400">{a.reference}</div>
+                      <div className="font-semibold text-slate-900 dark:text-white text-lg">{a.designation}</div>
+                      <div className="text-sm text-slate-500 dark:text-zinc-400">{a.reference}</div>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="text-xs text-zinc-500 font-medium mb-1 tracking-wider uppercase">En Stock</span>
+                      <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium mb-1 tracking-wider uppercase">En Stock</span>
                       <span className={`font-black text-xl px-4 py-1.5 rounded-xl ${
-                        a.stockActuel <= 0 ? 'bg-rose-500/10 text-rose-400 ring-1 ring-rose-500/20' :
-                        a.stockActuel <= a.stockMinimum ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20'
+                        a.stockActuel <= 0 ? 'bg-rose-50 text-rose-600 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20' :
+                        a.stockActuel <= a.stockMinimum ? 'bg-amber-50 text-amber-600 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/20' : 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20'
                       }`}>{a.stockActuel}</span>
                     </div>
                   </div>
@@ -189,13 +189,13 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
       {/* 1. Choix du Chantier */}
       {(mode === "DEPART" || mode === "RETOUR") && (
         <>
-          <div className="bg-zinc-900 p-5 sm:p-6 rounded-3xl border border-white/5 shadow-xl space-y-4">
-        <h2 className="font-semibold text-white text-lg flex items-center gap-2">
-          {mode === "DEPART" ? <Truck className="w-5 h-5 text-indigo-400"/> : <RotateCcw className="w-5 h-5 text-emerald-400"/>} 
+          <div className="bg-white dark:bg-zinc-900 p-5 sm:p-6 rounded-3xl border border-slate-100 dark:border-white/5 shadow-sm dark:shadow-xl space-y-4">
+        <h2 className="font-semibold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+          {mode === "DEPART" ? <Truck className="w-5 h-5 text-indigo-500 dark:text-indigo-400"/> : <RotateCcw className="w-5 h-5 text-emerald-500 dark:text-emerald-400"/>} 
           1. {mode === "DEPART" ? "Pour quel chantier ?" : "De quel chantier viens-tu ?"}
         </h2>
         <select 
-          className="w-full border-0 ring-1 ring-inset ring-white/10 rounded-2xl p-4 bg-zinc-950 text-white text-lg font-medium focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-shadow appearance-none"
+          className="w-full border-0 ring-1 ring-inset ring-slate-200 dark:ring-white/10 rounded-2xl p-4 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-white text-lg font-medium focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-indigo-500 transition-shadow appearance-none"
           value={chantierId}
           onChange={(e) => setChantierId(e.target.value)}
         >
@@ -208,14 +208,14 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
 
       {/* 2. Ajout de Matériel */}
       <div className={`transition-all duration-500 ${!chantierId ? 'opacity-40 pointer-events-none grayscale' : ''}`}>
-        <div className="bg-zinc-900 p-5 sm:p-6 rounded-3xl border border-white/5 shadow-xl space-y-4">
+        <div className="bg-white dark:bg-zinc-900 p-5 sm:p-6 rounded-3xl border border-slate-100 dark:border-white/5 shadow-sm dark:shadow-xl space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-white text-lg flex items-center gap-2">
-              <Box className="w-5 h-5 text-indigo-400"/> 2. Matériel
+            <h2 className="font-semibold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+              <Box className="w-5 h-5 text-indigo-500 dark:text-indigo-400"/> 2. Matériel
             </h2>
             <button 
               onClick={() => setIsScanning(true)}
-              className="flex items-center gap-2 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 ring-1 ring-indigo-500/30 px-4 py-2 rounded-xl font-medium text-sm transition-colors"
+              className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 ring-1 ring-indigo-500/20 dark:ring-indigo-500/30 px-4 py-2 rounded-xl font-medium text-sm transition-colors"
             >
               <ScanBarcode className="w-5 h-5" /> Scanner
             </button>
@@ -223,12 +223,12 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
           
           <div className="relative mt-2">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-zinc-500" />
+              <Search className="h-5 w-5 text-slate-400 dark:text-zinc-500" />
             </div>
             <input
               type="text"
               placeholder="Ou taper un nom..."
-              className="block w-full pl-12 rounded-2xl border-0 ring-1 ring-inset ring-white/10 p-4 bg-zinc-950 text-white placeholder:text-zinc-600 focus:bg-zinc-900 focus:ring-2 focus:ring-inset focus:ring-indigo-500 text-lg transition-all"
+              className="block w-full pl-12 rounded-2xl border-0 ring-1 ring-inset ring-slate-200 dark:ring-white/10 p-4 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:bg-white dark:focus:bg-zinc-900 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-indigo-500 text-lg transition-all"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -240,13 +240,13 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
                 <button
                   key={a.id}
                   onClick={() => addToPanier(a)}
-                  className="w-full text-left p-4 bg-zinc-800 border border-white/5 shadow-sm hover:border-indigo-500/50 rounded-2xl flex justify-between items-center transition-colors group"
+                  className="w-full text-left p-4 bg-white dark:bg-zinc-800 border border-slate-100 dark:border-white/5 shadow-sm hover:border-indigo-500/30 dark:hover:border-indigo-500/50 rounded-2xl flex justify-between items-center transition-colors group"
                 >
                   <div>
-                    <div className="font-semibold text-white">{a.designation}</div>
-                    <div className="text-sm text-zinc-400">{a.reference}</div>
+                    <div className="font-semibold text-slate-900 dark:text-white">{a.designation}</div>
+                    <div className="text-sm text-slate-500 dark:text-zinc-400">{a.reference}</div>
                   </div>
-                  <Plus className="text-zinc-500 group-hover:text-indigo-400 transition-colors" />
+                  <Plus className="text-slate-400 dark:text-zinc-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
                 </button>
               ))}
             </div>
@@ -257,27 +257,27 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
       {/* 3. Panier & Observation */}
       {panier.length > 0 && (
         <div className="space-y-4">
-          <div className="bg-zinc-900 rounded-3xl border border-white/5 shadow-xl overflow-hidden animate-in slide-in-from-bottom-2 fade-in">
-            <div className="p-4 bg-zinc-900/80 border-b border-white/5 flex justify-between items-center">
-              <h3 className="font-semibold text-white">Dans ma liste</h3>
-              <span className="bg-indigo-500/20 text-indigo-400 text-xs font-bold px-2 py-1 rounded-full">{panier.length} article(s)</span>
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-white/5 shadow-sm dark:shadow-xl overflow-hidden animate-in slide-in-from-bottom-2 fade-in">
+            <div className="p-4 bg-slate-50 dark:bg-zinc-900/80 border-b border-slate-100 dark:border-white/5 flex justify-between items-center">
+              <h3 className="font-semibold text-slate-900 dark:text-white">Dans ma liste</h3>
+              <span className="bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold px-2 py-1 rounded-full">{panier.length} article(s)</span>
             </div>
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-slate-100 dark:divide-white/5">
               {panier.map(item => (
-                <div key={item.article.id} className="p-4 bg-zinc-800 flex justify-between items-center">
+                <div key={item.article.id} className="p-4 bg-white dark:bg-zinc-800 flex justify-between items-center">
                   <div className="flex-1 pr-4">
-                    <div className="font-semibold text-white text-sm">{item.article.designation}</div>
-                    <div className="text-xs text-zinc-400">{item.article.reference}</div>
+                    <div className="font-semibold text-slate-900 dark:text-white text-sm">{item.article.designation}</div>
+                    <div className="text-xs text-slate-500 dark:text-zinc-400">{item.article.reference}</div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <button onClick={() => updateQty(item.article.id, item.quantite - 1)} className="p-2 rounded-xl bg-zinc-700/50 text-zinc-300 hover:bg-zinc-700 transition-colors ring-1 ring-white/5">
+                    <button onClick={() => updateQty(item.article.id, item.quantite - 1)} className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-700/50 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors ring-1 ring-slate-200 dark:ring-white/5">
                       <Minus className="w-5 h-5" />
                     </button>
-                    <span className="font-black text-xl w-8 text-center text-white">{item.quantite}</span>
-                    <button onClick={() => updateQty(item.article.id, item.quantite + 1)} className="p-2 rounded-xl bg-zinc-700/50 text-zinc-300 hover:bg-zinc-700 transition-colors ring-1 ring-white/5">
+                    <span className="font-black text-xl w-8 text-center text-slate-900 dark:text-white">{item.quantite}</span>
+                    <button onClick={() => updateQty(item.article.id, item.quantite + 1)} className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-700/50 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors ring-1 ring-slate-200 dark:ring-white/5">
                       <Plus className="w-5 h-5" />
                     </button>
-                    <button onClick={() => remove(item.article.id)} className="p-2 text-rose-500/70 hover:text-rose-400 transition-colors ml-2">
+                    <button onClick={() => remove(item.article.id)} className="p-2 text-rose-500 hover:text-rose-600 dark:text-rose-500/70 dark:hover:text-rose-400 transition-colors ml-2">
                       <Trash2 className="w-5 h-5" />
                     </button>
                   </div>
@@ -288,7 +288,7 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
           <div>
             <textarea
               placeholder="Un commentaire ? (ex: pris dans l'étagère du haut...)"
-              className="w-full rounded-2xl border-0 ring-1 ring-inset ring-white/10 p-4 bg-zinc-900 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-all resize-none shadow-sm"
+              className="w-full rounded-2xl border-0 ring-1 ring-inset ring-slate-200 dark:ring-white/10 p-4 bg-white dark:bg-zinc-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-indigo-500 transition-all resize-none shadow-sm"
               rows={2}
               value={observation}
               onChange={(e) => setObservation(e.target.value)}

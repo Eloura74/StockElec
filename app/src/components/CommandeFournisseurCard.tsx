@@ -67,15 +67,15 @@ export function CommandeFournisseurCard({
   const totalItemsToOrder = Object.values(quantities).filter(q => q > 0).length
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      <div className="bg-gray-50 border-b px-5 py-4 flex items-center justify-between">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden">
+      <div className="bg-gray-50 dark:bg-zinc-950 border-b px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
             <ShoppingCart className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-bold text-gray-900 text-lg">{fournisseur}</h3>
-            <p className="text-sm text-gray-500">{items.length} article(s) en alerte</p>
+            <h3 className="font-bold text-gray-900 dark:text-zinc-50 text-lg">{fournisseur}</h3>
+            <p className="text-sm text-gray-500 dark:text-zinc-400">{items.length} article(s) en alerte</p>
           </div>
         </div>
         <button
@@ -86,7 +86,7 @@ export function CommandeFournisseurCard({
               ? "bg-emerald-100 text-emerald-700" 
               : totalItemsToOrder > 0 
                 ? "bg-gray-900 text-white hover:bg-gray-800 shadow-md" 
-                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 cursor-not-allowed"
           }`}
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -96,7 +96,7 @@ export function CommandeFournisseurCard({
 
       <div className="p-0">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50/50 text-gray-500 text-xs uppercase border-b">
+          <thead className="bg-gray-50 dark:bg-zinc-950/50 text-gray-500 dark:text-zinc-400 text-xs uppercase border-b">
             <tr>
               <th className="px-5 py-3 font-medium">Article</th>
               <th className="px-5 py-3 font-medium text-center">Stock Actuel</th>
@@ -107,8 +107,8 @@ export function CommandeFournisseurCard({
             {items.map(item => (
               <tr key={item.articleId} className="hover:bg-blue-50/30 transition-colors">
                 <td className="px-5 py-3">
-                  <div className="font-medium text-gray-900">{item.designation}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">
+                  <div className="font-medium text-gray-900 dark:text-zinc-50">{item.designation}</div>
+                  <div className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
                     {item.referenceFournisseur ? `Réf: ${item.referenceFournisseur}` : `Réf int: ${item.reference}`}
                   </div>
                 </td>
@@ -117,7 +117,7 @@ export function CommandeFournisseurCard({
                     <AlertCircle className="h-3 w-3" />
                     {item.stockDépôt} {item.unite}
                   </div>
-                  <div className="text-[10px] text-gray-400 mt-1">Min: {item.stockMinimum}</div>
+                  <div className="text-[10px] text-gray-400 dark:text-zinc-500 mt-1">Min: {item.stockMinimum}</div>
                 </td>
                 <td className="px-5 py-3 text-right">
                   <div className="flex items-center justify-end gap-2">
@@ -126,12 +126,12 @@ export function CommandeFournisseurCard({
                       min="0"
                       value={quantities[item.articleId]}
                       onChange={(e) => handleQuantityChange(item.articleId, e.target.value)}
-                      className="w-16 text-center border-gray-300 rounded-md text-sm font-bold text-blue-700 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-16 text-center border-gray-300 dark:border-zinc-700 rounded-md text-sm font-bold text-blue-700 focus:ring-blue-500 focus:border-blue-500"
                     />
-                    <span className="text-gray-500 w-8 text-left">{item.unite}</span>
+                    <span className="text-gray-500 dark:text-zinc-400 w-8 text-left">{item.unite}</span>
                   </div>
                   {item.quantiteParBoite > 1 && (
-                    <div className="text-[10px] text-gray-400 mt-1 mr-10">
+                    <div className="text-[10px] text-gray-400 dark:text-zinc-500 mt-1 mr-10">
                       Par boîte de {item.quantiteParBoite}
                     </div>
                   )}

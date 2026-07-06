@@ -31,10 +31,10 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/catalogue" className="text-gray-500 hover:text-gray-900">
+          <Link href="/catalogue" className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:text-zinc-50">
             <ArrowLeft className="h-6 w-6" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Détails de l'article</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50">Détails de l'article</h1>
         </div>
         <div className="flex gap-2">
           <form action={deleteArticle.bind(null, article.id)}>
@@ -45,36 +45,36 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Édition */}
-        <div className="rounded-xl border bg-white p-6 shadow-sm lg:col-span-1">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Edit className="w-5 h-5 text-gray-500"/> Modifier l'article</h2>
+        <div className="rounded-xl border bg-white dark:bg-zinc-900 p-6 shadow-sm lg:col-span-1">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Edit className="w-5 h-5 text-gray-500 dark:text-zinc-400"/> Modifier l'article</h2>
           <form action={updateArticle} className="space-y-4">
             <input type="hidden" name="id" value={article.id} />
             
             <div>
-              <label className="block text-sm font-medium text-gray-700">Désignation</label>
-              <input name="designation" type="text" defaultValue={article.designation} required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Désignation</label>
+              <input name="designation" type="text" defaultValue={article.designation} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Référence Interne</label>
-              <input name="reference" type="text" defaultValue={article.reference} required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Référence Interne</label>
+              <input name="reference" type="text" defaultValue={article.reference} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Fournisseur (Nom)</label>
-                <input name="fournisseur" type="text" defaultValue={article.fournisseur || ''} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: Rexel" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Fournisseur (Nom)</label>
+                <input name="fournisseur" type="text" defaultValue={article.fournisseur || ''} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: Rexel" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Réf. Fournisseur (Code)</label>
-                <input name="referenceFournisseur" type="text" defaultValue={article.referenceFournisseur || ''} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: REX-12345" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Réf. Fournisseur (Code)</label>
+                <input name="referenceFournisseur" type="text" defaultValue={article.referenceFournisseur || ''} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: REX-12345" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Qté par lot (Achat)</label>
-                <input name="quantiteParBoite" type="number" defaultValue={article.quantiteParBoite || 1} min="1" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" title="Combien d'unités dans une boîte commandée ?" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Qté par lot (Achat)</label>
+                <input name="quantiteParBoite" type="number" defaultValue={article.quantiteParBoite || 1} min="1" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" title="Combien d'unités dans une boîte commandée ?" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Catégorie</label>
-              <select name="categorie" defaultValue={article.categorie || ""} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Catégorie</label>
+              <select name="categorie" defaultValue={article.categorie || ""} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option>Appareillage</option>
                 <option>Câblage</option>
                 <option>Tableau</option>
@@ -85,17 +85,17 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Unité</label>
-                <input name="unite" type="text" defaultValue={article.unite || ""} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Unité</label>
+                <input name="unite" type="text" defaultValue={article.unite || ""} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Seuil Alerte</label>
-                <input name="stockMinimum" type="number" defaultValue={article.stockMinimum} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Seuil Alerte</label>
+                <input name="stockMinimum" type="number" defaultValue={article.stockMinimum} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Prix unitaire (€)</label>
-              <input name="prixUnitaire" type="number" step="0.01" defaultValue={article.prixUnitaire || 0} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Prix unitaire (€)</label>
+              <input name="prixUnitaire" type="number" step="0.01" defaultValue={article.prixUnitaire || 0} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
             <div>
               <ScannerInput 
@@ -113,37 +113,37 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
         {/* Historique & Stats */}
         <div className="lg:col-span-2 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className={`rounded-xl border p-4 shadow-sm ${stockInfo.enAlerte ? 'bg-red-50 border-red-200' : 'bg-white'}`}>
-              <p className="text-sm font-medium text-gray-500">Stock Dépôt Actuel</p>
-              <p className={`text-2xl font-bold ${stockInfo.enAlerte ? 'text-red-600' : 'text-gray-900'}`}>{stockInfo.stockDepot} {article.unite}</p>
+            <div className={`rounded-xl border p-4 shadow-sm ${stockInfo.enAlerte ? 'bg-red-50 border-red-200' : 'bg-white dark:bg-zinc-900'}`}>
+              <p className="text-sm font-medium text-gray-500 dark:text-zinc-400">Stock Dépôt Actuel</p>
+              <p className={`text-2xl font-bold ${stockInfo.enAlerte ? 'text-red-600' : 'text-gray-900 dark:text-zinc-50'}`}>{stockInfo.stockDepot} {article.unite}</p>
             </div>
-            <div className="rounded-xl border bg-white p-4 shadow-sm">
-              <p className="text-sm font-medium text-gray-500">Stock sur Chantiers</p>
-              <p className="text-2xl font-bold text-gray-900">{stockInfo.stockChantiersTotal} {article.unite || 'u'}</p>
+            <div className="rounded-xl border bg-white dark:bg-zinc-900 p-4 shadow-sm">
+              <p className="text-sm font-medium text-gray-500 dark:text-zinc-400">Stock sur Chantiers</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-zinc-50">{stockInfo.stockChantiersTotal} {article.unite || 'u'}</p>
             </div>
-            <div className="mt-4 rounded bg-gray-50 p-4">
-              <p className="text-sm text-gray-600">Valeur totale en stock : <span className="font-semibold text-gray-900">{((stockInfo.stockDepot + stockInfo.stockChantiersTotal) * (article.prixUnitaire || 0)).toFixed(2)} €</span></p>
+            <div className="mt-4 rounded bg-gray-50 dark:bg-zinc-950 p-4">
+              <p className="text-sm text-gray-600 dark:text-zinc-300">Valeur totale en stock : <span className="font-semibold text-gray-900 dark:text-zinc-50">{((stockInfo.stockDepot + stockInfo.stockChantiersTotal) * (article.prixUnitaire || 0)).toFixed(2)} €</span></p>
             </div>
           </div>
 
-          <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="border-b px-6 py-4 flex justify-between items-center bg-gray-50">
-              <h2 className="text-lg font-semibold text-gray-800">Historique des Mouvements</h2>
+          <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+            <div className="border-b px-6 py-4 flex justify-between items-center bg-gray-50 dark:bg-zinc-950">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100">Historique des Mouvements</h2>
               <form action={entrerStockRapide} className="flex gap-2">
                 <input type="hidden" name="articleId" value={article.id} />
-                <input type="number" name="quantite" placeholder="Qté" defaultValue="1" min="1" className="w-20 rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none" />
+                <input type="number" name="quantite" placeholder="Qté" defaultValue="1" min="1" className="w-20 rounded border border-gray-300 dark:border-zinc-700 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none" />
                 <button type="submit" className="rounded bg-emerald-600 px-3 py-1 text-sm font-medium text-white hover:bg-emerald-700">Entrée rapide</button>
               </form>
             </div>
             <div className="p-6">
               {article.mouvements.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">Aucun mouvement pour le moment.</div>
+                <div className="text-center py-8 text-gray-500 dark:text-zinc-400">Aucun mouvement pour le moment.</div>
               ) : (
-                <div className="relative border-l border-gray-200 ml-3 space-y-8">
+                <div className="relative border-l border-gray-200 dark:border-zinc-800 ml-3 space-y-8">
                   {article.mouvements.map((mvt: any, index: number) => {
                     let Icon = ArrowRightLeft
-                    let colorClass = "bg-gray-100 text-gray-500"
-                    let iconBgClass = "bg-gray-100"
+                    let colorClass = "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"
+                    let iconBgClass = "bg-gray-100 dark:bg-zinc-800"
                     
                     if (mvt.type === 'Achat') {
                       Icon = PackagePlus

@@ -61,10 +61,10 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Link href="/chantiers" className="text-gray-500 hover:text-gray-900">
+          <Link href="/chantiers" className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:text-zinc-50">
             <ArrowLeft className="h-6 w-6" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50 flex items-center gap-2">
             Détails du chantier : {chantier.nom}
             {chantier.statut === 'Terminé' && (
               <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full font-bold uppercase tracking-wider">Clôturé</span>
@@ -85,18 +85,18 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Édition */}
-        <div className="rounded-xl border bg-white p-6 shadow-sm lg:col-span-1">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Edit className="w-5 h-5 text-gray-500"/> Modifier le chantier</h2>
+        <div className="rounded-xl border bg-white dark:bg-zinc-900 p-6 shadow-sm lg:col-span-1">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Edit className="w-5 h-5 text-gray-500 dark:text-zinc-400"/> Modifier le chantier</h2>
           <form action={updateChantier} className="space-y-4">
             <input type="hidden" name="id" value={chantier.id} />
             
             <div>
-              <label className="block text-sm font-medium text-gray-700">Nom du chantier</label>
-              <input name="nom" type="text" defaultValue={chantier.nom} required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Nom du chantier</label>
+              <input name="nom" type="text" defaultValue={chantier.nom} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Statut</label>
-              <select name="statut" defaultValue={chantier.statut} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Statut</label>
+              <select name="statut" defaultValue={chantier.statut} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option value="Actif">Actif</option>
                 <option value="Terminé">Terminé</option>
               </select>
@@ -116,11 +116,11 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
                 <CheckCircle2 className="w-6 h-6 text-emerald-600"/> Bilan Financier du Chantier
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white/60 p-4 rounded-lg border border-emerald-100/50">
+                <div className="bg-white dark:bg-zinc-900/60 p-4 rounded-lg border border-emerald-100/50">
                   <p className="text-sm font-medium text-emerald-800/70 mb-1">Matériel Consommé</p>
                   <p className="text-2xl font-bold text-emerald-900">{valeurConsommee.toFixed(2)} €</p>
                 </div>
-                <div className="bg-white/60 p-4 rounded-lg border border-emerald-100/50">
+                <div className="bg-white dark:bg-zinc-900/60 p-4 rounded-lg border border-emerald-100/50">
                   <p className="text-sm font-medium text-emerald-800/70 mb-1">Matériel Perdu/Cassé</p>
                   <p className="text-2xl font-bold text-red-600">{valeurPerdue.toFixed(2)} €</p>
                 </div>
@@ -132,16 +132,16 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-xl border bg-white p-4 shadow-sm flex items-center gap-4">
+              <div className="rounded-xl border bg-white dark:bg-zinc-900 p-4 shadow-sm flex items-center gap-4">
                 <div className="bg-orange-100 p-3 rounded-lg text-orange-600"><Package className="w-6 h-6"/></div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Matériel déployé (reste sur site)</p>
-                  <p className="text-2xl font-bold text-gray-900">{materielDeploye.reduce((acc, m) => acc + m.quantite, 0)} unités</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-zinc-400">Matériel déployé (reste sur site)</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-zinc-50">{materielDeploye.reduce((acc, m) => acc + m.quantite, 0)} unités</p>
                 </div>
               </div>
-              <div className="rounded-xl border bg-white p-4 shadow-sm">
-                <p className="text-sm font-medium text-gray-500">Valeur totale sur site</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="rounded-xl border bg-white dark:bg-zinc-900 p-4 shadow-sm">
+                <p className="text-sm font-medium text-gray-500 dark:text-zinc-400">Valeur totale sur site</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-zinc-50">
                   {valeurTotale.toFixed(2)} €
                 </p>
               </div>
@@ -149,24 +149,24 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
           )}
 
           {chantier.statut === 'Actif' && (
-            <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-              <div className="border-b px-6 py-4 bg-gray-50">
-                <h2 className="text-lg font-semibold text-gray-800">Matériel Actuellement sur ce Chantier</h2>
+            <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+              <div className="border-b px-6 py-4 bg-gray-50 dark:bg-zinc-950">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100">Matériel Actuellement sur ce Chantier</h2>
               </div>
               <div className="p-6">
                 {materielDeploye.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center">Aucun matériel actuellement sur ce chantier.</p>
+                  <p className="text-sm text-gray-500 dark:text-zinc-400 text-center">Aucun matériel actuellement sur ce chantier.</p>
                 ) : (
                   <div className="space-y-4">
                     {materielDeploye.map(m => (
                       <div key={m.article.id} className="flex justify-between items-center border-b pb-2 last:border-0">
                         <div>
-                          <p className="font-medium text-gray-900">{m.article.designation}</p>
-                          <p className="text-xs text-gray-500">{m.article.reference}</p>
+                          <p className="font-medium text-gray-900 dark:text-zinc-50">{m.article.designation}</p>
+                          <p className="text-xs text-gray-500 dark:text-zinc-400">{m.article.reference}</p>
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-orange-600">{m.quantite} {m.article.unite}</p>
-                          <p className="text-xs text-gray-500">Soit {(m.quantite * m.article.prixUnitaire).toFixed(2)} €</p>
+                          <p className="text-xs text-gray-500 dark:text-zinc-400">Soit {(m.quantite * m.article.prixUnitaire).toFixed(2)} €</p>
                         </div>
                       </div>
                     ))}
@@ -176,30 +176,30 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
             </div>
           )}
 
-          <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="border-b px-6 py-4 bg-gray-50">
-              <h2 className="text-lg font-semibold text-gray-800">Historique des Mouvements</h2>
+          <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+            <div className="border-b px-6 py-4 bg-gray-50 dark:bg-zinc-950">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100">Historique des Mouvements</h2>
             </div>
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="bg-white">
+                <thead className="bg-white dark:bg-zinc-900">
                   <tr>
-                    <th className="px-6 py-3 font-medium text-gray-500">Date</th>
-                    <th className="px-6 py-3 font-medium text-gray-500">Article</th>
-                    <th className="px-6 py-3 font-medium text-gray-500">Par</th>
-                    <th className="px-6 py-3 font-medium text-gray-500">Type</th>
-                    <th className="px-6 py-3 font-medium text-gray-500">Qté</th>
-                    <th className="px-6 py-3 font-medium text-gray-500">Obs.</th>
+                    <th className="px-6 py-3 font-medium text-gray-500 dark:text-zinc-400">Date</th>
+                    <th className="px-6 py-3 font-medium text-gray-500 dark:text-zinc-400">Article</th>
+                    <th className="px-6 py-3 font-medium text-gray-500 dark:text-zinc-400">Par</th>
+                    <th className="px-6 py-3 font-medium text-gray-500 dark:text-zinc-400">Type</th>
+                    <th className="px-6 py-3 font-medium text-gray-500 dark:text-zinc-400">Qté</th>
+                    <th className="px-6 py-3 font-medium text-gray-500 dark:text-zinc-400">Obs.</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-zinc-800">
                   {chantier.mouvements.length === 0 ? (
-                    <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">Aucun mouvement.</td></tr>
+                    <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-zinc-400">Aucun mouvement.</td></tr>
                   ) : (
                     chantier.mouvements.map((mvt: any) => (
-                      <tr key={mvt.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-3 text-gray-600">{new Date(mvt.date).toLocaleDateString('fr-FR')} à {new Date(mvt.date).getHours()}:{new Date(mvt.date).getMinutes().toString().padStart(2, '0')}</td>
-                        <td className="px-6 py-3 font-medium text-gray-900">{mvt.article.designation}</td>
+                      <tr key={mvt.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-950">
+                        <td className="px-6 py-3 text-gray-600 dark:text-zinc-300">{new Date(mvt.date).toLocaleDateString('fr-FR')} à {new Date(mvt.date).getHours()}:{new Date(mvt.date).getMinutes().toString().padStart(2, '0')}</td>
+                        <td className="px-6 py-3 font-medium text-gray-900 dark:text-zinc-50">{mvt.article.designation}</td>
                         <td className="px-6 py-3">
                           {mvt.utilisateur ? <span className="text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded-md">{mvt.utilisateur}</span> : '-'}
                         </td>
@@ -212,10 +212,10 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
                             {mvt.type}
                           </span>
                         </td>
-                        <td className="px-6 py-3 font-black text-gray-700">
+                        <td className="px-6 py-3 font-black text-gray-700 dark:text-zinc-200">
                           {mvt.type === 'Depart' ? '+' : '-'}{mvt.quantite}
                         </td>
-                        <td className="px-6 py-3 text-sm text-gray-500 italic max-w-xs truncate" title={mvt.observation || ""}>
+                        <td className="px-6 py-3 text-sm text-gray-500 dark:text-zinc-400 italic max-w-xs truncate" title={mvt.observation || ""}>
                           {mvt.observation || '-'}
                         </td>
                       </tr>
@@ -226,13 +226,13 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
             </div>
 
             {/* Vue Mobile (Historique Mouvements) */}
-            <div className="md:hidden divide-y divide-gray-100 border-t border-gray-100">
+            <div className="md:hidden divide-y divide-gray-100 border-t border-gray-100 dark:border-zinc-800">
               {chantier.mouvements.length === 0 ? (
-                <div className="p-6 text-center text-gray-500">Aucun mouvement enregistré.</div>
+                <div className="p-6 text-center text-gray-500 dark:text-zinc-400">Aucun mouvement enregistré.</div>
               ) : (
                 chantier.mouvements.map((mvt: any) => (
-                  <div key={mvt.id} className="p-4 bg-white space-y-2">
-                    <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
+                  <div key={mvt.id} className="p-4 bg-white dark:bg-zinc-900 space-y-2">
+                    <div className="flex justify-between items-center text-xs text-gray-500 dark:text-zinc-400 mb-1">
                       <span>{new Date(mvt.date).toLocaleDateString('fr-FR')} à {new Date(mvt.date).getHours()}:{new Date(mvt.date).getMinutes().toString().padStart(2, '0')}</span>
                       <span className={`inline-flex items-center rounded-full px-2 py-0.5 font-bold text-[10px] uppercase
                         ${mvt.type === 'Depart' ? 'bg-blue-100 text-blue-800' : ''}
@@ -242,8 +242,8 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
                         {mvt.type}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
-                      <div className="font-medium text-gray-900">{mvt.article.designation}</div>
+                    <div className="flex justify-between items-center bg-gray-50 dark:bg-zinc-950 p-3 rounded-lg">
+                      <div className="font-medium text-gray-900 dark:text-zinc-50">{mvt.article.designation}</div>
                       <div className={`font-bold text-lg ${mvt.type === 'Depart' ? 'text-blue-600' : mvt.type === 'Retour' ? 'text-emerald-600' : 'text-red-600'}`}>
                         {mvt.type === 'Depart' ? '+' : '-'}{mvt.quantite}
                       </div>

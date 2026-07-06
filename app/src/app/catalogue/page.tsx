@@ -30,25 +30,25 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Formulaire d'ajout */}
         <div className="lg:col-span-1">
-          <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <div className="border-b bg-gray-50/50 px-4 py-3 font-medium">
+          <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+            <div className="border-b bg-gray-50 dark:bg-zinc-950/50 px-4 py-3 font-medium">
               Ajouter un article
             </div>
             <form action={createArticle} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Référence</label>
-                <input required name="reference" type="text" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: VIS-6X60" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Référence</label>
+                <input required name="reference" type="text" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: VIS-6X60" />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700">Désignation</label>
-                <input required name="designation" type="text" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: Vis béton 6x60" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Désignation</label>
+                <input required name="designation" type="text" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: Vis béton 6x60" />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Catégorie</label>
-                  <select name="categorie" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Catégorie</label>
+                  <select name="categorie" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm bg-white dark:bg-zinc-900">
                     <option value="Consommable">Consommable</option>
                     <option value="Outillage">Outillage</option>
                     <option value="EPI">EPI</option>
@@ -56,41 +56,41 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Stock initial</label>
-                  <input name="stockInitial" type="number" defaultValue="0" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Stock initial</label>
+                  <input name="stockInitial" type="number" defaultValue="0" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Unité</label>
-                  <input name="unite" type="text" defaultValue="u" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Unité</label>
+                  <input name="unite" type="text" defaultValue="u" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Seuil alerte</label>
-                  <input name="stockMinimum" type="number" defaultValue="0" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Seuil alerte</label>
+                  <input name="stockMinimum" type="number" defaultValue="0" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Qté par lot (Achat)</label>
-                  <input name="quantiteParBoite" type="number" defaultValue="1" min="1" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" title="Combien d'unités dans une boîte commandée ?" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Qté par lot (Achat)</label>
+                  <input name="quantiteParBoite" type="number" defaultValue="1" min="1" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" title="Combien d'unités dans une boîte commandée ?" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Fournisseur (Nom)</label>
-                  <input name="fournisseur" type="text" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: Rexel" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Fournisseur (Nom)</label>
+                  <input name="fournisseur" type="text" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: Rexel" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Réf. Fournisseur (Code)</label>
-                  <input name="referenceFournisseur" type="text" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: REX-12345" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Réf. Fournisseur (Code)</label>
+                  <input name="referenceFournisseur" type="text" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="ex: REX-12345" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Prix unitaire (€)</label>
-                  <input name="prixUnitaire" type="number" step="0.01" defaultValue="0" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Prix unitaire (€)</label>
+                  <input name="prixUnitaire" type="number" step="0.01" defaultValue="0" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                 </div>
                 <div>
                   <ScannerInput 
@@ -101,8 +101,8 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
               </div>
               
               <div className="flex items-center gap-2 pt-2">
-                <input id="retour" name="retourAttendu" type="checkbox" className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                <label htmlFor="retour" className="text-sm text-gray-700">Retour de chantier attendu (Outillage)</label>
+                <input id="retour" name="retourAttendu" type="checkbox" className="h-4 w-4 rounded border-gray-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500" />
+                <label htmlFor="retour" className="text-sm text-gray-700 dark:text-zinc-200">Retour de chantier attendu (Outillage)</label>
               </div>
               
               <button type="submit" className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
@@ -115,23 +115,23 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
 
         {/* Liste des articles */}
         <div className="lg:col-span-2">
-          <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+          <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
             <div className="hidden md:block overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-sm">
+                <thead className="bg-gray-50 dark:bg-zinc-950">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Article</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-500">Réf. Fourn.</th>
-                    <th className="px-4 py-3 text-center font-medium text-gray-500">Stock Dépôt</th>
-                    <th className="px-4 py-3 text-center font-medium text-gray-500">En Chantier</th>
-                    <th className="px-4 py-3 text-center font-medium text-gray-500">Seuil</th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-zinc-400">Article</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-zinc-400">Réf. Fourn.</th>
+                    <th className="px-4 py-3 text-center font-medium text-gray-500 dark:text-zinc-400">Stock Dépôt</th>
+                    <th className="px-4 py-3 text-center font-medium text-gray-500 dark:text-zinc-400">En Chantier</th>
+                    <th className="px-4 py-3 text-center font-medium text-gray-500 dark:text-zinc-400">Seuil</th>
+                    <th className="px-4 py-3 text-right font-medium text-gray-500 dark:text-zinc-400">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-gray-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                   {articles.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-4 py-8 text-center text-gray-500 dark:text-zinc-400">
                         Aucun article dans le catalogue.
                       </td>
                     </tr>
@@ -140,26 +140,26 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
                       const stockInfo = calculerStockArticle(article, article.mouvements)
                       const enAlerte = stockInfo.enAlerte
                       return (
-                        <tr key={article.id} className="hover:bg-gray-50">
+                        <tr key={article.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-950">
                           <td className="px-4 py-3">
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-gray-900 dark:text-zinc-50">
                                 <Link href={`/catalogue/${article.id}`} className="hover:text-blue-600 hover:underline">
                                   {article.designation}
                                 </Link>
                               </div>
-                              <div className="text-sm text-gray-500">{article.reference}</div>
+                              <div className="text-sm text-gray-500 dark:text-zinc-400">{article.reference}</div>
                           </td>
-                          <td className="px-4 py-3 text-gray-600">
+                          <td className="px-4 py-3 text-gray-600 dark:text-zinc-300">
                             {article.referenceFournisseur || '-'}
                           </td>
                           <td className={`px-4 py-3 text-center font-bold ${enAlerte ? 'text-red-600' : 'text-green-600'}`}>
                             {stockInfo.stockDepot} {article.unite}
                             {enAlerte && <AlertTriangle className="inline-block ml-1 h-4 w-4" />}
                           </td>
-                          <td className="px-4 py-3 text-center text-gray-600">
+                          <td className="px-4 py-3 text-center text-gray-600 dark:text-zinc-300">
                             {stockInfo.stockChantiersTotal} {article.unite}
                           </td>
-                          <td className="px-4 py-3 text-center text-gray-500">
+                          <td className="px-4 py-3 text-center text-gray-500 dark:text-zinc-400">
                             {article.stockMinimum}
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -191,40 +191,40 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
             {/* Vue Mobile (Cartes) */}
             <div className="md:hidden divide-y divide-gray-100">
               {articles.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">Aucun article dans le catalogue.</div>
+                <div className="p-8 text-center text-gray-500 dark:text-zinc-400">Aucun article dans le catalogue.</div>
               ) : (
                 articles.map((article: any) => {
                   const stockInfo = calculerStockArticle(article, article.mouvements)
                   const enAlerte = stockInfo.enAlerte
                   return (
-                    <div key={article.id} className="p-4 bg-white space-y-3">
+                    <div key={article.id} className="p-4 bg-white dark:bg-zinc-900 space-y-3">
                       <div className="flex justify-between items-start gap-2">
                         <div>
-                          <Link href={`/catalogue/${article.id}`} className="font-bold text-gray-900 hover:text-blue-600 block">
+                          <Link href={`/catalogue/${article.id}`} className="font-bold text-gray-900 dark:text-zinc-50 hover:text-blue-600 block">
                             {article.designation}
                           </Link>
-                          <div className="text-xs text-gray-500 mt-0.5">{article.reference} {article.referenceFournisseur ? `• Fourn: ${article.referenceFournisseur}` : ''}</div>
+                          <div className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">{article.reference} {article.referenceFournisseur ? `• Fourn: ${article.referenceFournisseur}` : ''}</div>
                         </div>
                       </div>
 
-                      <div className="flex gap-4 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+                      <div className="flex gap-4 text-sm bg-gray-50 dark:bg-zinc-950 p-3 rounded-lg border border-gray-100 dark:border-zinc-800">
                         <div className="flex-1">
-                          <div className="text-gray-500 text-xs mb-1">Stock Dépôt</div>
+                          <div className="text-gray-500 dark:text-zinc-400 text-xs mb-1">Stock Dépôt</div>
                           <div className={`font-bold text-lg ${enAlerte ? 'text-red-600' : 'text-green-600'}`}>
                             {stockInfo.stockDepot} <span className="text-sm font-normal">{article.unite}</span>
                             {enAlerte && <AlertTriangle className="inline-block ml-1 h-4 w-4" />}
                           </div>
                         </div>
-                        <div className="flex-1 border-l border-gray-200 pl-4">
-                          <div className="text-gray-500 text-xs mb-1">En Chantier</div>
-                          <div className="font-medium text-gray-700">
+                        <div className="flex-1 border-l border-gray-200 dark:border-zinc-800 pl-4">
+                          <div className="text-gray-500 dark:text-zinc-400 text-xs mb-1">En Chantier</div>
+                          <div className="font-medium text-gray-700 dark:text-zinc-200">
                             {stockInfo.stockChantiersTotal} <span className="text-sm font-normal">{article.unite}</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between pt-2">
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-gray-400 dark:text-zinc-500">
                           Seuil alerte: {article.stockMinimum}
                         </div>
                         <div className="flex items-center gap-2">

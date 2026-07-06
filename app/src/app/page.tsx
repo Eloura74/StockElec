@@ -73,8 +73,8 @@ export default async function Home() {
               <Package className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Articles</p>
-              <h2 className="text-2xl font-black text-gray-900 mt-1">{articlesCount}</h2>
+              <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Total Articles</p>
+              <h2 className="text-2xl font-black text-gray-900 dark:text-zinc-50 mt-1">{articlesCount}</h2>
             </div>
           </div>
         </div>
@@ -85,8 +85,8 @@ export default async function Home() {
               <Truck className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Chantiers Actifs</p>
-              <h2 className="text-2xl font-black text-gray-900 mt-1">{chantiersActifsCount}</h2>
+              <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Chantiers Actifs</p>
+              <h2 className="text-2xl font-black text-gray-900 dark:text-zinc-50 mt-1">{chantiersActifsCount}</h2>
             </div>
           </div>
         </div>
@@ -97,8 +97,8 @@ export default async function Home() {
               <Package className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Valeur au Dépôt</p>
-              <h2 className="text-2xl font-black text-gray-900 mt-1">{valeurTotaleDépôt.toFixed(2)} €</h2>
+              <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Valeur au Dépôt</p>
+              <h2 className="text-2xl font-black text-gray-900 dark:text-zinc-50 mt-1">{valeurTotaleDépôt.toFixed(2)} €</h2>
             </div>
           </div>
         </div>
@@ -109,8 +109,8 @@ export default async function Home() {
               <Wrench className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Valeur Chantier</p>
-              <h2 className="text-2xl font-black text-gray-900 mt-1">{valeurTotaleChantiers.toFixed(2)} €</h2>
+              <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Valeur Chantier</p>
+              <h2 className="text-2xl font-black text-gray-900 dark:text-zinc-50 mt-1">{valeurTotaleChantiers.toFixed(2)} €</h2>
             </div>
           </div>
         </div>
@@ -121,8 +121,8 @@ export default async function Home() {
               <AlertTriangle className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">Alertes Stock</p>
-              <h2 className="text-2xl font-black text-gray-900 mt-1">{articlesEnAlerte}</h2>
+              <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Alertes Stock</p>
+              <h2 className="text-2xl font-black text-gray-900 dark:text-zinc-50 mt-1">{articlesEnAlerte}</h2>
             </div>
           </div>
         </div>
@@ -132,9 +132,9 @@ export default async function Home() {
 
       <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
         {/* Top 3 Immobilisations */}
-        <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-          <div className="border-b bg-gray-50/50 px-6 py-4 flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Capital Immobilisé (Top 3)</h3>
+        <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+          <div className="border-b bg-gray-50 dark:bg-zinc-950/50 px-6 py-4 flex items-center justify-between">
+            <h3 className="font-semibold text-gray-900 dark:text-zinc-50">Capital Immobilisé (Top 3)</h3>
           </div>
           <div className="p-6 space-y-4">
             {topImmobilisations.map((item, index) => (
@@ -144,24 +144,24 @@ export default async function Home() {
                     {index + 1}
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 line-clamp-1 text-sm">{item.article.designation}</p>
-                    <p className="text-xs text-gray-500">{item.article.reference}</p>
+                    <p className="font-medium text-gray-900 dark:text-zinc-50 line-clamp-1 text-sm">{item.article.designation}</p>
+                    <p className="text-xs text-gray-500 dark:text-zinc-400">{item.article.reference}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-gray-900">{item.valeur.toFixed(2)} €</p>
+                  <p className="font-bold text-gray-900 dark:text-zinc-50">{item.valeur.toFixed(2)} €</p>
                 </div>
               </div>
             ))}
             {topImmobilisations.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-4">Aucune donnée financière.</p>
+              <p className="text-sm text-gray-500 dark:text-zinc-400 text-center py-4">Aucune donnée financière.</p>
             )}
           </div>
         </div>
         {/* Alertes de stock */}
-        <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-          <div className="border-b bg-gray-50/50 px-6 py-4 flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Articles à recommander</h3>
+        <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+          <div className="border-b bg-gray-50 dark:bg-zinc-950/50 px-6 py-4 flex items-center justify-between">
+            <h3 className="font-semibold text-gray-900 dark:text-zinc-50">Articles à recommander</h3>
             <span className="text-xs font-medium text-red-600 bg-red-100 px-2 py-1 rounded-full">{articlesEnAlerte} alertes</span>
           </div>
           <div className="p-6">
@@ -185,15 +185,15 @@ export default async function Home() {
                     <div className="flex items-center gap-3">
                       <div className="mt-1 h-2 w-2 rounded-full bg-red-500"></div>
                       <div>
-                        <p className="font-medium text-gray-900">{article.designation}</p>
-                        <p className="text-xs text-gray-500">{article.reference}</p>
+                        <p className="font-medium text-gray-900 dark:text-zinc-50">{article.designation}</p>
+                        <p className="text-xs text-gray-500 dark:text-zinc-400">{article.reference}</p>
                         {raison && <p className="text-xs text-orange-600 mt-1">{raison}</p>}
                       </div>
                     </div>
                     <div className="text-right flex flex-col gap-1">
                       <div className="flex flex-col items-end">
                         <span className="font-bold text-red-600">{stockInfo.stockDepot} {article.unite}</span>
-                        <span className="text-xs text-gray-500">Seuil: {article.stockMinimum}</span>
+                        <span className="text-xs text-gray-500 dark:text-zinc-400">Seuil: {article.stockMinimum}</span>
                       </div>
                       {aCommander > 0 && (
                         <div className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-md mt-1">
@@ -205,13 +205,13 @@ export default async function Home() {
                 )
               })}
               {articlesEnAlerte === 0 && (
-                <div className="p-8 text-center text-gray-500 text-sm">
+                <div className="p-8 text-center text-gray-500 dark:text-zinc-400 text-sm">
                   Aucun article en rupture de stock.
                 </div>
               )}
             
             {alertesDetails.length > 5 && (
-              <div className="p-3 text-center bg-gray-50">
+              <div className="p-3 text-center bg-gray-50 dark:bg-zinc-950">
                 <Link href="/catalogue" className="text-sm font-medium text-blue-600 hover:underline">
                   Voir toutes les alertes
                 </Link>
@@ -221,14 +221,14 @@ export default async function Home() {
         </div>
 
         {/* Historique récent */}
-        <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-          <div className="border-b bg-gray-50/50 px-6 py-4 flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Activité récente</h3>
+        <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+          <div className="border-b bg-gray-50 dark:bg-zinc-950/50 px-6 py-4 flex items-center justify-between">
+            <h3 className="font-semibold text-gray-900 dark:text-zinc-50">Activité récente</h3>
             <Link href="/mouvements" className="text-sm text-blue-600 hover:underline">Voir tout</Link>
           </div>
           <div className="divide-y">
             {recentMouvements.length > 0 ? recentMouvements.map((mvt) => (
-              <div key={mvt.id} className="flex items-center gap-4 p-4 hover:bg-gray-50">
+              <div key={mvt.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-950">
                 <div className={`rounded-full p-2 ${
                   mvt.type === 'Depart' ? 'bg-orange-100 text-orange-600' :
                   mvt.type === 'Retour' ? 'bg-blue-100 text-blue-600' :
@@ -240,19 +240,19 @@ export default async function Home() {
                    <Package className="h-4 w-4" />}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-gray-900 dark:text-zinc-50">
                     {mvt.quantite}x {mvt.article.reference}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-zinc-400">
                     {mvt.type} {mvt.chantier ? `- ${mvt.chantier.nom}` : ''}
                   </p>
                 </div>
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-gray-400 dark:text-zinc-500">
                   {new Date(mvt.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
                 </div>
               </div>
             )) : (
-              <div className="p-8 text-center text-gray-500 text-sm">
+              <div className="p-8 text-center text-gray-500 dark:text-zinc-400 text-sm">
                 Aucun mouvement récent.
               </div>
             )}

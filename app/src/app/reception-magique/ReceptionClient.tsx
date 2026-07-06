@@ -96,12 +96,12 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
 
   if (report) {
     return (
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center space-y-6">
+      <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800 text-center space-y-6">
         <div className="mx-auto w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
           <CheckCircle2 className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-black text-gray-900">Réception terminée !</h2>
-        <p className="text-lg text-gray-600">
+        <h2 className="text-2xl font-black text-gray-900 dark:text-zinc-50">Réception terminée !</h2>
+        <p className="text-lg text-gray-600 dark:text-zinc-300">
           <strong className="text-emerald-600">{report.succes}</strong> articles ont été ajoutés à votre stock.
         </p>
         
@@ -132,7 +132,7 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
     <div className="space-y-6">
       
       {!rows.length && (
-        <div className="bg-white p-12 rounded-3xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-center hover:bg-gray-50 hover:border-blue-500 transition-colors cursor-pointer relative group">
+        <div className="bg-white dark:bg-zinc-900 p-12 rounded-3xl border-2 border-dashed border-gray-300 dark:border-zinc-700 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-950 hover:border-blue-500 transition-colors cursor-pointer relative group">
           <input 
             type="file" 
             accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
@@ -142,43 +142,43 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
           <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             {isParsing ? <Loader2 className="w-10 h-10 animate-spin" /> : <FileUp className="w-10 h-10" />}
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Glissez un fichier Excel ou CSV ici</h3>
-          <p className="text-gray-500 max-w-sm">Les colonnes Référence, Désignation et Quantité seront automatiquement détectées.</p>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-50 mb-2">Glissez un fichier Excel ou CSV ici</h3>
+          <p className="text-gray-500 dark:text-zinc-400 max-w-sm">Les colonnes Référence, Désignation et Quantité seront automatiquement détectées.</p>
         </div>
       )}
 
       {rows.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
-            <h3 className="font-bold text-gray-900">Prévisualisation ({rows.length} lignes détectées)</h3>
-            <button onClick={() => setRows([])} className="text-sm font-medium text-gray-500 hover:text-gray-900">Annuler</button>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden flex flex-col">
+          <div className="p-4 bg-gray-50 dark:bg-zinc-950 border-b flex justify-between items-center">
+            <h3 className="font-bold text-gray-900 dark:text-zinc-50">Prévisualisation ({rows.length} lignes détectées)</h3>
+            <button onClick={() => setRows([])} className="text-sm font-medium text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:text-zinc-50">Annuler</button>
           </div>
           
           <div className="overflow-x-auto max-h-[500px]">
             <table className="w-full text-sm text-left">
-              <thead className="bg-white sticky top-0 shadow-sm">
+              <thead className="bg-white dark:bg-zinc-900 sticky top-0 shadow-sm">
                 <tr>
-                  <th className="px-4 py-3 font-medium text-gray-500 w-10">
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-zinc-400 w-10">
                     <input 
                       type="checkbox" 
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
                       checked={rows.every(r => r.selected)}
                       onChange={e => setRows(rows.map(r => ({ ...r, selected: e.target.checked })))}
                     />
                   </th>
-                  <th className="px-4 py-3 font-medium text-gray-500">Statut</th>
-                  <th className="px-4 py-3 font-medium text-gray-500">Référence</th>
-                  <th className="px-4 py-3 font-medium text-gray-500">Désignation</th>
-                  <th className="px-4 py-3 font-medium text-gray-500 text-center">Qté</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-zinc-400">Statut</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-zinc-400">Référence</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-zinc-400">Désignation</th>
+                  <th className="px-4 py-3 font-medium text-gray-500 dark:text-zinc-400 text-center">Qté</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {rows.map((row, idx) => (
-                  <tr key={idx} className={`hover:bg-gray-50 cursor-pointer ${!row.selected ? 'opacity-50' : ''}`} onClick={() => toggleSelect(idx)}>
+                  <tr key={idx} className={`hover:bg-gray-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-950 cursor-pointer ${!row.selected ? 'opacity-50' : ''}`} onClick={() => toggleSelect(idx)}>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                       <input 
                         type="checkbox" 
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-gray-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
                         checked={row.selected}
                         onChange={() => toggleSelect(idx)}
                       />
@@ -194,16 +194,16 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-mono text-gray-900">{row.reference}</td>
-                    <td className="px-4 py-3 text-gray-600 truncate max-w-xs">{row.designation}</td>
-                    <td className="px-4 py-3 text-center font-bold text-gray-900">+{row.quantite}</td>
+                    <td className="px-4 py-3 font-mono text-gray-900 dark:text-zinc-50">{row.reference}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-zinc-300 truncate max-w-xs">{row.designation}</td>
+                    <td className="px-4 py-3 text-center font-bold text-gray-900 dark:text-zinc-50">+{row.quantite}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           
-          <div className="p-4 bg-gray-50 border-t flex justify-end">
+          <div className="p-4 bg-gray-50 dark:bg-zinc-950 border-t flex justify-end">
             <button 
               onClick={handleValider}
               disabled={isSubmitting || !rows.some(r => r.selected)}

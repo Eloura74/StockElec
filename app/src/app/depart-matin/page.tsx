@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma"
 import { DepartMatinClient } from "./DepartMatinClient"
 import { LogOut } from "lucide-react"
 import { logout } from "@/app/actions/auth"
+import { ThemeToggle } from "@/components/ThemeToggle"
 
 export default async function DepartMatinPage() {
   const session = await getSession()
@@ -42,16 +43,19 @@ export default async function DepartMatinPage() {
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col">
       {/* Header Mobile / Tablette (Pas de sidebar) */}
-      <header className="bg-zinc-900 border-b border-white/10 text-white p-4 flex justify-between items-center shadow-lg">
+      <header className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-white/10 p-4 flex justify-between items-center shadow-md dark:shadow-lg">
         <div>
-          <h1 className="text-xl font-black tracking-tight">Départ Chantier</h1>
-          <p className="text-sm text-zinc-400 font-medium">Connecté : <span className="text-indigo-400">{session.username}</span></p>
+          <h1 className="text-xl font-black tracking-tight text-gray-900 dark:text-white">Départ Chantier</h1>
+          <p className="text-sm font-medium text-gray-500 dark:text-zinc-400">Connecté : <span className="text-blue-600 dark:text-indigo-400">{session.username}</span></p>
         </div>
-        <form action={logout}>
-          <button type="submit" className="bg-zinc-800 hover:bg-zinc-700 ring-1 ring-white/10 p-2.5 rounded-xl transition-all shadow-sm">
-            <LogOut className="w-5 h-5 text-zinc-300" />
-          </button>
-        </form>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <form action={logout}>
+            <button type="submit" className="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 ring-1 ring-gray-200 dark:ring-white/10 p-2.5 rounded-xl transition-all shadow-sm">
+              <LogOut className="w-5 h-5 text-gray-700 dark:text-zinc-300" />
+            </button>
+          </form>
+        </div>
       </header>
 
       <main className="flex-1 p-4 sm:p-6 lg:max-w-4xl lg:mx-auto w-full selection:bg-indigo-500/30">

@@ -24,7 +24,7 @@ export default async function OutillagePage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Outillage</h1>
-          <p className="text-gray-500 mt-1">Gérez vos machines et équipements onéreux.</p>
+          <p className="text-gray-500 dark:text-zinc-400 mt-1">Gérez vos machines et équipements onéreux.</p>
         </div>
         <Link href="/outillage/nouveau" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2">
           <Plus className="h-4 w-4" />
@@ -33,9 +33,9 @@ export default async function OutillagePage() {
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white border rounded-xl p-4 text-center">
-          <div className="text-2xl font-bold text-gray-900">{total}</div>
-          <div className="text-xs text-gray-500 uppercase tracking-wide">Machines</div>
+        <div className="bg-white dark:bg-zinc-900 border rounded-xl p-4 text-center">
+          <div className="text-2xl font-bold text-gray-900 dark:text-zinc-50">{total}</div>
+          <div className="text-xs text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Machines</div>
         </div>
         <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-center">
           <div className="text-2xl font-bold text-emerald-700">{disponibles}</div>
@@ -55,7 +55,7 @@ export default async function OutillagePage() {
               <OutillageCard key={outil.id} outil={outil} />
             ))}
             {outillages.length === 0 && (
-              <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-xl border border-dashed">
+              <div className="col-span-full py-12 text-center text-gray-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 rounded-xl border border-dashed">
                 Aucun outil enregistré pour le moment.
               </div>
             )}

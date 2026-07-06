@@ -87,9 +87,9 @@ export function InventaireClient({ articles }: { articles: Article[] }) {
     <div className="space-y-6">
       
       {/* Recherche et Scan */}
-      <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="font-bold text-gray-900 dark:text-zinc-50 flex items-center gap-2">
             <Search className="w-5 h-5 text-blue-600"/> Trouver un article
           </h2>
           <button 
@@ -102,12 +102,12 @@ export function InventaireClient({ articles }: { articles: Article[] }) {
         
         <div className="relative mt-2">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+            <Search className="h-5 w-5 text-gray-400 dark:text-zinc-500" />
           </div>
           <input
             type="text"
             placeholder="Référence ou mot-clé..."
-            className="block w-full pl-12 rounded-xl border-gray-300 p-4 bg-gray-50 focus:bg-white focus:ring-blue-500 focus:border-blue-500 text-lg transition-colors"
+            className="block w-full pl-12 rounded-xl border-gray-300 dark:border-zinc-700 p-4 bg-gray-50 dark:bg-zinc-950 focus:bg-white dark:bg-zinc-900 focus:ring-blue-500 focus:border-blue-500 text-lg transition-colors"
             value={search}
             onChange={e => {
               setSearch(e.target.value)
@@ -119,21 +119,21 @@ export function InventaireClient({ articles }: { articles: Article[] }) {
         {search && !selectedArticle && (
           <div className="mt-4 space-y-2">
             {filteredArticles.length === 0 ? (
-              <div className="p-4 text-gray-500 text-center bg-gray-50 rounded-xl">Aucun produit trouvé.</div>
+              <div className="p-4 text-gray-500 dark:text-zinc-400 text-center bg-gray-50 dark:bg-zinc-950 rounded-xl">Aucun produit trouvé.</div>
             ) : (
               filteredArticles.map(a => (
                 <button
                   key={a.id}
                   onClick={() => handleSelectArticle(a)}
-                  className="w-full text-left p-4 bg-gray-50 hover:bg-blue-50 border border-transparent hover:border-blue-100 rounded-xl flex justify-between items-center transition-colors"
+                  className="w-full text-left p-4 bg-gray-50 dark:bg-zinc-950 hover:bg-blue-50 border border-transparent hover:border-blue-100 rounded-xl flex justify-between items-center transition-colors"
                 >
                   <div>
-                    <div className="font-bold text-gray-900">{a.designation}</div>
-                    <div className="text-sm text-gray-500">{a.reference}</div>
+                    <div className="font-bold text-gray-900 dark:text-zinc-50">{a.designation}</div>
+                    <div className="text-sm text-gray-500 dark:text-zinc-400">{a.reference}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs text-gray-500">Stock DB</div>
-                    <div className="font-black text-gray-900">{a.stockActuel}</div>
+                    <div className="text-xs text-gray-500 dark:text-zinc-400">Stock DB</div>
+                    <div className="font-black text-gray-900 dark:text-zinc-50">{a.stockActuel}</div>
                   </div>
                 </button>
               ))
@@ -144,21 +144,21 @@ export function InventaireClient({ articles }: { articles: Article[] }) {
 
       {/* Article Sélectionné */}
       {selectedArticle && (
-        <div className="bg-white p-6 rounded-2xl border-2 border-blue-500 shadow-xl space-y-6 animate-in slide-in-from-bottom-4">
+        <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border-2 border-blue-500 shadow-xl space-y-6 animate-in slide-in-from-bottom-4">
           <div className="flex justify-between items-start">
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 text-xs font-bold mb-2">
                 <Box className="w-3.5 h-3.5" /> {selectedArticle.categorie}
               </div>
-              <h3 className="font-black text-xl text-gray-900">{selectedArticle.designation}</h3>
-              <p className="text-gray-500 font-mono mt-1">{selectedArticle.reference}</p>
+              <h3 className="font-black text-xl text-gray-900 dark:text-zinc-50">{selectedArticle.designation}</h3>
+              <p className="text-gray-500 dark:text-zinc-400 font-mono mt-1">{selectedArticle.reference}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">
-              <div className="text-sm text-gray-500 font-medium mb-1">Stock Informatique</div>
-              <div className="text-3xl font-black text-gray-900">{selectedArticle.stockActuel}</div>
+            <div className="bg-gray-50 dark:bg-zinc-950 p-4 rounded-xl border border-gray-100 dark:border-zinc-800 text-center">
+              <div className="text-sm text-gray-500 dark:text-zinc-400 font-medium mb-1">Stock Informatique</div>
+              <div className="text-3xl font-black text-gray-900 dark:text-zinc-50">{selectedArticle.stockActuel}</div>
             </div>
             
             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center relative">

@@ -14,7 +14,7 @@ export default async function InventairePage() {
         <h1 className="text-3xl font-bold tracking-tight">Inventaire Rapide</h1>
       </div>
 
-      <p className="text-gray-500">
+      <p className="text-gray-500 dark:text-zinc-400">
         Sélectionnez ou scannez un produit pour corriger son stock physique. Le système ajustera automatiquement les écarts.
       </p>
 

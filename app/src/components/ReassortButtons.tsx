@@ -60,7 +60,7 @@ export function ReassortButtons({ fournisseur, items }: { fournisseur: string, i
     <div className="flex items-center gap-2">
       <button 
         onClick={handleExportCSV}
-        className="flex items-center gap-2 rounded-md bg-white border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+        className="flex items-center gap-2 rounded-md bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-zinc-200 hover:bg-gray-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-950"
       >
         <FileDown className="h-4 w-4" /> Exporter CSV
       </button>

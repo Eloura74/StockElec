@@ -29,8 +29,8 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
   }
 
   return (
-    <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-      <div className="border-b bg-gray-50/50 px-4 py-3 font-medium flex justify-between items-center">
+    <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+      <div className="border-b bg-gray-50 dark:bg-zinc-950/50 px-4 py-3 font-medium flex justify-between items-center">
         <span>Saisir un mouvement</span>
         <button 
           type="button" 
@@ -50,8 +50,8 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
         )}
         
         <div>
-          <label className="block text-sm font-medium text-gray-700">Type de mouvement</label>
-          <select name="type" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white">
+          <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Type de mouvement</label>
+          <select name="type" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm bg-white dark:bg-zinc-900">
             <option value="Depart">Départ vers Chantier</option>
             <option value="Retour">Retour de Chantier</option>
             <option value="Achat">Achat / Entrée Dépôt</option>
@@ -61,13 +61,13 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Article</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Article</label>
           <select 
             required 
             name="articleId" 
             value={selectedArticleId}
             onChange={(e) => setSelectedArticleId(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white"
+            className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm bg-white dark:bg-zinc-900"
           >
             <option value="">-- Sélectionner --</option>
             {articles.map(a => (
@@ -78,8 +78,8 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
 
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Chantier (si applicable)</label>
-            <select name="chantierId" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white">
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Chantier (si applicable)</label>
+            <select name="chantierId" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm bg-white dark:bg-zinc-900">
               <option value="">-- Aucun / Dépôt --</option>
               {chantiers.map(c => (
                 <option key={c.id} value={c.id}>{c.nom}</option>
@@ -90,18 +90,18 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Quantité</label>
-            <input required name="quantite" type="number" min="1" defaultValue="1" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Quantité</label>
+            <input required name="quantite" type="number" min="1" defaultValue="1" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="block text-sm text-gray-900 font-bold">👤 Saisi par (OBLIGATOIRE)</label>
+            <label className="block text-sm text-gray-900 dark:text-zinc-50 font-bold">👤 Saisi par (OBLIGATOIRE)</label>
             <input required name="utilisateur" type="text" placeholder="Ton prénom" className="mt-1 block w-full rounded-md border-2 border-orange-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-orange-500" />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Observation</label>
-          <textarea name="observation" rows={2} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" placeholder="Optionnel..."></textarea>
+          <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Observation</label>
+          <textarea name="observation" rows={2} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm" placeholder="Optionnel..."></textarea>
         </div>
         
         <button type="submit" className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
