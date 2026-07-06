@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench, PackageSearch, Users, LogOut, Scan, Wand2 } from "lucide-react";
+import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench, PackageSearch, Users, LogOut, Scan, Wand2, Menu, X } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
 
   const links = [
     { href: "/", label: "Tableau de bord", icon: Home },
@@ -66,28 +68,66 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-white pb-safe pt-2 px-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <nav className="flex justify-around items-center gap-1">
-          {links.map((link) => {
-            const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== "/");
-            const Icon = link.icon;
-            return (
-              <Link 
-                key={link.href}
-                href={link.href} 
-                className={`flex flex-col items-center justify-center w-full py-2 px-1 rounded-xl transition-all ${
-                  isActive 
-                    ? "text-blue-600 bg-blue-50" 
-                    : "text-gray-500 hover:bg-gray-50"
-                }`}
+      {/* Mobile Navigation - FAB & Fullscreen Menu */}
+      <div className="md:hidden">
+        {/* FAB */}
+        <button 
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-40 bg-blue-600 text-white p-4 rounded-full shadow-xl shadow-blue-600/30 active:scale-95 transition-transform"
+        >
+          <Menu className="h-7 w-7" />
+        </button>
+
+        {/* Fullscreen Overlay */}
+        {isOpen && (
+          <div className="fixed inset-0 z-50 bg-white flex flex-col animate-in slide-in-from-bottom-2 fade-in duration-200">
+            <div className="flex justify-between items-center p-4 border-b">
+              <div className="flex items-center gap-3">
+                <HardHat className="h-7 w-7 text-blue-600" />
+                <span className="text-2xl font-black tracking-tight">StockPro</span>
+              </div>
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition-colors"
               >
-                <Icon className={`h-6 w-6 mb-1 ${isActive ? "stroke-[2.5px]" : "stroke-2"}`} />
-                <span className="text-[10px] font-medium truncate w-full text-center">{link.label}</span>
-              </Link>
-            )
-          })}
-        </nav>
+                <X className="h-7 w-7" />
+              </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-4 space-y-3 pb-24">
+              {links.map((link) => {
+                const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== "/");
+                const Icon = link.icon;
+                return (
+                  <Link 
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
+                      isActive 
+                        ? "bg-blue-50 text-blue-700 font-bold border border-blue-100 shadow-sm" 
+                        : "bg-gray-50 text-gray-700 font-medium border border-transparent hover:border-gray-200"
+                    }`}
+                  >
+                    <Icon className={`h-6 w-6 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-lg">{link.label}</span>
+                  </Link>
+                )
+              })}
+              
+              <div className="mt-8 pt-4 border-t border-gray-100">
+                <form action={logout}>
+                  <button 
+                    type="submit" 
+                    className="flex w-full items-center gap-4 p-4 rounded-2xl bg-red-50 text-red-700 font-bold border border-red-100 hover:bg-red-100 transition-colors"
+                  >
+                    <LogOut className="h-6 w-6 text-red-600" />
+                    <span className="text-lg">Déconnexion</span>
+                  </button>
+                </form>
+              </div>
+            </nav>
+          </div>
+        )}
       </div>
     </>
   );
