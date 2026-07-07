@@ -18,6 +18,7 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
   const [success, setSuccess] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
   const [mode, setMode] = useState<"DEPART" | "VERIF" | "RETOUR">("DEPART")
+  const [lastAdded, setLastAdded] = useState<string | null>(null)
 
   const filteredArticles = articles.filter(a => 
     a.designation.toLowerCase().includes(search.toLowerCase()) || 
@@ -28,10 +29,13 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
     const existing = panier.find(p => p.article.id === article.id)
     if (existing) {
       setPanier(panier.map(p => p.article.id === article.id ? { ...p, quantite: p.quantite + 1 } : p))
+      setLastAdded(`✅ ${article.designation} ajouté (x${existing.quantite + 1})`)
     } else {
       setPanier([...panier, { article, quantite: 1 }])
+      setLastAdded(`✅ ${article.designation} ajouté`)
     }
     setSearch("")
+    setTimeout(() => setLastAdded(null), 3000)
   }
 
   const handleScan = (decodedText: string) => {
@@ -125,6 +129,13 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
           Stock
         </button>
       </div>
+
+      {/* Message de Feedback Flash */}
+      {lastAdded && (
+        <div className="bg-indigo-600 text-white p-3 rounded-xl font-bold text-center shadow-lg animate-in slide-in-from-top-4 fade-in">
+          {lastAdded}
+        </div>
+      )}
 
       {success && (mode === "DEPART" || mode === "RETOUR") && (
         <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl flex items-center gap-3 font-medium shadow-lg animate-in slide-in-from-top-4 fade-in duration-300">
@@ -273,7 +284,13 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
                     <button onClick={() => updateQty(item.article.id, item.quantite - 1)} className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-700/50 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors ring-1 ring-slate-200 dark:ring-white/5">
                       <Minus className="w-5 h-5" />
                     </button>
-                    <span className="font-black text-xl w-8 text-center text-slate-900 dark:text-white">{item.quantite}</span>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      value={item.quantite} 
+                      onChange={(e) => updateQty(item.article.id, parseInt(e.target.value) || 1)}
+                      className="font-black text-xl w-14 text-center text-slate-900 dark:text-white bg-transparent border-none focus:ring-0 p-0"
+                    />
                     <button onClick={() => updateQty(item.article.id, item.quantite + 1)} className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-700/50 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors ring-1 ring-slate-200 dark:ring-white/5">
                       <Plus className="w-5 h-5" />
                     </button>
