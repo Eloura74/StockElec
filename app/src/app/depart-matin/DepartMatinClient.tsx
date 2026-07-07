@@ -280,23 +280,29 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
                     <div className="font-semibold text-slate-900 dark:text-white text-sm">{item.article.designation}</div>
                     <div className="text-xs text-slate-500 dark:text-zinc-400">{item.article.reference}</div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button onClick={() => updateQty(item.article.id, item.quantite - 1)} className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-700/50 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors ring-1 ring-slate-200 dark:ring-white/5">
-                      <Minus className="w-5 h-5" />
-                    </button>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      value={item.quantite} 
-                      onChange={(e) => updateQty(item.article.id, parseInt(e.target.value) || 1)}
-                      className="font-black text-xl w-14 text-center text-slate-900 dark:text-white bg-transparent border-none focus:ring-0 p-0"
-                    />
-                    <button onClick={() => updateQty(item.article.id, item.quantite + 1)} className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-700/50 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors ring-1 ring-slate-200 dark:ring-white/5">
-                      <Plus className="w-5 h-5" />
-                    </button>
-                    <button onClick={() => remove(item.article.id)} className="p-2 text-rose-500 hover:text-rose-600 dark:text-rose-500/70 dark:hover:text-rose-400 transition-colors ml-2">
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <button onClick={() => updateQty(item.article.id, item.quantite - 1)} className="p-3 sm:p-4 rounded-xl bg-slate-100 dark:bg-zinc-700/50 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors active:scale-95 shadow-sm ring-1 ring-slate-200 dark:ring-white/5">
+                        <Minus className="w-6 h-6" />
+                      </button>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        value={item.quantite} 
+                        onChange={(e) => updateQty(item.article.id, parseInt(e.target.value) || 1)}
+                        className="font-black text-2xl w-14 text-center text-slate-900 dark:text-white bg-transparent border-none focus:ring-0 p-0"
+                      />
+                      <button onClick={() => updateQty(item.article.id, item.quantite + 1)} className="p-3 sm:p-4 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors active:scale-95 shadow-sm ring-1 ring-indigo-200 dark:ring-indigo-500/30">
+                        <Plus className="w-6 h-6" />
+                      </button>
+                      <button onClick={() => remove(item.article.id)} className="p-3 sm:p-4 text-rose-500 hover:text-rose-600 dark:text-rose-500/70 dark:hover:text-rose-400 transition-colors ml-1 active:scale-95">
+                        <Trash2 className="w-6 h-6" />
+                      </button>
+                    </div>
+                    <div className="flex gap-2 w-full justify-end pr-18">
+                      <button onClick={() => updateQty(item.article.id, item.quantite + 5)} className="px-4 py-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 ring-1 ring-indigo-200 dark:ring-indigo-500/20 rounded-lg text-sm font-bold active:scale-95 transition-transform">+5</button>
+                      <button onClick={() => updateQty(item.article.id, item.quantite + 10)} className="px-4 py-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 ring-1 ring-indigo-200 dark:ring-indigo-500/20 rounded-lg text-sm font-bold active:scale-95 transition-transform">+10</button>
+                    </div>
                   </div>
                 </div>
               ))}
