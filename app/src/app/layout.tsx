@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
-import { BottomNav } from "@/components/BottomNav";
 import { getSession } from "@/lib/auth";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -44,10 +43,9 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           {showSidebar && <Sidebar />}
-          <main className={`flex-1 overflow-y-auto p-4 md:p-8 ${!showSidebar ? 'pb-24 md:pb-8 p-0 md:p-0' : ''} bg-gray-50/20 dark:bg-zinc-900/20`}>
+          <main className={`flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50/20 dark:bg-zinc-900/20 ${!showSidebar ? 'p-0 md:p-0' : ''}`}>
             {children}
           </main>
-          {!showSidebar && <BottomNav />}
         </ThemeProvider>
       </body>
     </html>
