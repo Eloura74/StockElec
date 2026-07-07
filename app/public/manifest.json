@@ -1,11 +1,11 @@
 {
-  "name": "StockPro - Gestion Stock Quentin Elec",
-  "short_name": "StockPro",
-  "description": "Application de gestion de stock, d'inventaire et d'outillage",
+  "name": "Quentin Elec Stock",
+  "short_name": "StockElec",
+  "description": "Application de gestion de stock pour Quentin Elec",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#4f46e5",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "/icon-192x192.png",

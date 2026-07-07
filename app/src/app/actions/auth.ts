@@ -5,15 +5,17 @@ import { cookies } from "next/headers"
 import { encrypt } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import bcrypt from "bcryptjs"
 
 // Création du compte gérant s'il n'existe pas (appelé à la volée lors du login par sécurité si db vide)
 async function initAdmin() {
   const admin = await (prisma as any).user.findUnique({ where: { username: 'cedricelec' } })
   if (!admin) {
+    const hashedPassword = await bcrypt.hash('cogolin', 10)
     await (prisma as any).user.create({
       data: {
         username: 'cedricelec',
-        password: 'cogolin',
+        password: hashedPassword,
         role: 'GERANT'
       }
     })
@@ -30,7 +32,27 @@ export async function login(formData: FormData) {
     where: { username }
   })
 
-  if (!user || user.password !== password) {
+  if (!user) {
+    return { error: "Identifiant ou mot de passe incorrect." }
+  }
+
+  // Rétrocompatibilité : si le mot de passe n'est pas haché (ne commence pas par $2a$ ou $2b$ ou $2y$)
+  let isPasswordValid = false;
+  if (!user.password.startsWith("$2")) {
+    isPasswordValid = (user.password === password);
+    // Si valide, on le met à jour avec le hash silencieusement pour le migrer
+    if (isPasswordValid) {
+      const newHash = await bcrypt.hash(password, 10);
+      await (prisma as any).user.update({
+        where: { id: user.id },
+        data: { password: newHash }
+      });
+    }
+  } else {
+    isPasswordValid = await bcrypt.compare(password, user.password);
+  }
+
+  if (!isPasswordValid) {
     return { error: "Identifiant ou mot de passe incorrect." }
   }
 
@@ -74,10 +96,12 @@ export async function createUser(formData: FormData) {
   const exists = await (prisma as any).user.findUnique({ where: { username } })
   if (exists) return { error: "Ce nom d'utilisateur existe déjà." }
 
+  const hashedPassword = await bcrypt.hash(password, 10)
+
   await (prisma as any).user.create({
     data: {
       username,
-      password,
+      password: hashedPassword,
       role: 'CHEF_EQUIPE'
     }
   })
