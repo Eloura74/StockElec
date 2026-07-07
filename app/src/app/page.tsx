@@ -50,7 +50,8 @@ export default async function Home() {
     take: 5,
     orderBy: { createdAt: 'desc' },
     include: {
-      chantier: true
+      chantier: true,
+      article: true
     }
   });
 
