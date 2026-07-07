@@ -54,6 +54,23 @@ export function DashboardCharts({
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b'];
 
+  // 3. Top 5 des articles les plus consommés
+  const consoMap = new Map<string, number>();
+  articles.forEach(article => {
+    let consoTotal = 0;
+    (article.mouvements || []).forEach((mvt: any) => {
+      if (mvt.type === 'Consomme' || mvt.type === 'Depart') {
+        consoTotal += mvt.quantite;
+      }
+    });
+    if (consoTotal > 0) consoMap.set(article.designation, consoTotal);
+  });
+
+  const topConsoData = Array.from(consoMap.entries())
+    .map(([name, quantite]) => ({ name, quantite }))
+    .sort((a, b) => b.quantite - a.quantite)
+    .slice(0, 5);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       {/* Graphique : Sorties récentes */}
@@ -112,6 +129,26 @@ export function DashboardCharts({
               {entry.name}
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Graphique : Top 5 Consommés */}
+      <div className="rounded-xl border bg-white dark:bg-zinc-900 p-6 shadow-sm lg:col-span-2">
+        <h3 className="font-semibold text-gray-900 dark:text-zinc-50 mb-4">Top 5 des articles les plus utilisés</h3>
+        <div className="h-64 w-full">
+          {topConsoData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={topConsoData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
+                <XAxis type="number" axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" width={150} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
+                <RechartsTooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="quantite" fill="#10b981" radius={[0, 4, 4, 0]} name="Unités utilisées" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-gray-500">Aucune donnée disponible</div>
+          )}
         </div>
       </div>
     </div>

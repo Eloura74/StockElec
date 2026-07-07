@@ -5,6 +5,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { DeleteButton } from "@/components/DeleteButton"
 import { CloturerButton } from "@/components/CloturerButton"
+import { ExportBonLivraisonButton } from "@/components/ExportBonLivraisonButton"
 
 export default async function ChantierDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -71,7 +72,8 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
             )}
           </h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <ExportBonLivraisonButton chantier={chantier} materielDeploye={materielDeploye} />
           {chantier.statut === 'Actif' && (
             <form action={cloturerChantier.bind(null, chantier.id)}>
               <CloturerButton />

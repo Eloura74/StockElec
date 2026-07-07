@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma"
 import Link from "next/link"
 import { calculerStockArticle } from "@/lib/stockUtils"
 import { DashboardCharts } from "@/components/DashboardCharts"
+import { ExportExcelComptableButton } from "@/components/ExportExcelComptableButton"
 
 export default async function Home() {
   // Récupérer les articles avec leurs mouvements pour calculer les vrais stocks
@@ -49,9 +50,51 @@ export default async function Home() {
     take: 5,
     orderBy: { createdAt: 'desc' },
     include: {
-      article: true,
       chantier: true
     }
+  });
+
+  // Export Excel Data Prep
+  const dataDepot = articles.map(article => {
+    const stock = calculerStockArticle(article, article.mouvements)
+    return {
+      "Référence": article.reference,
+      "Désignation": article.designation,
+      "Catégorie": article.categorie || "-",
+      "Stock Dépôt": stock.stockDepot,
+      "Prix Unitaire (€)": article.prixUnitaire || 0,
+      "Valeur Totale (€)": stock.stockDepot * (article.prixUnitaire || 0)
+    }
+  })
+
+  const chantiersComplets = await prisma.chantier.findMany({
+    include: {
+      mouvements: { include: { article: true } }
+    }
+  });
+
+  const dataChantiers: any[] = [];
+  chantiersComplets.forEach(chantier => {
+    const materielMap = new Map<string, { article: any, quantite: number }>();
+    chantier.mouvements.forEach((mvt: any) => {
+      if (!materielMap.has(mvt.articleId)) materielMap.set(mvt.articleId, { article: mvt.article, quantite: 0 });
+      const current = materielMap.get(mvt.articleId)!;
+      if (mvt.type === 'Depart') current.quantite += mvt.quantite;
+      if (mvt.type === 'Retour' || mvt.type === 'Consomme') current.quantite -= mvt.quantite;
+    });
+
+    materielMap.forEach(m => {
+      if (m.quantite > 0) {
+        dataChantiers.push({
+          "Chantier": chantier.nom,
+          "Statut": chantier.statut,
+          "Référence": m.article.reference,
+          "Désignation": m.article.designation,
+          "Quantité sur site": m.quantite,
+          "Valeur (€)": m.quantite * (m.article.prixUnitaire || 0)
+        });
+      }
+    });
   });
 
   return (
@@ -84,6 +127,9 @@ export default async function Home() {
           <Link href="/mouvements" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm flex items-center gap-2 ml-auto sm:ml-0">
             <FileText className="w-4 h-4" /> Mouvement manuel
           </Link>
+          <div className="ml-auto sm:ml-0">
+            <ExportExcelComptableButton dataDepot={dataDepot} dataChantiers={dataChantiers} />
+          </div>
         </div>
       </div>
 
