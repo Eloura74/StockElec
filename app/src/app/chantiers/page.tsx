@@ -7,7 +7,11 @@ import Link from "next/link"
 
 export default async function ChantiersPage() {
   const chantiers = await prisma.chantier.findMany({
-    include: { mouvements: true },
+    include: { 
+      mouvements: {
+        include: { article: true }
+      } 
+    },
     orderBy: { createdAt: 'desc' }
   })
 
@@ -62,7 +66,15 @@ export default async function ChantiersPage() {
                   ) : (
                     chantiers.map((chantier: any) => {
                       const resteChantier = calculerResteSurChantier(chantier.mouvements)
-                      const materielDeploye = (Object.values(resteChantier) as number[]).reduce((acc: number, val: number) => acc + val, 0)
+                      let materielDeploye = 0;
+                      let valeurChantier = 0;
+                      Object.entries(resteChantier).forEach(([articleId, qty]) => {
+                        materielDeploye += (qty as number);
+                        const mvt = chantier.mouvements.find((m: any) => m.articleId === articleId);
+                        if (mvt?.article?.prixUnitaire) {
+                          valeurChantier += (qty as number) * mvt.article.prixUnitaire;
+                        }
+                      });
                       
                       return (
                         <tr key={chantier.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-950">
@@ -84,8 +96,9 @@ export default async function ChantiersPage() {
                               {chantier.statut}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-center font-medium text-blue-600">
-                            {materielDeploye} unités
+                          <td className="px-4 py-3 text-center text-blue-600">
+                            <div className="font-bold">{materielDeploye} unités</div>
+                            <div className="text-xs text-gray-500">{valeurChantier.toFixed(2)} €</div>
                           </td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex justify-end gap-2">
@@ -112,7 +125,15 @@ export default async function ChantiersPage() {
               ) : (
                 chantiers.map((chantier: any) => {
                   const resteChantier = calculerResteSurChantier(chantier.mouvements)
-                  const materielDeploye = (Object.values(resteChantier) as number[]).reduce((acc: number, val: number) => acc + val, 0)
+                  let materielDeploye = 0;
+                  let valeurChantier = 0;
+                  Object.entries(resteChantier).forEach(([articleId, qty]) => {
+                    materielDeploye += (qty as number);
+                    const mvt = chantier.mouvements.find((m: any) => m.articleId === articleId);
+                    if (mvt?.article?.prixUnitaire) {
+                      valeurChantier += (qty as number) * mvt.article.prixUnitaire;
+                    }
+                  });
                   
                   return (
                     <div key={chantier.id} className="p-4 bg-white dark:bg-zinc-900 space-y-3">
@@ -137,7 +158,10 @@ export default async function ChantiersPage() {
 
                       <div className="flex justify-between items-center bg-gray-50 dark:bg-zinc-950 p-3 rounded-lg border border-gray-100 dark:border-zinc-800">
                         <div className="text-xs text-gray-500 dark:text-zinc-400 font-medium">Matériel sur site</div>
-                        <div className="font-bold text-blue-600">{materielDeploye} unités</div>
+                        <div className="text-right">
+                          <div className="font-bold text-blue-600">{materielDeploye} unités</div>
+                          <div className="text-xs text-gray-500">{valeurChantier.toFixed(2)} €</div>
+                        </div>
                       </div>
 
                       <div className="flex justify-end gap-2 pt-1">

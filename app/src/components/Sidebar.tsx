@@ -17,7 +17,6 @@ export function Sidebar() {
     { href: "/chantiers", label: "Chantiers", icon: HardHat },
     { href: "/outillage", label: "Outillage", icon: Wrench },
     { href: "/inventaire", label: "Inventaire", icon: PackageSearch },
-    { href: "/inventaire-rapide", label: "Scan & Go", icon: Scan },
     { href: "/reception-magique", label: "Réception Auto", icon: Wand2 },
     { href: "/mouvements", label: "Mouvements", icon: FileText },
     { href: "/reassort", label: "Réassort", icon: ArrowRightLeft },

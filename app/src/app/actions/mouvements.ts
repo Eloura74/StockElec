@@ -42,9 +42,38 @@ export async function createMouvement(formData: FormData) {
 }
 
 export async function deleteMouvement(id: string) {
+  // Not used anymore directly by the UI to avoid data loss. Kept for admin use.
   await prisma.mouvement.delete({
     where: { id }
   })
+  revalidatePath("/mouvements")
+  revalidatePath("/catalogue")
+  revalidatePath("/reassort")
+  revalidatePath("/")
+}
+
+export async function annulerMouvement(id: string) {
+  const mvt = await prisma.mouvement.findUnique({ where: { id } })
+  if (!mvt) return;
+
+  let typeInverse = "";
+  if (mvt.type === "Achat" || mvt.type === "Retour" || mvt.type === "Correction_Plus") {
+    typeInverse = "Correction_Moins";
+  } else {
+    typeInverse = "Correction_Plus";
+  }
+
+  await prisma.mouvement.create({
+    data: {
+      type: typeInverse,
+      quantite: mvt.quantite,
+      articleId: mvt.articleId,
+      chantierId: mvt.chantierId,
+      utilisateur: "Système",
+      observation: `Annulation du mouvement ${mvt.type} du ${mvt.date.toLocaleDateString("fr-FR")}`
+    }
+  });
+
   revalidatePath("/mouvements")
   revalidatePath("/catalogue")
   revalidatePath("/reassort")

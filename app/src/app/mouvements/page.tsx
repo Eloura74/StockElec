@@ -1,19 +1,35 @@
-import { getMouvements, createMouvement, deleteMouvement } from "@/app/actions/mouvements"
+import { getMouvements, createMouvement, annulerMouvement } from "@/app/actions/mouvements"
 import { getArticles } from "@/app/actions/articles"
 import { getChantiers } from "@/app/actions/chantiers"
 import { FileText, ArrowRightLeft, Trash2 } from "lucide-react"
 import { DeleteButton } from "@/components/DeleteButton"
 import { MouvementForm } from "@/components/MouvementForm"
 
-export default async function MouvementsPage() {
-  const mouvements = await getMouvements()
+import { MouvementsFilters } from "./MouvementsFilters"
+
+export default async function MouvementsPage({ searchParams }: { searchParams: Promise<{ start?: string, end?: string }> }) {
+  const { start, end } = await searchParams
+  
+  let mouvements = await getMouvements()
   const articles = await getArticles()
   const chantiers = await getChantiers()
 
+  if (start) {
+    const startDate = new Date(start)
+    startDate.setHours(0, 0, 0, 0)
+    mouvements = mouvements.filter(m => m.date >= startDate)
+  }
+  if (end) {
+    const endDate = new Date(end)
+    endDate.setHours(23, 59, 59, 999)
+    mouvements = mouvements.filter(m => m.date <= endDate)
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight">Mouvements de Stock</h1>
+        <MouvementsFilters />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -78,8 +94,8 @@ export default async function MouvementsPage() {
                           {mvt.observation || '-'}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <form action={deleteMouvement.bind(null, mvt.id)}>
-                            <DeleteButton message="Supprimer ce mouvement ? Le stock sera recalculé sans lui." />
+                          <form action={annulerMouvement.bind(null, mvt.id)}>
+                            <DeleteButton message="Annuler ce mouvement ? Un mouvement de correction inverse sera créé pour rétablir le stock." />
                           </form>
                         </td>
                       </tr>
@@ -125,8 +141,8 @@ export default async function MouvementsPage() {
                         {mvt.chantier?.nom && <span className="font-medium text-gray-700 dark:text-zinc-200 bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">📍 {mvt.chantier.nom}</span>}
                         {mvt.utilisateur && <span className="font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">👤 {mvt.utilisateur}</span>}
                       </div>
-                      <form action={deleteMouvement.bind(null, mvt.id)}>
-                        <DeleteButton message="Supprimer ce mouvement ?" />
+                      <form action={annulerMouvement.bind(null, mvt.id)}>
+                        <DeleteButton message="Annuler ce mouvement ? Un mouvement de correction inverse sera créé pour rétablir le stock." />
                       </form>
                     </div>
 

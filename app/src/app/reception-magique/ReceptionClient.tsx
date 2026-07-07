@@ -144,6 +144,9 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
           </div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-50 mb-2">Glissez un fichier Excel ou CSV ici</h3>
           <p className="text-gray-500 dark:text-zinc-400 max-w-sm">Les colonnes Référence, Désignation et Quantité seront automatiquement détectées.</p>
+          <a href="data:text/csv;charset=utf-8,Reference,Designation,Quantite%0AEX-123,Article%20Exemple,10" download="Modele_Import_Stock.csv" className="mt-4 px-4 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors z-10" onClick={(e) => e.stopPropagation()}>
+            📥 Télécharger le modèle CSV
+          </a>
         </div>
       )}
 
@@ -203,7 +206,11 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
             </table>
           </div>
           
-          <div className="p-4 bg-gray-50 dark:bg-zinc-950 border-t flex justify-end">
+          <div className="p-4 bg-gray-50 dark:bg-zinc-950 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-sm text-gray-600 dark:text-zinc-400 text-center sm:text-left">
+              <span className="font-bold text-emerald-600">{rows.filter(r => r.selected && r.estConnu).length} articles connus</span> vont voir leur stock mis à jour.<br/>
+              <span className="font-bold text-orange-500">{rows.filter(r => r.selected && !r.estConnu).length} articles inconnus</span> seront ignorés (créez-les d'abord au catalogue).
+            </div>
             <button 
               onClick={handleValider}
               disabled={isSubmitting || !rows.some(r => r.selected)}

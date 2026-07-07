@@ -1,4 +1,4 @@
-import { Package, Truck, AlertTriangle, TrendingDown, ArrowRight, Wrench } from "lucide-react"
+import { Package, Truck, AlertTriangle, TrendingDown, ArrowRight, Wrench, HardHat, ArrowRightLeft, FileText } from "lucide-react"
 import prisma from "@/lib/prisma"
 import Link from "next/link"
 import { calculerStockArticle } from "@/lib/stockUtils"
@@ -56,11 +56,33 @@ export default async function Home() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Alert Banner */}
+      {articlesEnAlerte > 0 && (
+        <Link href="/catalogue?alert=true" className="bg-rose-50 border border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20 rounded-2xl p-4 flex items-center justify-between group hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors shadow-sm cursor-pointer">
+          <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+            <AlertTriangle className="w-6 h-6 shrink-0" />
+            <div className="font-semibold text-sm sm:text-base">
+              ⚠️ {articlesEnAlerte} article(s) en rupture ou sous le seuil d'alerte ! Cliquez ici pour les voir.
+            </div>
+          </div>
+          <ArrowRight className="w-5 h-5 text-rose-500 transform group-hover:translate-x-1 transition-transform" />
+        </Link>
+      )}
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight">Tableau de bord</h1>
-        <div className="flex items-center gap-2">
-          <Link href="/mouvements" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-            Nouveau mouvement
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/catalogue" className="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 ring-1 ring-indigo-200 dark:ring-indigo-500/30 px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2">
+            <Package className="w-4 h-4" /> Nouvel Article
+          </Link>
+          <Link href="/chantiers" className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 ring-1 ring-emerald-200 dark:ring-emerald-500/30 px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2">
+            <HardHat className="w-4 h-4" /> Nouveau Chantier
+          </Link>
+          <Link href="/reassort" className="bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 ring-1 ring-amber-200 dark:ring-amber-500/30 px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2">
+            <ArrowRightLeft className="w-4 h-4" /> Faire un Réassort
+          </Link>
+          <Link href="/mouvements" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm flex items-center gap-2 ml-auto sm:ml-0">
+            <FileText className="w-4 h-4" /> Mouvement manuel
           </Link>
         </div>
       </div>

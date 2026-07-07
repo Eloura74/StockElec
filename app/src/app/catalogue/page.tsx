@@ -7,11 +7,16 @@ import { calculerStockArticle } from "@/lib/stockUtils"
 import Link from "next/link"
 import { SearchInput } from "@/components/SearchInput"
 import { ExportPDFButton } from "@/components/ExportPDFButton"
+import { CatalogueFilters } from "./CatalogueFilters"
 
-export default async function CataloguePage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q } = await searchParams
+export default async function CataloguePage({ searchParams }: { searchParams: Promise<{ q?: string, f?: string, c?: string, p?: string, alert?: string }> }) {
+  const { q, f, c, p, alert } = await searchParams
   let articles = await getArticles()
   
+  if (alert === 'true') {
+    articles = articles.filter((a: any) => calculerStockArticle(a, a.mouvements).enAlerte)
+  }
+
   if (q) {
     const query = q.toLowerCase()
     articles = articles.filter((article: any) => 
@@ -20,6 +25,24 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
       (article.referenceFournisseur && article.referenceFournisseur.toLowerCase().includes(query))
     )
   }
+
+  if (f) {
+    articles = articles.filter((a: any) => a.fournisseur === f)
+  }
+
+  if (c) {
+    articles = articles.filter((a: any) => a.categorie === c)
+  }
+
+  const fournisseurs = Array.from(new Set(articles.map((a: any) => a.fournisseur).filter(Boolean))) as string[]
+  const categories = Array.from(new Set(articles.map((a: any) => a.categorie).filter(Boolean))) as string[]
+  fournisseurs.sort()
+  categories.sort()
+
+  const currentPage = parseInt(p || "1", 10)
+  const pageSize = 50
+  const totalPages = Math.ceil(articles.length / pageSize)
+  const paginatedArticles = articles.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   return (
     <div className="space-y-6">
@@ -30,6 +53,13 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
         </div>
         <SearchInput />
       </div>
+
+      <CatalogueFilters 
+        fournisseurs={fournisseurs} 
+        categories={categories} 
+        totalPages={totalPages} 
+        currentPage={currentPage} 
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Formulaire d'ajout */}
@@ -133,14 +163,14 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                  {articles.length === 0 ? (
+                  {paginatedArticles.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="px-4 py-8 text-center text-gray-500 dark:text-zinc-400">
                         Aucun article dans le catalogue.
                       </td>
                     </tr>
                   ) : (
-                    articles.map((article: any) => {
+                    paginatedArticles.map((article: any) => {
                       const stockInfo = calculerStockArticle(article, article.mouvements)
                       const enAlerte = stockInfo.enAlerte
                       return (
@@ -194,10 +224,10 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
 
             {/* Vue Mobile (Cartes) */}
             <div className="md:hidden divide-y divide-gray-100">
-              {articles.length === 0 ? (
+              {paginatedArticles.length === 0 ? (
                 <div className="p-8 text-center text-gray-500 dark:text-zinc-400">Aucun article dans le catalogue.</div>
               ) : (
-                articles.map((article: any) => {
+                paginatedArticles.map((article: any) => {
                   const stockInfo = calculerStockArticle(article, article.mouvements)
                   const enAlerte = stockInfo.enAlerte
                   return (
