@@ -6,6 +6,7 @@ import { ScannerInput } from "@/components/ScannerInput"
 import { calculerStockArticle } from "@/lib/stockUtils"
 import Link from "next/link"
 import { SearchInput } from "@/components/SearchInput"
+import { ExportPDFButton } from "@/components/ExportPDFButton"
 
 export default async function CataloguePage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams
@@ -23,7 +24,10 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Mon Stock</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold tracking-tight">Mon Stock</h1>
+          <ExportPDFButton articles={articles} />
+        </div>
         <SearchInput />
       </div>
 
