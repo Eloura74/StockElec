@@ -27,7 +27,7 @@ export function Sidebar() {
     <>
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
-        <div className="flex h-screen w-64 flex-col border-r bg-gray-50 dark:bg-zinc-950/40 dark:bg-gray-900/40 px-4 py-6 shadow-sm">
+        <div className="flex h-dvh w-64 flex-col border-r bg-gray-50 dark:bg-zinc-950/40 dark:bg-gray-900/40 px-4 py-6 shadow-sm">
           <div className="flex items-center gap-2 px-2 pb-6">
             <HardHat className="h-6 w-6 text-blue-600" />
             <span className="text-lg font-bold tracking-tight">StockPro</span>

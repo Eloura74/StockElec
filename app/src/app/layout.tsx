@@ -35,7 +35,7 @@ export default async function RootLayout({
 
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${inter.className} flex h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-zinc-50 antialiased overflow-hidden transition-colors`}>
+      <body className={`${inter.className} flex h-dvh bg-white dark:bg-zinc-950 text-gray-900 dark:text-zinc-50 antialiased overflow-hidden transition-colors`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
