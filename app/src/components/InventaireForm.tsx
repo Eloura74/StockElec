@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
-import { Camera, CheckCircle2, AlertTriangle, Scale, PlusCircle, Edit3, X, Save } from 'lucide-react'
+import { Camera, CheckCircle2, AlertTriangle, Scale, PlusCircle, Edit3, X, Save, Search } from 'lucide-react'
 import { calculerStockArticle } from '@/lib/stockUtils'
 import { corrigerStock } from '@/app/actions/mouvements'
 import { creerArticleEtStock, updateInfosRapides } from '@/app/actions/articles'
@@ -22,6 +22,10 @@ export function InventaireForm({ articles }: { articles: any[] }) {
   const [observation, setObservation] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
 
   // Quick edit mode (for known articles)
   const [isEditingInfo, setIsEditingInfo] = useState(false)
@@ -186,20 +190,71 @@ export function InventaireForm({ articles }: { articles: any[] }) {
 
         {/* Sélection Manuelle (si pas de scan) */}
         {mode === 'idle' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">Ou sélectionner manuellement :</label>
-            <select 
-              value={selectedArticleId}
-              onChange={handleSelectChange}
-              className="block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-4 py-3 text-sm bg-white dark:bg-zinc-900 focus:border-purple-500 focus:ring-purple-500"
-            >
-              <option value="">-- Sélectionner un article --</option>
-              {articles.map(a => (
-                <option key={a.id} value={a.id}>[{a.reference}] {a.designation}</option>
-              ))}
-            </select>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-2">
+                Ou sélectionner manuellement :
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400 dark:text-zinc-500" />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value)
+                    setShowDropdown(true)
+                  }}
+                  onFocus={() => setShowDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                  className="block w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:border-purple-500 focus:ring-purple-500 text-sm transition-colors"
+                  placeholder="Rechercher par référence, désignation..."
+                />
+                
+                {showDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                    {articles
+                      .filter(a => 
+                        !searchQuery || 
+                        a.designation.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        (a.reference && a.reference.toLowerCase().includes(searchQuery.toLowerCase()))
+                      )
+                      .slice(0, 50)
+                      .map(a => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedArticleId(a.id)
+                            setMode('known')
+                            setEditDesignation(a.designation)
+                            setEditFournisseur(a.fournisseur || '')
+                            setEditReference(a.reference || '')
+                            setQuantiteReelle('')
+                            setObservation('')
+                            setSuccessMessage(null)
+                            setIsEditingInfo(false)
+                            setSearchQuery('')
+                            setShowDropdown(false)
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800 border-b border-gray-100 dark:border-zinc-800 last:border-0 transition-colors"
+                        >
+                          <div className="font-medium text-gray-900 dark:text-zinc-100">{a.designation}</div>
+                          <div className="text-xs text-gray-500 dark:text-zinc-400">Réf: {a.reference || 'Aucune'}</div>
+                        </button>
+                      ))}
+                    {articles.filter(a => !searchQuery || a.designation.toLowerCase().includes(searchQuery.toLowerCase()) || (a.reference && a.reference.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
+                      <div className="px-4 py-4 text-sm text-gray-500 dark:text-zinc-400 text-center">
+                        Aucun article trouvé.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
             
-            <div className="mt-8 text-center text-gray-400 dark:text-zinc-500 p-8 border-2 border-dashed rounded-xl">
+            <div className="text-center text-gray-400 dark:text-zinc-500 p-8 border-2 border-dashed rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
               <Camera className="w-12 h-12 mx-auto mb-3 opacity-20" />
               <p>Scannez un produit avec le bouton "Scanner Code"</p>
               <p className="text-sm mt-1">S'il est inconnu, l'application vous proposera de le créer immédiatement.</p>
