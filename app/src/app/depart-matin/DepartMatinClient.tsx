@@ -20,6 +20,9 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
   const [mode, setMode] = useState<"DEPART" | "VERIF" | "RETOUR">("DEPART")
   const [lastAdded, setLastAdded] = useState<string | null>(null)
 
+  const [chantierSearchQuery, setChantierSearchQuery] = useState("")
+  const [showChantierDropdown, setShowChantierDropdown] = useState(false)
+
   const filteredArticles = articles.filter(a => 
     a.designation.toLowerCase().includes(search.toLowerCase()) || 
     a.reference.toLowerCase().includes(search.toLowerCase())
@@ -205,16 +208,77 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
           {mode === "DEPART" ? <Truck className="w-5 h-5 text-indigo-500 dark:text-indigo-400"/> : <RotateCcw className="w-5 h-5 text-emerald-500 dark:text-emerald-400"/>} 
           1. {mode === "DEPART" ? "Pour quel chantier ?" : "De quel chantier viens-tu ?"}
         </h2>
-        <select 
-          className="w-full border-0 ring-1 ring-inset ring-slate-200 dark:ring-white/10 rounded-2xl p-4 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-white text-lg font-medium focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-indigo-500 transition-shadow appearance-none"
-          value={chantierId}
-          onChange={(e) => setChantierId(e.target.value)}
-        >
-          <option value="">-- Choisir un chantier --</option>
-          {chantiers.map(c => (
-            <option key={c.id} value={c.id}>{c.nom}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select 
+            className="absolute opacity-0 w-full h-full -z-10 pointer-events-none"
+            value={chantierId}
+            onChange={(e) => setChantierId(e.target.value)}
+            tabIndex={-1}
+          >
+            <option value="">-- Choisir un chantier --</option>
+            {chantiers.map(c => (
+              <option key={c.id} value={c.id}>{c.nom}</option>
+            ))}
+          </select>
+          
+          {!chantierId ? (
+            <>
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-slate-400 dark:text-zinc-500" />
+              </div>
+              <input
+                type="text"
+                value={chantierSearchQuery}
+                onChange={(e) => {
+                  setChantierSearchQuery(e.target.value)
+                  setShowChantierDropdown(true)
+                }}
+                onFocus={() => setShowChantierDropdown(true)}
+                onBlur={() => setTimeout(() => setShowChantierDropdown(false), 200)}
+                placeholder="Rechercher un chantier..."
+                className="w-full pl-12 border-0 ring-1 ring-inset ring-slate-200 dark:ring-white/10 rounded-2xl p-4 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-white text-lg font-medium focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-indigo-500 transition-shadow"
+              />
+              {showChantierDropdown && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl max-h-60 overflow-y-auto">
+                  {chantiers
+                    .filter(c => !chantierSearchQuery || c.nom.toLowerCase().includes(chantierSearchQuery.toLowerCase()))
+                    .map(c => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          setChantierId(c.id)
+                          setChantierSearchQuery('')
+                          setShowChantierDropdown(false)
+                        }}
+                        className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-zinc-800 border-b border-slate-100 dark:border-white/5 last:border-0 transition-colors font-medium text-slate-900 dark:text-white text-lg"
+                      >
+                        {c.nom}
+                      </button>
+                    ))}
+                  {chantiers.filter(c => !chantierSearchQuery || c.nom.toLowerCase().includes(chantierSearchQuery.toLowerCase())).length === 0 && (
+                    <div className="p-4 text-slate-500 dark:text-zinc-500 text-center font-medium">
+                      Aucun chantier trouvé.
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 rounded-2xl">
+              <div className="font-semibold text-indigo-900 dark:text-indigo-100 text-lg">
+                {chantiers.find(c => c.id === chantierId)?.nom}
+              </div>
+              <button
+                type="button"
+                onClick={() => setChantierId('')}
+                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-bold text-sm px-3 py-2 bg-white dark:bg-zinc-800 rounded-lg shadow-sm"
+              >
+                Changer
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 2. Ajout de Matériel */}
