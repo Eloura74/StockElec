@@ -9,6 +9,7 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  serverExternalPackages: ['pdf-parse'],
 };
 
 export default withPWA(nextConfig);

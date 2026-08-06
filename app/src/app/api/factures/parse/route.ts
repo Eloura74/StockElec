@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-const pdf = require('pdf-parse');
 
 export async function POST(req: Request) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const pdf = require('pdf-parse');
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     
