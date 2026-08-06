@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -100,5 +100,32 @@ model User {
   password  String   // En clair car c'est une app interne très simple, ou hashé si on préfère.
   role      String   @default("CHEF_EQUIPE") // "GERANT" ou "CHEF_EQUIPE"
   createdAt DateTime @default(now())
+}
+
+model FactureFournisseur {
+  id              String   @id @default(cuid())
+  fournisseur     String
+  numeroFacture   String?
+  dateFacture     DateTime @default(now())
+  
+  lignes          LigneFactureFournisseur[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model LigneFactureFournisseur {
+  id                  String   @id @default(cuid())
+  factureId           String
+  facture             FactureFournisseur @relation(fields: [factureId], references: [id], onDelete: Cascade)
+  
+  reference           String
+  designation         String
+  quantite            Int
+  prixUnitaire        Float
+  prixUnitairePrecedent Float? // Pour garder une trace lors de la validation
+  alerteHausse        Boolean  @default(false)
+  
+  createdAt           DateTime @default(now())
 }
 

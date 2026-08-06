@@ -20,6 +20,7 @@ export function Sidebar() {
     { href: "/reception-magique", label: "Réception Auto", icon: Wand2 },
     { href: "/mouvements", label: "Mouvements", icon: FileText },
     { href: "/reassort", label: "Réassort", icon: ArrowRightLeft },
+    { href: "/fournisseurs", label: "Factures F.", icon: FileText },
     { href: "/equipe", label: "Équipe", icon: Users },
   ];
 
