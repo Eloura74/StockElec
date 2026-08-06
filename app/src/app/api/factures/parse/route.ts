@@ -28,9 +28,10 @@ export async function POST(req: Request) {
     // On cherche une ligne contenant des nombres avec virgule.
     
     for (const line of lines) {
-      // Cherche si la ligne se termine par un prix ex: 12,50 ou 12.50
-      // et a potentiellement une qté avant.
-      const match = line.match(/(.*?)\s+(\d+)\s+([0-9]+[.,][0-9]{2})$/);
+      // Cherche une ligne avec (Texte) (Nombre/Qté) (Prix unitaire) (Prix total optionnel)
+      // Ex: LFF6015009016 GOUL LIFEA 60X150 PURE 10 15,00 150,00
+      // Ou: 152010 ENOLA B SPOT 1 NOIR 2 45.50
+      const match = line.match(/(.*?)\s+(\d+(?:[.,]\d+)?)\s+([0-9]+[.,][0-9]{2})(?:\s+[0-9]+[.,][0-9]{2})?$/);
       if (match) {
         const descRef = match[1].trim();
         // Essayer d'extraire la référence (souvent le premier mot)
@@ -38,11 +39,14 @@ export async function POST(req: Request) {
         const reference = parts[0];
         const designation = parts.slice(1).join(' ');
         
+        let quantite = parseFloat(match[2].replace(',', '.'));
+        if (isNaN(quantite)) quantite = 1;
+
         extractedItems.push({
           id: Math.random().toString(36).substring(7),
           reference: reference || 'REF_INCONNUE',
           designation: designation || descRef,
-          quantite: parseInt(match[2], 10),
+          quantite: quantite,
           prixUnitaire: parseFloat(match[3].replace(',', '.'))
         });
       }

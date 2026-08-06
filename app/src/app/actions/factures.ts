@@ -27,10 +27,16 @@ export async function saveFactureAndCheckPrices(fournisseur: string, numeroFactu
         },
         orderBy: {
           createdAt: 'desc'
+        },
+        include: {
+          facture: true
         }
       })
 
       const prixPrecedent = lastLigne ? lastLigne.prixUnitaire : null
+      const dateFacturePrecedente = lastLigne ? lastLigne.facture.dateFacture : null
+      const numeroFacturePrecedente = lastLigne ? lastLigne.facture.numeroFacture : null
+      
       const alerteHausse = prixPrecedent !== null && ligne.prixUnitaire > prixPrecedent
 
       const savedLigne = await prisma.ligneFactureFournisseur.create({
@@ -41,6 +47,8 @@ export async function saveFactureAndCheckPrices(fournisseur: string, numeroFactu
           quantite: ligne.quantite,
           prixUnitaire: ligne.prixUnitaire,
           prixUnitairePrecedent: prixPrecedent,
+          dateFacturePrecedente: dateFacturePrecedente,
+          numeroFacturePrecedente: numeroFacturePrecedente,
           alerteHausse: alerteHausse
         }
       })

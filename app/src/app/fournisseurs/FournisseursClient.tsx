@@ -73,11 +73,19 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
 
   const generateMailto = (ligne: any) => {
     const subject = encodeURIComponent(`Demande d'avoir - Facture ${numeroFacture || '[NUMÉRO]'}`)
+    
+    // Formater la date précédente si elle existe
+    let datePrecedenteText = ""
+    if (ligne.dateFacturePrecedente) {
+      datePrecedenteText = ` le ${new Date(ligne.dateFacturePrecedente).toLocaleDateString()}`
+    }
+    const numPrecedentText = ligne.numeroFacturePrecedente ? ` (Facture ${ligne.numeroFacturePrecedente})` : ""
+
     const body = encodeURIComponent(
       `Bonjour,\n\n` +
       `Nous avons constaté une augmentation de prix non convenue sur la facture ${numeroFacture || '[NUMÉRO]'}.\n\n` +
       `Article concerné : ${ligne.designation} (Réf: ${ligne.reference})\n` +
-      `Ancien prix unitaire : ${ligne.prixUnitairePrecedent} €\n` +
+      `Ancien prix unitaire payé${datePrecedenteText}${numPrecedentText} : ${ligne.prixUnitairePrecedent} €\n` +
       `Nouveau prix facturé : ${ligne.prixUnitaire} €\n` +
       `Quantité facturée : ${ligne.quantite}\n\n` +
       `Merci de bien vouloir nous établir un avoir pour la différence.\n\n` +

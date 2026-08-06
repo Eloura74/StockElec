@@ -124,6 +124,8 @@ model LigneFactureFournisseur {
   quantite            Int
   prixUnitaire        Float
   prixUnitairePrecedent Float? // Pour garder une trace lors de la validation
+  dateFacturePrecedente DateTime?
+  numeroFacturePrecedente String?
   alerteHausse        Boolean  @default(false)
   
   createdAt           DateTime @default(now())
