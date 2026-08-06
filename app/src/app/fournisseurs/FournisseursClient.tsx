@@ -94,6 +94,41 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
     return `mailto:contact@${fournisseur.toLowerCase()}.fr?subject=${subject}&body=${body}`
   }
 
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showOnlyAlerts, setShowOnlyAlerts] = useState(false)
+
+  // Calcul des statistiques globales (sur les données non filtrées par la recherche)
+  const totalFactures = initialFactures.length
+  let totalLignesAnalysees = 0
+  let totalAlertes = 0
+  
+  initialFactures.forEach(facture => {
+    totalLignesAnalysees += facture.lignes.length
+    facture.lignes.forEach((ligne: any) => {
+      if (ligne.alerteHausse) totalAlertes++
+    })
+  })
+
+  const filteredFactures = initialFactures.map(facture => {
+    let filteredLignes = facture.lignes
+
+    // 1. Filtre sur les alertes
+    if (showOnlyAlerts) {
+      filteredLignes = filteredLignes.filter((ligne: any) => ligne.alerteHausse)
+    }
+
+    // 2. Filtre de recherche textuelle
+    if (searchQuery.trim() !== '') {
+      filteredLignes = filteredLignes.filter((ligne: any) => 
+        ligne.reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ligne.designation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        facture.fournisseur.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    return { ...facture, lignes: filteredLignes }
+  }).filter(facture => facture.lignes.length > 0)
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       
@@ -170,7 +205,20 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
                     <input type="number" value={ligne.quantite} onChange={e => updateLigne(ligne.id, 'quantite', parseInt(e.target.value) || 0)} className="w-full p-2 border rounded" min="1" />
                   </td>
                   <td className="p-2">
-                    <input type="number" step="0.01" value={ligne.prixUnitaire} onChange={e => updateLigne(ligne.id, 'prixUnitaire', parseFloat(e.target.value) || 0)} className="w-full p-2 border rounded" min="0" />
+                    <input 
+                      type="text" 
+                      value={ligne.prixUnitaire} 
+                      onChange={e => {
+                        const val = e.target.value.replace(',', '.');
+                        updateLigne(ligne.id, 'prixUnitaire', val);
+                      }}
+                      onBlur={e => {
+                        const val = parseFloat(String(e.target.value).replace(',', '.')) || 0;
+                        updateLigne(ligne.id, 'prixUnitaire', val);
+                      }}
+                      className="w-full p-2 border rounded" 
+                      placeholder="0.00" 
+                    />
                   </td>
                   <td className="p-2 text-center">
                     <button onClick={() => removeLigne(ligne.id)} className="text-red-500 hover:text-red-700 p-2">
@@ -207,8 +255,50 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
 
       {/* SECTION HISTORIQUE ET ALERTES */}
       <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-bold">Historique & Alertes</h2>
+        
+        {/* STATISTIQUES */}
+        <div className="grid grid-cols-3 divide-x dark:divide-zinc-800 border-b dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/50">
+          <div className="p-4 text-center">
+            <div className="text-2xl font-bold">{totalFactures}</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wider">Factures</div>
+          </div>
+          <div className="p-4 text-center">
+            <div className="text-2xl font-bold text-blue-600">{totalLignesAnalysees}</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wider">Lignes vérifiées</div>
+          </div>
+          <div className="p-4 text-center">
+            <div className={`text-2xl font-bold ${totalAlertes > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              {totalAlertes}
+            </div>
+            <div className="text-xs text-gray-500 uppercase tracking-wider">Alertes Hausse</div>
+          </div>
+        </div>
+
+        {/* HEADER & FILTRES */}
+        <div className="p-6 border-b flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h2 className="text-xl font-bold">Historique</h2>
+          
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowOnlyAlerts(!showOnlyAlerts)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                showOnlyAlerts 
+                  ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50' 
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-700 dark:hover:bg-zinc-800'
+              }`}
+            >
+              <AlertTriangle className="h-4 w-4" />
+              {showOnlyAlerts ? 'Voir tout' : 'N\'afficher que les Hausses'}
+            </button>
+            
+            <input 
+              type="text"
+              placeholder="Rechercher Réf, Fournisseur..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full md:w-64 rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-950 px-4 py-2 text-sm"
+            />
+          </div>
         </div>
         <div className="p-0">
           <table className="w-full text-left text-sm">
@@ -223,7 +313,7 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
               </tr>
             </thead>
             <tbody className="divide-y">
-              {initialFactures.map(facture => (
+              {filteredFactures.map(facture => (
                 facture.lignes.map((ligne: any) => (
                   <tr key={ligne.id} className={ligne.alerteHausse ? "bg-red-50/50 dark:bg-red-900/10" : ""}>
                     <td className="p-4">
