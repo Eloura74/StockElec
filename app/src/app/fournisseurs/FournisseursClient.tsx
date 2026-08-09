@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, Plus, Trash2, Mail, CheckCircle2, AlertTriangle, FileText, ArrowRight, LineChart as ChartIcon, X } from 'lucide-react'
+import { Upload, Plus, Trash2, Mail, CheckCircle2, AlertTriangle, FileText, ArrowRight, LineChart as ChartIcon, X, Download, MailCheck, RefreshCw } from 'lucide-react'
 import { saveFactureAndCheckPrices, getPriceHistory } from '@/app/actions/factures'
 import { createAlias } from '@/app/actions/alias'
 import { useRouter } from 'next/navigation'
@@ -17,9 +17,10 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
   const [isSaving, setIsSaving] = useState(false)
 
   // Modale Graphique
-  const [chartData, setChartData] = useState<any[]>([])
   const [isChartOpen, setIsChartOpen] = useState(false)
+  const [chartData, setChartData] = useState<any[]>([])
   const [chartRef, setChartRef] = useState('')
+  const [isSyncingEmail, setIsSyncingEmail] = useState(false)
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -115,6 +116,76 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
     return `mailto:contact@${facture.fournisseur.toLowerCase()}.fr?subject=${subject}&body=${body}`
   }
 
+  const generateGlobalMailto = (facture: any) => {
+    const lignesEnHausse = facture.lignes.filter((l: any) => l.alerteHausse)
+    if (lignesEnHausse.length === 0) return '#'
+
+    const subject = encodeURIComponent(`Demande d'avoir global - Facture ${facture.numeroFacture || '[NUMÉRO]'}`)
+    
+    let totalAvoir = 0
+    let listeArticles = ''
+
+    lignesEnHausse.forEach((ligne: any) => {
+      const diffUnitaire = ligne.prixUnitaire - ligne.prixUnitairePrecedent
+      const diffTotale = diffUnitaire * ligne.quantite
+      totalAvoir += diffTotale
+
+      listeArticles += `- ${ligne.designation} (Réf: ${ligne.reference}) x${ligne.quantite}\n`
+      listeArticles += `  Ancien prix : ${ligne.prixUnitairePrecedent.toFixed(2)} € -> Nouveau prix : ${ligne.prixUnitaire.toFixed(2)} € (Surcoût: +${diffTotale.toFixed(2)} €)\n\n`
+    })
+
+    const body = encodeURIComponent(
+      `Bonjour,\n\n` +
+      `Nous avons constaté plusieurs anomalies de prix sur la facture ${facture.numeroFacture || '[NUMÉRO]'}.\n\n` +
+      `Voici le détail des écarts constatés par rapport à nos prix historiques :\n\n` +
+      listeArticles +
+      `Merci de bien vouloir vous aligner et nous établir un avoir global de ${totalAvoir.toFixed(2)} € pour cette facture.\n\n` +
+      `Cordialement,\nLa Comptabilité`
+    )
+    return `mailto:contact@${facture.fournisseur.toLowerCase()}.fr?subject=${subject}&body=${body}`
+  }
+
+  const exportCSV = () => {
+    let csv = 'Date,Fournisseur,N° Facture,Référence,Désignation,Qté,Ancien Prix,Nouveau Prix,Statut\n'
+    filteredFactures.forEach(facture => {
+      facture.lignes.forEach((ligne: any) => {
+        const date = new Date(facture.dateFacture).toLocaleDateString()
+        const statut = ligne.alerteHausse ? 'Hausse' : ligne.alerteBaisse ? 'Baisse' : 'OK'
+        const ancienPrix = ligne.prixUnitairePrecedent ? ligne.prixUnitairePrecedent.toFixed(2) : ''
+        const nvPrix = ligne.prixUnitaire.toFixed(2)
+        const designation = `"${ligne.designation.replace(/"/g, '""')}"`
+        csv += `${date},${facture.fournisseur},${facture.numeroFacture},${ligne.reference},${designation},${ligne.quantite},${ancienPrix},${nvPrix},${statut}\n`
+      })
+    })
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.setAttribute('download', 'export_factures.csv')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handleSyncEmail = async () => {
+    setIsSyncingEmail(true)
+    try {
+      const response = await fetch('/api/cron/fetch-emails')
+      const data = await response.json()
+      
+      if (response.ok) {
+        alert(`Synchronisation réussie. ${data.processed || 0} nouvelle(s) facture(s) importée(s).`)
+        router.refresh()
+      } else {
+        alert("Erreur lors de la synchronisation : " + (data.error || "inconnue"))
+      }
+    } catch (error) {
+      alert("Erreur lors de l'appel au serveur.")
+    } finally {
+      setIsSyncingEmail(false)
+    }
+  }
+
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState('all') // 'all', 'hausse', 'baisse'
 
@@ -171,10 +242,20 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
       
       {/* SECTION SAISIE / IMPORT */}
       <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-xl p-6 shadow-sm">
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <FileText className="h-6 w-6 text-blue-600" />
-          Nouvelle Facture
-        </h2>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <FileText className="h-6 w-6 text-blue-600" />
+            Nouvelle Facture
+          </h2>
+          <button
+            onClick={handleSyncEmail}
+            disabled={isSyncingEmail}
+            className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${isSyncingEmail ? 'animate-spin' : ''}`} />
+            {isSyncingEmail ? 'Synchronisation...' : 'Boîte Mail Auto'}
+          </button>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div>
@@ -321,7 +402,13 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
         <div className="p-6 border-b flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h2 className="text-xl font-bold">Historique</h2>
           
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <button 
+              onClick={exportCSV}
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg px-4 py-2 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <Download className="h-4 w-4" /> Exporter CSV
+            </button>
             <select 
               value={filterType}
               onChange={e => setFilterType(e.target.value)}
@@ -354,12 +441,28 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
               </tr>
             </thead>
             <tbody className="divide-y">
-              {filteredFactures.map(facture => (
-                facture.lignes.map((ligne: any) => (
+              {filteredFactures.map(facture => {
+                const aDesHausses = facture.lignes.some((l: any) => l.alerteHausse)
+                return facture.lignes.map((ligne: any, index: number) => (
                   <tr key={ligne.id} className={ligne.alerteHausse ? "bg-red-50/50 dark:bg-red-900/10" : ""}>
-                    <td className="p-4">
-                      <div className="font-medium">{facture.fournisseur}</div>
-                      <div className="text-xs text-gray-500">{facture.numeroFacture} - {new Date(facture.dateFacture).toLocaleDateString()}</div>
+                    <td className="p-4 align-top">
+                      {index === 0 ? (
+                        <>
+                          <div className="font-medium">{facture.fournisseur}</div>
+                          <div className="text-xs text-gray-500 mb-2">{facture.numeroFacture} - {new Date(facture.dateFacture).toLocaleDateString()}</div>
+                          {aDesHausses && (
+                            <a
+                              href={generateGlobalMailto(facture)}
+                              className="inline-flex items-center gap-1.5 text-[10px] font-medium bg-zinc-800 dark:bg-zinc-200 text-white dark:text-black px-2 py-1 rounded hover:bg-zinc-700 dark:hover:bg-zinc-300 transition-colors"
+                              title="Générer un e-mail regroupant toutes les hausses de cette facture"
+                            >
+                              <MailCheck className="h-3 w-3" /> Avoir Global
+                            </a>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-xs text-gray-400 opacity-50 ml-4">↳</div>
+                      )}
                     </td>
                     <td className="p-4">
                       <div className="font-medium">{ligne.reference}</div>
@@ -412,7 +515,7 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
                     </td>
                   </tr>
                 ))
-              ))}
+              })}
               {initialFactures.length === 0 && (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-gray-500">
