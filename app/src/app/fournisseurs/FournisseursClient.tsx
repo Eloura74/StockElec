@@ -86,8 +86,8 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
     }
   }
 
-  const generateMailto = (ligne: any) => {
-    const subject = encodeURIComponent(`Demande d'avoir - Facture ${numeroFacture || '[NUMÉRO]'}`)
+  const generateMailto = (facture: any, ligne: any) => {
+    const subject = encodeURIComponent(`Demande d'avoir - Facture ${facture.numeroFacture || '[NUMÉRO]'}`)
     
     // Formater la date précédente si elle existe
     let datePrecedenteText = ""
@@ -107,7 +107,7 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
       `Merci de bien vouloir vous aligner et nous établir un avoir pour la différence.\n\n` +
       `Cordialement,\nLa Comptabilité`
     )
-    return `mailto:contact@${fournisseur.toLowerCase()}.fr?subject=${subject}&body=${body}`
+    return `mailto:contact@${facture.fournisseur.toLowerCase()}.fr?subject=${subject}&body=${body}`
   }
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -394,7 +394,7 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
                       </button>
                       {ligne.alerteHausse && (
                         <a 
-                          href={generateMailto(ligne)}
+                          href={generateMailto(facture, ligne)}
                           className="inline-flex items-center gap-2 text-xs font-medium bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700 transition-colors"
                         >
                           <Mail className="h-3 w-3" /> Demander Avoir
