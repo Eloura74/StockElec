@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, Plus, Trash2, Mail, CheckCircle2, AlertTriangle, FileText, ArrowRight } from 'lucide-react'
-import { saveFactureAndCheckPrices } from '@/app/actions/factures'
+import { Upload, Plus, Trash2, Mail, CheckCircle2, AlertTriangle, FileText, ArrowRight, LineChart as ChartIcon, X } from 'lucide-react'
+import { saveFactureAndCheckPrices, getPriceHistory } from '@/app/actions/factures'
+import { createAlias } from '@/app/actions/alias'
 import { useRouter } from 'next/navigation'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export function FournisseursClient({ initialFactures }: { initialFactures: any[] }) {
   const router = useRouter()
@@ -13,6 +15,11 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
   
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+
+  // Modale Graphique
+  const [chartData, setChartData] = useState<any[]>([])
+  const [isChartOpen, setIsChartOpen] = useState(false)
+  const [chartRef, setChartRef] = useState('')
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -58,6 +65,14 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
     if (lignes.length === 0) return alert("Veuillez ajouter au moins une ligne")
 
     setIsSaving(true)
+    
+    // Traiter les alias
+    for (const ligne of lignes) {
+      if (ligne.originalReference && ligne.reference !== ligne.originalReference && ligne.saveAlias !== false) {
+        await createAlias(fournisseur, ligne.originalReference, ligne.reference)
+      }
+    }
+
     const res = await saveFactureAndCheckPrices(fournisseur, numeroFacture, lignes)
     setIsSaving(false)
 
@@ -96,17 +111,31 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
   }
 
   const [searchQuery, setSearchQuery] = useState('')
-  const [showOnlyAlerts, setShowOnlyAlerts] = useState(false)
+  const [filterType, setFilterType] = useState('all') // 'all', 'hausse', 'baisse'
+
+  const handleOpenChart = async (reference: string) => {
+    setChartRef(reference)
+    setIsChartOpen(true)
+    const data = await getPriceHistory(reference)
+    const formattedData = data.map((d: any) => ({
+      date: new Date(d.facture.dateFacture).toLocaleDateString(),
+      prix: d.prixUnitaire,
+      fournisseur: d.facture.fournisseur
+    }))
+    setChartData(formattedData)
+  }
 
   // Calcul des statistiques globales (sur les données non filtrées par la recherche)
   const totalFactures = initialFactures.length
   let totalLignesAnalysees = 0
   let totalAlertes = 0
+  let totalBaisses = 0
   
   initialFactures.forEach(facture => {
     totalLignesAnalysees += facture.lignes.length
     facture.lignes.forEach((ligne: any) => {
       if (ligne.alerteHausse) totalAlertes++
+      if (ligne.alerteBaisse) totalBaisses++
     })
   })
 
@@ -114,8 +143,10 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
     let filteredLignes = facture.lignes
 
     // 1. Filtre sur les alertes
-    if (showOnlyAlerts) {
+    if (filterType === 'hausse') {
       filteredLignes = filteredLignes.filter((ligne: any) => ligne.alerteHausse)
+    } else if (filterType === 'baisse') {
+      filteredLignes = filteredLignes.filter((ligne: any) => ligne.alerteBaisse)
     }
 
     // 2. Filtre de recherche textuelle
@@ -198,6 +229,12 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
                 <tr key={ligne.id} className="border-b last:border-0">
                   <td className="p-2">
                     <input type="text" value={ligne.reference} onChange={e => updateLigne(ligne.id, 'reference', e.target.value)} className="w-full p-2 border rounded" placeholder="Réf" />
+                    {ligne.originalReference && ligne.reference !== ligne.originalReference && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-blue-600">
+                        <input type="checkbox" checked={ligne.saveAlias !== false} onChange={e => updateLigne(ligne.id, 'saveAlias', e.target.checked)} />
+                        <label>Créer alias {ligne.originalReference} &rarr; {ligne.reference}</label>
+                      </div>
+                    )}
                   </td>
                   <td className="p-2">
                     <input type="text" value={ligne.designation} onChange={e => updateLigne(ligne.id, 'designation', e.target.value)} className="w-full p-2 border rounded" placeholder="Description" />
@@ -280,17 +317,15 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
           <h2 className="text-xl font-bold">Historique</h2>
           
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowOnlyAlerts(!showOnlyAlerts)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                showOnlyAlerts 
-                  ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50' 
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-700 dark:hover:bg-zinc-800'
-              }`}
+            <select 
+              value={filterType}
+              onChange={e => setFilterType(e.target.value)}
+              className="rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-950 px-4 py-2 text-sm"
             >
-              <AlertTriangle className="h-4 w-4" />
-              {showOnlyAlerts ? 'Voir tout' : 'N\'afficher que les Hausses'}
-            </button>
+              <option value="all">Toutes les lignes</option>
+              <option value="hausse">Uniquement les Hausses</option>
+              <option value="baisse">Uniquement les Baisses</option>
+            </select>
             
             <input 
               type="text"
@@ -343,13 +378,20 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold">
                           <AlertTriangle className="h-3 w-3" /> Hausse
                         </span>
-                      ) : (
+                      ) : ligne.alerteBaisse ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">
+                          <ArrowRight className="h-3 w-3 rotate-90" /> Baisse
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-bold">
                           <CheckCircle2 className="h-3 w-3" /> OK
                         </span>
                       )}
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 flex gap-2 items-center">
+                      <button onClick={() => handleOpenChart(ligne.reference)} className="text-gray-500 hover:text-blue-600 transition-colors" title="Historique">
+                        <ChartIcon className="h-4 w-4" />
+                      </button>
                       {ligne.alerteHausse && (
                         <a 
                           href={generateMailto(ligne)}
@@ -373,6 +415,41 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
           </table>
         </div>
       </div>
+
+      {/* MODAL GRAPHIQUE */}
+      {isChartOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-xl p-6 w-full max-w-2xl shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold">Évolution du prix : {chartRef}</h3>
+              <button onClick={() => setIsChartOpen(false)} className="text-gray-500 hover:text-gray-900">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="h-64 w-full">
+              {chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="date" fontSize={12} />
+                    <YAxis dataKey="prix" fontSize={12} unit="€" />
+                    <Tooltip 
+                      formatter={(value: any) => [`${value} €`, 'Prix']}
+                      labelFormatter={(label) => `Date: ${label}`}
+                    />
+                    <Line type="monotone" dataKey="prix" stroke="#2563eb" strokeWidth={2} activeDot={{ r: 8 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-gray-500">
+                  Chargement des données...
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       
     </div>
   )

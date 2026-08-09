@@ -128,7 +128,17 @@ model LigneFactureFournisseur {
   dateFacturePrecedente DateTime?
   numeroFacturePrecedente String?
   alerteHausse        Boolean  @default(false)
+  alerteBaisse        Boolean  @default(false)
   
   createdAt           DateTime @default(now())
 }
 
+model ReferenceAlias {
+  id                  String   @id @default(cuid())
+  fournisseur         String
+  aliasFournisseur    String   // La ref du fournisseur (ex: REX-123)
+  referenceCanonique  String   // Votre ref interne (ex: 069731)
+  createdAt           DateTime @default(now())
+
+  @@unique([fournisseur, aliasFournisseur])
+}

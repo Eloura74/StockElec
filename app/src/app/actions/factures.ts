@@ -17,10 +17,21 @@ export async function saveFactureAndCheckPrices(fournisseur: string, numeroFactu
     const resultLignes = []
 
     for (const ligne of lignes) {
-      // Rechercher le meilleur prix historique pour cette référence tous fournisseurs confondus
+      // 1. Résoudre l'alias éventuel
+      const alias = await prisma.referenceAlias.findUnique({
+        where: {
+          fournisseur_aliasFournisseur: {
+            fournisseur: fournisseur,
+            aliasFournisseur: ligne.reference
+          }
+        }
+      })
+      const referenceToUse = alias ? alias.referenceCanonique : ligne.reference
+
+      // 2. Rechercher le meilleur prix historique pour cette référence tous fournisseurs confondus
       const bestPriceLigne = await prisma.ligneFactureFournisseur.findFirst({
         where: {
-          reference: ligne.reference,
+          reference: referenceToUse,
         },
         orderBy: {
           prixUnitaire: 'asc'
@@ -37,10 +48,23 @@ export async function saveFactureAndCheckPrices(fournisseur: string, numeroFactu
       
       const alerteHausse = prixPrecedent !== null && ligne.prixUnitaire > prixPrecedent
 
+      // 3. Détecter une baisse significative (ex: inférieur de 5% à la moyenne)
+      let alerteBaisse = false
+      const allPrices = await prisma.ligneFactureFournisseur.findMany({
+        where: { reference: referenceToUse },
+        select: { prixUnitaire: true }
+      })
+      if (allPrices.length > 0) {
+        const avg = allPrices.reduce((acc, curr) => acc + curr.prixUnitaire, 0) / allPrices.length
+        if (ligne.prixUnitaire < avg * 0.95) { // Baisse d'au moins 5% par rapport à la moyenne
+          alerteBaisse = true
+        }
+      }
+
       const savedLigne = await prisma.ligneFactureFournisseur.create({
         data: {
           factureId: facture.id,
-          reference: ligne.reference,
+          reference: referenceToUse, // On enregistre sous la référence canonique
           designation: ligne.designation,
           quantite: ligne.quantite,
           prixUnitaire: ligne.prixUnitaire,
@@ -48,7 +72,8 @@ export async function saveFactureAndCheckPrices(fournisseur: string, numeroFactu
           fournisseurPrecedent: fournisseurPrecedent,
           dateFacturePrecedente: dateFacturePrecedente,
           numeroFacturePrecedente: numeroFacturePrecedente,
-          alerteHausse: alerteHausse
+          alerteHausse: alerteHausse,
+          alerteBaisse: alerteBaisse
         }
       })
       
@@ -71,6 +96,20 @@ export async function getFactures() {
     },
     orderBy: {
       dateFacture: 'desc'
+    }
+  })
+}
+
+export async function getPriceHistory(reference: string) {
+  return await prisma.ligneFactureFournisseur.findMany({
+    where: { reference },
+    include: {
+      facture: true
+    },
+    orderBy: {
+      facture: {
+        dateFacture: 'asc'
+      }
     }
   })
 }
