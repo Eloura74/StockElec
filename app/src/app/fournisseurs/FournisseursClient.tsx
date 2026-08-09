@@ -97,14 +97,19 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
     const numPrecedentText = ligne.numeroFacturePrecedente ? ` (Facture ${ligne.numeroFacturePrecedente})` : ""
     const fournisseurPrecedentText = ligne.fournisseurPrecedent ? ` chez ${ligne.fournisseurPrecedent}` : ""
 
+    const diffUnitaire = ligne.prixUnitaire - ligne.prixUnitairePrecedent;
+    const diffTotale = diffUnitaire * ligne.quantite;
+
     const body = encodeURIComponent(
       `Bonjour,\n\n` +
-      `Nous avons constaté une anomalie de prix sur la facture ${numeroFacture || '[NUMÉRO]'}.\n\n` +
+      `Nous avons constaté une anomalie de prix sur la facture ${facture.numeroFacture || '[NUMÉRO]'}.\n\n` +
       `Article concerné : ${ligne.designation} (Réf: ${ligne.reference})\n` +
-      `Meilleur prix historique enregistré${fournisseurPrecedentText}${datePrecedenteText}${numPrecedentText} : ${ligne.prixUnitairePrecedent} €\n` +
-      `Nouveau prix facturé : ${ligne.prixUnitaire} €\n` +
       `Quantité facturée : ${ligne.quantite}\n\n` +
-      `Merci de bien vouloir vous aligner et nous établir un avoir pour la différence.\n\n` +
+      `Prix historique enregistré${fournisseurPrecedentText}${datePrecedenteText}${numPrecedentText} : ${ligne.prixUnitairePrecedent.toFixed(2)} €\n` +
+      `Nouveau prix facturé : ${ligne.prixUnitaire.toFixed(2)} €\n` +
+      `Différence unitaire : +${diffUnitaire.toFixed(2)} €\n` +
+      `Surcoût total pour cette ligne : +${diffTotale.toFixed(2)} €\n\n` +
+      `Merci de bien vouloir vous aligner et nous établir un avoir de ${diffTotale.toFixed(2)} €.\n\n` +
       `Cordialement,\nLa Comptabilité`
     )
     return `mailto:contact@${facture.fournisseur.toLowerCase()}.fr?subject=${subject}&body=${body}`
@@ -389,8 +394,12 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
                       )}
                     </td>
                     <td className="p-4 flex gap-2 items-center">
-                      <button onClick={() => handleOpenChart(ligne.reference)} className="text-gray-500 hover:text-blue-600 transition-colors" title="Historique">
-                        <ChartIcon className="h-4 w-4" />
+                      <button 
+                        onClick={() => handleOpenChart(ligne.reference)} 
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors text-xs font-medium" 
+                        title="Voir l'évolution du prix"
+                      >
+                        <ChartIcon className="h-4 w-4" /> Graphique
                       </button>
                       {ligne.alerteHausse && (
                         <a 
