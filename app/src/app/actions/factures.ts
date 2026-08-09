@@ -17,25 +17,23 @@ export async function saveFactureAndCheckPrices(fournisseur: string, numeroFactu
     const resultLignes = []
 
     for (const ligne of lignes) {
-      // Rechercher le dernier prix connu pour ce fournisseur et cette référence
-      const lastLigne = await prisma.ligneFactureFournisseur.findFirst({
+      // Rechercher le meilleur prix historique pour cette référence tous fournisseurs confondus
+      const bestPriceLigne = await prisma.ligneFactureFournisseur.findFirst({
         where: {
           reference: ligne.reference,
-          facture: {
-            fournisseur: fournisseur
-          }
         },
         orderBy: {
-          createdAt: 'desc'
+          prixUnitaire: 'asc'
         },
         include: {
           facture: true
         }
       })
 
-      const prixPrecedent = lastLigne ? lastLigne.prixUnitaire : null
-      const dateFacturePrecedente = lastLigne ? lastLigne.facture.dateFacture : null
-      const numeroFacturePrecedente = lastLigne ? lastLigne.facture.numeroFacture : null
+      const prixPrecedent = bestPriceLigne ? bestPriceLigne.prixUnitaire : null
+      const dateFacturePrecedente = bestPriceLigne ? bestPriceLigne.facture.dateFacture : null
+      const numeroFacturePrecedente = bestPriceLigne ? bestPriceLigne.facture.numeroFacture : null
+      const fournisseurPrecedent = bestPriceLigne ? bestPriceLigne.facture.fournisseur : null
       
       const alerteHausse = prixPrecedent !== null && ligne.prixUnitaire > prixPrecedent
 
@@ -47,6 +45,7 @@ export async function saveFactureAndCheckPrices(fournisseur: string, numeroFactu
           quantite: ligne.quantite,
           prixUnitaire: ligne.prixUnitaire,
           prixUnitairePrecedent: prixPrecedent,
+          fournisseurPrecedent: fournisseurPrecedent,
           dateFacturePrecedente: dateFacturePrecedente,
           numeroFacturePrecedente: numeroFacturePrecedente,
           alerteHausse: alerteHausse

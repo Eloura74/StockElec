@@ -80,15 +80,16 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
       datePrecedenteText = ` le ${new Date(ligne.dateFacturePrecedente).toLocaleDateString()}`
     }
     const numPrecedentText = ligne.numeroFacturePrecedente ? ` (Facture ${ligne.numeroFacturePrecedente})` : ""
+    const fournisseurPrecedentText = ligne.fournisseurPrecedent ? ` chez ${ligne.fournisseurPrecedent}` : ""
 
     const body = encodeURIComponent(
       `Bonjour,\n\n` +
-      `Nous avons constaté une augmentation de prix non convenue sur la facture ${numeroFacture || '[NUMÉRO]'}.\n\n` +
+      `Nous avons constaté une anomalie de prix sur la facture ${numeroFacture || '[NUMÉRO]'}.\n\n` +
       `Article concerné : ${ligne.designation} (Réf: ${ligne.reference})\n` +
-      `Ancien prix unitaire payé${datePrecedenteText}${numPrecedentText} : ${ligne.prixUnitairePrecedent} €\n` +
+      `Meilleur prix historique enregistré${fournisseurPrecedentText}${datePrecedenteText}${numPrecedentText} : ${ligne.prixUnitairePrecedent} €\n` +
       `Nouveau prix facturé : ${ligne.prixUnitaire} €\n` +
       `Quantité facturée : ${ligne.quantite}\n\n` +
-      `Merci de bien vouloir nous établir un avoir pour la différence.\n\n` +
+      `Merci de bien vouloir vous aligner et nous établir un avoir pour la différence.\n\n` +
       `Cordialement,\nLa Comptabilité`
     )
     return `mailto:contact@${fournisseur.toLowerCase()}.fr?subject=${subject}&body=${body}`
@@ -306,7 +307,7 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
               <tr>
                 <th className="p-4">Date & Facture</th>
                 <th className="p-4">Article</th>
-                <th className="p-4 text-right">Ancien Prix</th>
+                <th className="p-4 text-right">Meilleur Prix Historique</th>
                 <th className="p-4 text-right">Nouveau Prix</th>
                 <th className="p-4 text-center">Statut</th>
                 <th className="p-4">Action</th>
@@ -325,7 +326,14 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
                       <div className="text-xs text-gray-500 truncate max-w-[200px]">{ligne.designation}</div>
                     </td>
                     <td className="p-4 text-right text-gray-500">
-                      {ligne.prixUnitairePrecedent ? `${ligne.prixUnitairePrecedent.toFixed(2)} €` : '-'}
+                      {ligne.prixUnitairePrecedent ? (
+                        <div>
+                          <div>{ligne.prixUnitairePrecedent.toFixed(2)} €</div>
+                          {ligne.fournisseurPrecedent && (
+                            <div className="text-xs text-gray-400">({ligne.fournisseurPrecedent})</div>
+                          )}
+                        </div>
+                      ) : '-'}
                     </td>
                     <td className="p-4 text-right font-medium">
                       {ligne.prixUnitaire.toFixed(2)} €
