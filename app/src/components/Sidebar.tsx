@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench, PackageSearch, Users, LogOut, Scan, Wand2, Menu, X } from "lucide-react";
+import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench, PackageSearch, Users, LogOut, Scan, Wand2, Menu, X, BookOpen } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -21,6 +21,7 @@ export function Sidebar() {
     { href: "/mouvements", label: "Mouvements", icon: FileText },
     { href: "/reassort", label: "Réassort", icon: ArrowRightLeft },
     { href: "/fournisseurs", label: "Factures F.", icon: FileText },
+    { href: "/guide", label: "Guide & Tuto", icon: BookOpen },
     { href: "/equipe", label: "Équipe", icon: Users },
   ];
 
