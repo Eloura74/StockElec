@@ -2,8 +2,27 @@ import { NextResponse } from 'next/server';
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdf = require('pdf-parse');
+async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pdfModule = require('pdf-parse');
+  if (typeof pdfModule === 'function') {
+    const data = await pdfModule(buffer);
+    return data.text || '';
+  } else if (pdfModule.PDFParse) {
+    const parser = new pdfModule.PDFParse({ data: buffer });
+    const textResult = await parser.getText();
+    return textResult.text || '';
+  } else if (pdfModule.default && typeof pdfModule.default === 'function') {
+    const data = await pdfModule.default(buffer);
+    return data.text || '';
+  } else if (pdfModule.default?.PDFParse) {
+    const parser = new pdfModule.default.PDFParse({ data: buffer });
+    const textResult = await parser.getText();
+    return textResult.text || '';
+  }
+  throw new Error("Impossible d'initialiser le parseur PDF.");
+}
+
 import { PrismaClient } from '@prisma/client';
 import { saveFactureAndCheckPrices } from '@/app/actions/factures';
 
@@ -54,8 +73,7 @@ export async function GET(req: Request) {
             console.log(`Traitement du PDF : ${pdfAttachment.filename} (Email UID: ${message.uid})`);
             
             // 1. Extraire le texte du PDF
-            const data = await pdf(pdfAttachment.content);
-            const text = data.text;
+            const text = await extractTextFromPdf(pdfAttachment.content);
 
             // 2. Extraire les données avec Gemini
             if (!process.env.GEMINI_API_KEY) {

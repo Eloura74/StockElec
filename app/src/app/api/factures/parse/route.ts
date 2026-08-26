@@ -1,10 +1,30 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai';
 
+async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pdfModule = require('pdf-parse');
+  
+  if (typeof pdfModule === 'function') {
+    const data = await pdfModule(buffer);
+    return data.text || '';
+  } else if (pdfModule.PDFParse) {
+    const parser = new pdfModule.PDFParse({ data: buffer });
+    const textResult = await parser.getText();
+    return textResult.text || '';
+  } else if (pdfModule.default && typeof pdfModule.default === 'function') {
+    const data = await pdfModule.default(buffer);
+    return data.text || '';
+  } else if (pdfModule.default?.PDFParse) {
+    const parser = new pdfModule.default.PDFParse({ data: buffer });
+    const textResult = await parser.getText();
+    return textResult.text || '';
+  }
+  throw new Error("Impossible d'initialiser le parseur PDF.");
+}
+
 export async function POST(req: Request) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const pdf = require('pdf-parse');
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     
@@ -15,8 +35,13 @@ export async function POST(req: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     
-    const data = await pdf(buffer);
-    const text = data.text;
+    let text = '';
+    try {
+      text = await extractTextFromPdf(buffer);
+    } catch (pdfErr: any) {
+      console.error("Erreur lors de l'extraction brute du PDF:", pdfErr);
+      return NextResponse.json({ error: "Échec de lecture du fichier PDF: " + pdfErr.message }, { status: 500 });
+    }
 
     let extractedItems: any[] = [];
     let extractedFournisseur: string | null = null;
@@ -145,8 +170,8 @@ Texte extrait de la facture :\n\n${text}`;
       textSample: text.substring(0, 500)
     });
     
-  } catch (error) {
-    console.error('Erreur PDF:', error);
-    return NextResponse.json({ error: 'Erreur lors de la lecture du PDF' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Erreur API parse:', error);
+    return NextResponse.json({ error: 'Erreur lors du traitement : ' + (error?.message || error) }, { status: 500 });
   }
 }
