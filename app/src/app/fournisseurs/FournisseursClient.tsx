@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, Plus, Trash2, Mail, CheckCircle2, AlertTriangle, FileText, ArrowRight, LineChart as ChartIcon, X, Download, MailCheck, RefreshCw } from 'lucide-react'
+import { Upload, Plus, Trash2, Mail, CheckCircle2, AlertTriangle, FileText, ArrowRight, LineChart as ChartIcon, X, Download, MailCheck, RefreshCw, Copy, ExternalLink, Check } from 'lucide-react'
 import { saveFactureAndCheckPrices, getPriceHistory } from '@/app/actions/factures'
 import { createAlias } from '@/app/actions/alias'
 import { useRouter } from 'next/navigation'
@@ -21,6 +21,21 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
   const [chartData, setChartData] = useState<any[]>([])
   const [chartRef, setChartRef] = useState('')
   const [isSyncingEmail, setIsSyncingEmail] = useState(false)
+
+  // Modale Email
+  const [emailModal, setEmailModal] = useState<{
+    isOpen: boolean;
+    to: string;
+    subject: string;
+    body: string;
+    copied: boolean;
+  }>({
+    isOpen: false,
+    to: '',
+    subject: '',
+    body: '',
+    copied: false
+  })
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -104,10 +119,9 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
     }
   }
 
-  const generateMailto = (facture: any, ligne: any) => {
-    const subject = encodeURIComponent(`Demande d'avoir - Facture ${facture.numeroFacture || '[NUMÉRO]'}`)
+  const openEmailModalForLigne = (facture: any, ligne: any) => {
+    const subject = `Demande d'avoir - Facture ${facture.numeroFacture || '[NUMÉRO]'}`
     
-    // Formater la date précédente si elle existe
     let datePrecedenteText = ""
     if (ligne.dateFacturePrecedente) {
       datePrecedenteText = ` le ${new Date(ligne.dateFacturePrecedente).toLocaleDateString()}`
@@ -115,51 +129,65 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
     const numPrecedentText = ligne.numeroFacturePrecedente ? ` (Facture ${ligne.numeroFacturePrecedente})` : ""
     const fournisseurPrecedentText = ligne.fournisseurPrecedent ? ` chez ${ligne.fournisseurPrecedent}` : ""
 
-    const diffUnitaire = ligne.prixUnitaire - ligne.prixUnitairePrecedent;
-    const diffTotale = diffUnitaire * ligne.quantite;
+    const diffUnitaire = ligne.prixUnitaire - (ligne.prixUnitairePrecedent || 0)
+    const diffTotale = diffUnitaire * (ligne.quantite || 1)
 
-    const body = encodeURIComponent(
+    const body = 
       `Bonjour,\n\n` +
       `Nous avons constaté une anomalie de prix sur la facture ${facture.numeroFacture || '[NUMÉRO]'}.\n\n` +
       `Article concerné : ${ligne.designation} (Réf: ${ligne.reference})\n` +
       `Quantité facturée : ${ligne.quantite}\n\n` +
-      `Prix historique enregistré${fournisseurPrecedentText}${datePrecedenteText}${numPrecedentText} : ${ligne.prixUnitairePrecedent.toFixed(2)} €\n` +
+      `Prix historique enregistré${fournisseurPrecedentText}${datePrecedenteText}${numPrecedentText} : ${(ligne.prixUnitairePrecedent || 0).toFixed(2)} €\n` +
       `Nouveau prix facturé : ${ligne.prixUnitaire.toFixed(2)} €\n` +
       `Différence unitaire : +${diffUnitaire.toFixed(2)} €\n` +
       `Surcoût total pour cette ligne : +${diffTotale.toFixed(2)} €\n\n` +
       `Merci de bien vouloir vous aligner et nous établir un avoir de ${diffTotale.toFixed(2)} €.\n\n` +
       `Cordialement,\nLa Comptabilité`
-    )
-    return `mailto:contact@${facture.fournisseur.toLowerCase()}.fr?subject=${subject}&body=${body}`
+
+    const to = `contact@${facture.fournisseur.toLowerCase().replace(/\s+/g, '')}.fr`
+    setEmailModal({
+      isOpen: true,
+      to,
+      subject,
+      body,
+      copied: false
+    })
   }
 
-  const generateGlobalMailto = (facture: any) => {
+  const openEmailModalForGlobal = (facture: any) => {
     const lignesEnHausse = facture.lignes.filter((l: any) => l.alerteHausse)
-    if (lignesEnHausse.length === 0) return '#'
+    if (lignesEnHausse.length === 0) return
 
-    const subject = encodeURIComponent(`Demande d'avoir global - Facture ${facture.numeroFacture || '[NUMÉRO]'}`)
+    const subject = `Demande d'avoir global - Facture ${facture.numeroFacture || '[NUMÉRO]'}`
     
     let totalAvoir = 0
     let listeArticles = ''
 
     lignesEnHausse.forEach((ligne: any) => {
-      const diffUnitaire = ligne.prixUnitaire - ligne.prixUnitairePrecedent
-      const diffTotale = diffUnitaire * ligne.quantite
+      const diffUnitaire = ligne.prixUnitaire - (ligne.prixUnitairePrecedent || 0)
+      const diffTotale = diffUnitaire * (ligne.quantite || 1)
       totalAvoir += diffTotale
 
       listeArticles += `- ${ligne.designation} (Réf: ${ligne.reference}) x${ligne.quantite}\n`
-      listeArticles += `  Ancien prix : ${ligne.prixUnitairePrecedent.toFixed(2)} € -> Nouveau prix : ${ligne.prixUnitaire.toFixed(2)} € (Surcoût: +${diffTotale.toFixed(2)} €)\n\n`
+      listeArticles += `  Ancien prix : ${(ligne.prixUnitairePrecedent || 0).toFixed(2)} € -> Nouveau prix : ${ligne.prixUnitaire.toFixed(2)} € (Surcoût: +${diffTotale.toFixed(2)} €)\n\n`
     })
 
-    const body = encodeURIComponent(
+    const body = 
       `Bonjour,\n\n` +
       `Nous avons constaté plusieurs anomalies de prix sur la facture ${facture.numeroFacture || '[NUMÉRO]'}.\n\n` +
       `Voici le détail des écarts constatés par rapport à nos prix historiques :\n\n` +
       listeArticles +
       `Merci de bien vouloir vous aligner et nous établir un avoir global de ${totalAvoir.toFixed(2)} € pour cette facture.\n\n` +
       `Cordialement,\nLa Comptabilité`
-    )
-    return `mailto:contact@${facture.fournisseur.toLowerCase()}.fr?subject=${subject}&body=${body}`
+
+    const to = `contact@${facture.fournisseur.toLowerCase().replace(/\s+/g, '')}.fr`
+    setEmailModal({
+      isOpen: true,
+      to,
+      subject,
+      body,
+      copied: false
+    })
   }
 
   const exportCSV = () => {
@@ -468,13 +496,13 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
                           <div className="font-medium">{facture.fournisseur}</div>
                           <div className="text-xs text-gray-500 mb-2">{facture.numeroFacture} - {new Date(facture.dateFacture).toLocaleDateString()}</div>
                           {aDesHausses && (
-                            <a
-                              href={generateGlobalMailto(facture)}
+                            <button
+                              onClick={() => openEmailModalForGlobal(facture)}
                               className="inline-flex items-center gap-1.5 text-[10px] font-medium bg-zinc-800 dark:bg-zinc-200 text-white dark:text-black px-2 py-1 rounded hover:bg-zinc-700 dark:hover:bg-zinc-300 transition-colors"
                               title="Générer un e-mail regroupant toutes les hausses de cette facture"
                             >
                               <MailCheck className="h-3 w-3" /> Avoir Global
-                            </a>
+                            </button>
                           )}
                         </>
                       ) : (
@@ -522,12 +550,12 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
                         <ChartIcon className="h-4 w-4" /> Graphique
                       </button>
                       {ligne.alerteHausse && (
-                        <a 
-                          href={generateMailto(facture, ligne)}
+                        <button 
+                          onClick={() => openEmailModalForLigne(facture, ligne)}
                           className="inline-flex items-center gap-2 text-xs font-medium bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700 transition-colors"
                         >
                           <Mail className="h-3 w-3" /> Demander Avoir
-                        </a>
+                        </button>
                       )}
                     </td>
                   </tr>
@@ -575,6 +603,93 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
                   Chargement des données...
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODALE RECLAMATION EMAIL */}
+      {emailModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl p-6 w-full max-w-2xl shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b dark:border-zinc-800">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <h3 className="text-lg font-bold">Demande d'avoir prête à envoyer</h3>
+              </div>
+              <button 
+                onClick={() => setEmailModal(prev => ({ ...prev, isOpen: false }))}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-sm">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Destinataire</label>
+                <input 
+                  type="text" 
+                  value={emailModal.to} 
+                  onChange={e => setEmailModal({ ...emailModal, to: e.target.value })}
+                  className="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-950 px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Objet</label>
+                <input 
+                  type="text" 
+                  value={emailModal.subject} 
+                  onChange={e => setEmailModal({ ...emailModal, subject: e.target.value })}
+                  className="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-950 px-3 py-2 text-sm font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Message</label>
+                <textarea 
+                  rows={8}
+                  value={emailModal.body} 
+                  onChange={e => setEmailModal({ ...emailModal, body: e.target.value })}
+                  className="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-950 p-3 text-xs font-mono whitespace-pre-wrap"
+                />
+              </div>
+            </div>
+
+            {/* ACTIONS */}
+            <div className="pt-2 flex flex-wrap gap-2 justify-end">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`${emailModal.subject}\n\n${emailModal.body}`)
+                  setEmailModal(prev => ({ ...prev, copied: true }))
+                  setTimeout(() => setEmailModal(prev => ({ ...prev, copied: false })), 2500)
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-700 font-medium text-sm transition-colors"
+              >
+                {emailModal.copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                {emailModal.copied ? 'Texte copié !' : 'Copier le message'}
+              </button>
+
+              <a
+                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailModal.to)}&su=${encodeURIComponent(emailModal.subject)}&body=${encodeURIComponent(emailModal.body)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium text-sm transition-colors"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Ouvrir dans Gmail
+              </a>
+
+              <a
+                href={`mailto:${encodeURIComponent(emailModal.to)}?subject=${encodeURIComponent(emailModal.subject)}&body=${encodeURIComponent(emailModal.body)}`}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors"
+              >
+                <Mail className="h-4 w-4" />
+                Ouvrir logiciel de messagerie
+              </a>
             </div>
           </div>
         </div>
