@@ -38,6 +38,23 @@ export function FournisseursClient({ initialFactures }: { initialFactures: any[]
       const data = await res.json()
       if (data.items && data.items.length > 0) {
         setLignes(prev => [...prev, ...data.items])
+        if (data.numeroFacture) {
+          setNumeroFacture(data.numeroFacture)
+        }
+        if (data.fournisseur) {
+          const fUpper = data.fournisseur.toUpperCase()
+          if (fUpper.includes('YESSS') || fUpper.includes('YESSE')) {
+            setFournisseur('Yesse elec')
+          } else if (fUpper.includes('REXEL')) {
+            setFournisseur('Rexel')
+          } else if (fUpper.includes('SONEPAR')) {
+            setFournisseur('Sonepar')
+          } else if (fUpper.includes('BALITRAN')) {
+            setFournisseur('Balitran')
+          } else {
+            setFournisseur('Autre')
+          }
+        }
       } else {
         alert("Aucun article n'a pu être extrait automatiquement. Vous pouvez les ajouter manuellement.")
       }
