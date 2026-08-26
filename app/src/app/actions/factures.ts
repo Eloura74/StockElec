@@ -151,26 +151,36 @@ export async function updateStatutAvoir(
 }
 
 export async function getFactures() {
-  return await prisma.factureFournisseur.findMany({
-    include: {
-      lignes: true
-    },
-    orderBy: {
-      dateFacture: 'desc'
-    }
-  })
+  try {
+    return await prisma.factureFournisseur.findMany({
+      include: {
+        lignes: true
+      },
+      orderBy: {
+        dateFacture: 'desc'
+      }
+    })
+  } catch (error) {
+    console.error("Erreur lors de la récupération des factures:", error)
+    return []
+  }
 }
 
 export async function getPriceHistory(reference: string) {
-  return await prisma.ligneFactureFournisseur.findMany({
-    where: { reference },
-    include: {
-      facture: true
-    },
-    orderBy: {
-      facture: {
-        dateFacture: 'asc'
+  try {
+    return await prisma.ligneFactureFournisseur.findMany({
+      where: { reference },
+      include: {
+        facture: true
+      },
+      orderBy: {
+        facture: {
+          dateFacture: 'asc'
+        }
       }
-    }
-  })
+    })
+  } catch (error) {
+    console.error("Erreur lors de la récupération de l'historique de prix:", error)
+    return []
+  }
 }
