@@ -2,27 +2,6 @@ import { NextResponse } from 'next/server';
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai';
-async function extractTextFromPdf(buffer: Buffer): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfModule = require('pdf-parse');
-  if (typeof pdfModule === 'function') {
-    const data = await pdfModule(buffer);
-    return data.text || '';
-  } else if (pdfModule.PDFParse) {
-    const parser = new pdfModule.PDFParse({ data: buffer });
-    const textResult = await parser.getText();
-    return textResult.text || '';
-  } else if (pdfModule.default && typeof pdfModule.default === 'function') {
-    const data = await pdfModule.default(buffer);
-    return data.text || '';
-  } else if (pdfModule.default?.PDFParse) {
-    const parser = new pdfModule.default.PDFParse({ data: buffer });
-    const textResult = await parser.getText();
-    return textResult.text || '';
-  }
-  throw new Error("Impossible d'initialiser le parseur PDF.");
-}
-
 import { PrismaClient } from '@prisma/client';
 import { saveFactureAndCheckPrices } from '@/app/actions/factures';
 
@@ -72,15 +51,12 @@ export async function GET(req: Request) {
           if (pdfAttachment && pdfAttachment.content) {
             console.log(`Traitement du PDF : ${pdfAttachment.filename} (Email UID: ${message.uid})`);
             
-            // 1. Extraire le texte du PDF
-            const text = await extractTextFromPdf(pdfAttachment.content);
-
-            // 2. Extraire les données avec Gemini
             if (!process.env.GEMINI_API_KEY) {
               console.warn("Pas de GEMINI_API_KEY, impossible de lire la facture automatiquement.");
-              continue; // On passe au suivant
+              continue;
             }
 
+            const base64Data = (pdfAttachment.content as Buffer).toString('base64');
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
             const responseSchema: Schema = {
               type: SchemaType.OBJECT,
@@ -112,12 +88,20 @@ export async function GET(req: Request) {
               }
             });
 
-            const prompt = `Analyse cette facture.
-Trouve le nom du fournisseur et le numéro de facture.
-Extrait la liste des articles facturés. Ignore les frais de livraison et la TVA.
-Texte de la facture :\n\n${text}`;
+            const prompt = `Tu es un assistant expert en facturation de matériel électrique.
+Analyse cette facture PDF complète.
+Extrais le nom du fournisseur, le numéro de facture et la liste de tous les articles facturés avec leur référence, désignation, quantité et prix unitaire net HT facturé.`;
 
-            const result = await model.generateContent(prompt);
+            const result = await model.generateContent([
+              {
+                inlineData: {
+                  data: base64Data,
+                  mimeType: "application/pdf"
+                }
+              },
+              prompt
+            ]);
+
             const invoiceData = JSON.parse(result.response.text());
 
             if (!invoiceData.fournisseur || !invoiceData.numeroFacture || !invoiceData.lignes || invoiceData.lignes.length === 0) {
@@ -134,7 +118,7 @@ Texte de la facture :\n\n${text}`;
               id: Math.random().toString(36).substring(7)
             }));
 
-            // 3. Anti-doublon : vérifier si cette facture existe déjà
+            // Anti-doublon : vérifier si cette facture existe déjà
             const existingFacture = await prisma.factureFournisseur.findFirst({
               where: {
                 fournisseur: fournisseur,
@@ -145,7 +129,6 @@ Texte de la facture :\n\n${text}`;
             if (existingFacture) {
               console.log(`La facture ${numeroFacture} de ${fournisseur} existe déjà. Ignorée.`);
             } else {
-              // 4. Enregistrer la facture
               await saveFactureAndCheckPrices(fournisseur, numeroFacture, items);
               console.log(`Facture ${numeroFacture} enregistrée avec succès.`);
               processedCount++;
