@@ -108,6 +108,13 @@ model FactureFournisseur {
   numeroFacture   String?
   dateFacture     DateTime @default(now())
   
+  // Données financières et comptables
+  totalHT         Float?
+  totalTVA        Float?
+  totalTTC        Float?
+  dateEcheance    DateTime?
+  modePaiement    String?  // Ex: "LCR 30 Jours FDM", "Virement", etc.
+  
   lignes          LigneFactureFournisseur[]
   
   createdAt       DateTime @default(now())
@@ -129,6 +136,12 @@ model LigneFactureFournisseur {
   numeroFacturePrecedente String?
   alerteHausse        Boolean  @default(false)
   alerteBaisse        Boolean  @default(false)
+  
+  // Ventilation analytique et suivi comptable des avoirs
+  chantier            String?  // Ex: "SCI PELICAN", "HARVEY", "STOCK"
+  statutAvoir         String?  @default("A_RECLAMER") // "A_RECLAMER", "DEMANDE_ENVOYEE", "AVOIR_RECU", "REFUSE"
+  numeroAvoir         String?  // Numéro de l'avoir reçu du fournisseur
+  montantAvoir        Float?   // Montant récupéré (€)
   
   createdAt           DateTime @default(now())
 }

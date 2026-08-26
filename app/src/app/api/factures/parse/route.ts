@@ -28,6 +28,12 @@ export async function POST(req: Request) {
       properties: {
         fournisseur: { type: SchemaType.STRING },
         numeroFacture: { type: SchemaType.STRING },
+        dateFacture: { type: SchemaType.STRING },
+        totalHT: { type: SchemaType.NUMBER },
+        totalTVA: { type: SchemaType.NUMBER },
+        totalTTC: { type: SchemaType.NUMBER },
+        dateEcheance: { type: SchemaType.STRING },
+        modePaiement: { type: SchemaType.STRING },
         lignes: {
           type: SchemaType.ARRAY,
           items: {
@@ -37,6 +43,7 @@ export async function POST(req: Request) {
               designation: { type: SchemaType.STRING },
               quantite: { type: SchemaType.NUMBER },
               prixUnitaire: { type: SchemaType.NUMBER },
+              chantier: { type: SchemaType.STRING },
             },
             required: ['reference', 'designation', 'quantite', 'prixUnitaire'],
           }
@@ -53,19 +60,28 @@ export async function POST(req: Request) {
       }
     });
 
-    const prompt = `Tu es un assistant expert en facturation de matériel électrique pour artisans et électriciens.
+    const prompt = `Tu es un assistant expert en comptabilité et gestion de chantiers pour artisans et électriciens (BTP).
 Analyse cette facture PDF complète (Rexel, Sonepar, YESSS Electrique, Balitran, etc.).
-Extrais le nom du fournisseur, le numéro de facture et la liste complète de TOUS les articles facturés (sur toutes les pages).
+Extrais les données financières globales ainsi que la liste exhaustive de TOUS les articles facturés sur toutes les pages.
+
+Données globales à extraire :
+- fournisseur : Nom du distributeur (Rexel, Sonepar, YESSS Electrique, etc.)
+- numeroFacture : Numéro de la facture (ex: 061-007-000233)
+- dateFacture : Date de la facture (format JJ/MM/AAAA ou AAAA-MM-JJ)
+- totalHT : Montant Total Net HT de la facture (nombre décimal)
+- totalTVA : Montant Total TVA (nombre décimal)
+- totalTTC : Montant Total TTC (nombre décimal)
+- dateEcheance : Date limite de paiement / échéance si mentionnée (ex: 31/08/2026)
+- modePaiement : Condition ou mode de règlement (ex: "LCR 30 Jours FDM", "Virement")
 
 Pour chaque article facturé :
-- reference : La référence produit ou référence catalogue exacte (sans tiret ni espace inutile)
-- designation : La désignation / description précise du produit
-- quantite : La quantité facturée (nombre entier ou décimal)
-- prixUnitaire : Le prix unitaire NET HT facturé (après application des remises éventuelles de la ligne, hors TVA et hors frais de port globaux)
+- reference : La référence produit exacte du catalogue
+- designation : La description / désignation du produit
+- quantite : La quantité facturée (nombre)
+- prixUnitaire : Le prix unitaire NET HT après remise (hors TVA)
+- chantier : L'imputation analytique / nom du chantier ou référence client rattachée à cet article ou au bon de livraison (ex: "SCI PELICAN", "HARVEY", "CASSIOPEE", "WELDOM", "STOCK"). Si aucune mention de chantier n'est spécifiée, indiquer "STOCK".
 
-Consignes strictes :
-- Ignore les totaux généraux de facture, la TVA, les frais de livraison, les DEEE globales et les blocs d'adresses ou numéros de BL.
-- Sois exhaustif : extrait chaque ligne d'article de chaque page du document.`;
+Sois exhaustif et extrait l'intégralité des lignes d'articles de chaque page.`;
 
     const result = await model.generateContent([
       {
@@ -88,16 +104,23 @@ Consignes strictes :
       extractedItems = parsed.lignes.map((item: any) => ({
         ...item,
         originalReference: item.reference,
+        chantier: item.chantier || 'STOCK',
         id: Math.random().toString(36).substring(7)
       }));
     }
 
-    console.log(`Extraction IA réussie : ${extractedItems.length} articles pour la facture ${extractedNumeroFacture} (${extractedFournisseur})`);
+    console.log(`Extraction IA réussie : ${extractedItems.length} articles pour la facture ${extractedNumeroFacture} (${extractedFournisseur}) - Total HT: ${parsed.totalHT}€`);
 
     return NextResponse.json({ 
       success: true, 
       fournisseur: extractedFournisseur,
       numeroFacture: extractedNumeroFacture,
+      dateFacture: parsed.dateFacture || null,
+      totalHT: parsed.totalHT || null,
+      totalTVA: parsed.totalTVA || null,
+      totalTTC: parsed.totalTTC || null,
+      dateEcheance: parsed.dateEcheance || null,
+      modePaiement: parsed.modePaiement || null,
       items: extractedItems
     });
     
