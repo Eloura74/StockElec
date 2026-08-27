@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma db push --accept-data-loss && next build",
+    "build": "node -e \"if (process.env.DATABASE_URL && (process.env.DATABASE_URL.startsWith('postgres') || process.env.DATABASE_URL.startsWith('postgresql'))) { require('child_process').execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' }); }\" && next build",
     "start": "next start",
     "lint": "eslint .",
     "postinstall": "prisma generate"

@@ -29,3 +29,27 @@ export async function createAlias(fournisseur: string, aliasFournisseur: string,
     return { success: false, error: "Erreur serveur" }
   }
 }
+
+export async function getAliases() {
+  try {
+    return await prisma.referenceAlias.findMany({
+      orderBy: { createdAt: 'desc' }
+    })
+  } catch (error) {
+    console.error("Erreur getAliases:", error)
+    return []
+  }
+}
+
+export async function deleteAlias(id: string) {
+  try {
+    await prisma.referenceAlias.delete({
+      where: { id }
+    })
+    revalidatePath('/fournisseurs')
+    return { success: true }
+  } catch (error) {
+    console.error("Erreur suppression alias:", error)
+    return { success: false, error: "Erreur lors de la suppression" }
+  }
+}

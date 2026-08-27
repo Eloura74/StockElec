@@ -184,3 +184,16 @@ export async function getPriceHistory(reference: string) {
     return []
   }
 }
+
+export async function deleteFacture(factureId: string) {
+  try {
+    await prisma.factureFournisseur.delete({
+      where: { id: factureId }
+    })
+    revalidatePath('/fournisseurs')
+    return { success: true }
+  } catch (error: any) {
+    console.error("Erreur suppression facture:", error)
+    return { success: false, error: error?.message || "Impossible de supprimer la facture" }
+  }
+}

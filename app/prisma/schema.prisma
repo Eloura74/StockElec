@@ -155,3 +155,15 @@ model ReferenceAlias {
 
   @@unique([fournisseur, aliasFournisseur])
 }
+
+model ConfigMail {
+  id           String   @id @default("default")
+  imapHost     String   @default("imap.gmail.com")
+  imapPort     Int      @default(993)
+  imapUser     String   @default("")
+  imapPassword String   @default("")
+  tls          Boolean  @default(true)
+  nomBoite     String?  @default("Boîte Factures")
+  derniereSynchro DateTime?
+  updatedAt    DateTime @updatedAt
+}
