@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { parseDateFlexible } from '@/lib/date-parser'
 
 export interface SaveFactureOptions {
+  entreprise?: string
   totalHT?: number | null
   totalTVA?: number | null
   totalTTC?: number | null
@@ -27,6 +28,7 @@ export async function saveFactureAndCheckPrices(
     // 1. Sauvegarde de l'en-tête de facture
     const facture = await prisma.factureFournisseur.create({
       data: {
+        entreprise: options.entreprise || 'CedricElec',
         fournisseur,
         numeroFacture,
         dateFacture: dateFactureParsed,

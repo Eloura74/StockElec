@@ -105,6 +105,7 @@ model User {
 
 model FactureFournisseur {
   id              String   @id @default(cuid())
+  entreprise      String   @default("CedricElec")
   fournisseur     String
   numeroFacture   String?
   dateFacture     DateTime @default(now())

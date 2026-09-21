@@ -33,6 +33,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
   const [dateEcheance, setDateEcheance] = useState('')
   const [modePaiement, setModePaiement] = useState('')
   const [lignes, setLignes] = useState<any[]>([])
+  const [selectedEntreprise, setSelectedEntreprise] = useState<string>('CedricElec')
   
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -149,6 +150,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
             else if (fUpper.includes('BALITRAN')) fName = 'Balitran'
             
             await saveFactureAndCheckPrices(fName, data.numeroFacture, data.items, {
+              entreprise: selectedEntreprise,
               totalHT: data.totalHT || null,
               totalTVA: data.totalTVA || null,
               totalTTC: data.totalTTC || null,
@@ -205,6 +207,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
     }
 
     const res = await saveFactureAndCheckPrices(fournisseur, numeroFacture, lignes, {
+      entreprise: selectedEntreprise,
       totalHT: totalHT !== '' ? Number(totalHT) : null,
       totalTVA: totalTVA !== '' ? Number(totalTVA) : null,
       totalTTC: totalTTC !== '' ? Number(totalTTC) : null,
@@ -452,6 +455,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
         const isPlusCher = ligne.alerteHausse && ligne.fournisseurPrecedent && ligne.fournisseurPrecedent !== facture.fournisseur
 
         rows.push({
+          "Entreprise": facture.entreprise || 'CedricElec',
           "Date Facture": dateFact,
           "Fournisseur": facture.fournisseur,
           "N° Facture": facture.numeroFacture,
@@ -610,7 +614,19 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
         </div>
         
         {/* EN-TÊTE PRINCIPAL DE SAISIE */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Entreprise</label>
+            <select 
+              value={selectedEntreprise} 
+              onChange={e => setSelectedEntreprise(e.target.value)}
+              className="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-950 px-3 py-2 text-sm font-semibold text-blue-700 dark:text-blue-400"
+            >
+              <option value="CedricElec">CedricElec</option>
+              <option value="LittoralElec">LittoralElec</option>
+            </select>
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Fournisseur</label>
             <select 
@@ -979,11 +995,18 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
                         {index === 0 ? (
                           <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                              <div className="font-bold text-gray-900 dark:text-gray-100">{facture.fournisseur}</div>
+                              <div className="flex flex-col gap-1">
+                                <div className="font-bold text-gray-900 dark:text-gray-100">{facture.fournisseur}</div>
+                                {facture.entreprise && (
+                                  <span className={`inline-flex self-start text-[10px] font-semibold px-2 py-0.5 rounded-full ${facture.entreprise === 'LittoralElec' ? 'bg-cyan-100 text-cyan-800' : 'bg-indigo-100 text-indigo-800'}`}>
+                                    🏢 {facture.entreprise}
+                                  </span>
+                                )}
+                              </div>
                               <button 
                                 onClick={() => handleDeleteFacture(facture.id, facture.numeroFacture)}
                                 disabled={deletingFactureId === facture.id}
-                                className="text-gray-400 hover:text-red-600 p-1 rounded transition-colors"
+                                className="text-gray-400 hover:text-red-600 p-1 rounded transition-colors self-start"
                                 title="Supprimer cette facture"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
