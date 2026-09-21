@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { parseDateFlexible } from '@/lib/date-parser'
 
 export interface SaveFactureOptions {
   totalHT?: number | null
@@ -19,17 +20,9 @@ export async function saveFactureAndCheckPrices(
   options: SaveFactureOptions = {}
 ) {
   try {
-    let dateFactureParsed = new Date()
-    if (options.dateFacture) {
-      const d = new Date(options.dateFacture)
-      if (!isNaN(d.getTime())) dateFactureParsed = d
-    }
+    const dateFactureParsed = parseDateFlexible(options.dateFacture) || new Date()
 
-    let dateEcheanceParsed: Date | null = null
-    if (options.dateEcheance) {
-      const d = new Date(options.dateEcheance)
-      if (!isNaN(d.getTime())) dateEcheanceParsed = d
-    }
+    const dateEcheanceParsed = parseDateFlexible(options.dateEcheance)
 
     // 1. Sauvegarde de l'en-tête de facture
     const facture = await prisma.factureFournisseur.create({
@@ -182,6 +175,33 @@ export async function getPriceHistory(reference: string) {
   } catch (error) {
     console.error("Erreur lors de la récupération de l'historique de prix:", error)
     return []
+  }
+}
+
+export async function getMultiReferencesPrices(references: string[]) {
+  try {
+    const refs = Array.from(new Set(references))
+    const results: Record<string, { prix: number, fournisseur: string, date: Date }> = {}
+    
+    // Find best price for each reference
+    for (const ref of refs) {
+      const best = await prisma.ligneFactureFournisseur.findFirst({
+        where: { reference: ref },
+        orderBy: { prixUnitaire: 'asc' },
+        include: { facture: true }
+      })
+      if (best) {
+        results[ref] = {
+          prix: best.prixUnitaire,
+          fournisseur: best.facture.fournisseur,
+          date: best.facture.dateFacture
+        }
+      }
+    }
+    return results
+  } catch (error) {
+    console.error("Erreur getMultiReferencesPrices:", error)
+    return {}
   }
 }
 

@@ -16,13 +16,16 @@ export async function middleware(request: NextRequest) {
 
   const session = await getSession()
 
-  // 1. Unauthenticated users -> Redirect to login
-  if (!session && pathname !== '/login') {
+  // 1. Unauthenticated users -> Redirect to login (sauf pages publiques)
+  const publicPaths = ['/login', '/mot-de-passe-oublie', '/reset-password']
+  const isPublicPath = publicPaths.some(p => pathname === p || pathname.startsWith(`${p}/`))
+  
+  if (!session && !isPublicPath) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // 2. Authenticated users going to login -> Redirect to their respective dashboard
-  if (session && pathname === '/login') {
+  // 2. Authenticated users going to public pages -> Redirect to their respective dashboard
+  if (session && isPublicPath) {
     if (session.role === 'GERANT') {
       return NextResponse.redirect(new URL('/', request.url))
     } else {

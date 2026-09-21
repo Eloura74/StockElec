@@ -6,11 +6,11 @@ import { NextRequest, NextResponse } from 'next/server'
 const secretKey = process.env.JWT_SECRET || 'secret-ultra-securise-quentin-elec-2024'
 const key = new TextEncoder().encode(secretKey)
 
-export async function encrypt(payload: any) {
+export async function encrypt(payload: any, expirationTime: string = '30d') {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('30d')
+    .setExpirationTime(expirationTime)
     .sign(key)
 }
 

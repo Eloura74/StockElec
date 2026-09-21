@@ -177,6 +177,7 @@ export async function syncMailboxNow() {
               properties: {
                 fournisseur: { type: SchemaType.STRING },
                 numeroFacture: { type: SchemaType.STRING },
+                dateFacture: { type: SchemaType.STRING },
                 totalHT: { type: SchemaType.NUMBER },
                 totalTVA: { type: SchemaType.NUMBER },
                 totalTTC: { type: SchemaType.NUMBER },
@@ -209,7 +210,7 @@ export async function syncMailboxNow() {
             })
 
             const prompt = `Tu es un assistant expert en facturation de matériel électrique pour artisans (Rexel, Sonepar, YESSS, etc.).
-Extrais les totaux financiers, le nom du fournisseur, le numéro de facture, l'échéance et toutes les lignes avec références, désignations, quantités, prix unitaires nets et chantiers imputés.`
+Extrais les totaux financiers, le nom du fournisseur, le numéro de facture, l'échéance, la date d'émission ou date de livraison (au format JJ/MM/AAAA ou AAAA-MM-JJ) et toutes les lignes avec références, désignations, quantités, prix unitaires nets et chantiers imputés.`
 
             const result = await model.generateContent([
               {
@@ -244,7 +245,8 @@ Extrais les totaux financiers, le nom du fournisseur, le numéro de facture, l'�
                   totalTVA: parsed.totalTVA || null,
                   totalTTC: parsed.totalTTC || null,
                   dateEcheance: parsed.dateEcheance || null,
-                  modePaiement: parsed.modePaiement || null
+                  modePaiement: parsed.modePaiement || null,
+                  dateFacture: parsed.dateFacture || null
                 })
 
                 importedInvoices.push(`${fournisseur} (${numeroFacture})`)

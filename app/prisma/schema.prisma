@@ -97,7 +97,8 @@ model MouvementOutillage {
 model User {
   id        String   @id @default(cuid())
   username  String   @unique
-  password  String   // En clair car c'est une app interne très simple, ou hashé si on préfère.
+  password  String   // Hashé avec bcrypt
+  email     String?  // Optionnel — nécessaire pour la récupération de MDP en self-service
   role      String   @default("CHEF_EQUIPE") // "GERANT" ou "CHEF_EQUIPE"
   createdAt DateTime @default(now())
 }

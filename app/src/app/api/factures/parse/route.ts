@@ -67,7 +67,7 @@ Extrais les données financières globales ainsi que la liste exhaustive de TOUS
 Données globales à extraire :
 - fournisseur : Nom du distributeur (Rexel, Sonepar, YESSS Electrique, etc.)
 - numeroFacture : Numéro de la facture (ex: 061-007-000233)
-- dateFacture : Date de la facture (format JJ/MM/AAAA ou AAAA-MM-JJ)
+- dateFacture : La date d'émission de la facture ou la date du bon de livraison / bon de commande (format JJ/MM/AAAA ou AAAA-MM-JJ). Il faut absolument chercher la date d'émission qui est imprimée sur le document (ex: "Date : 15/09/2026"). Ne mets JAMAIS la date d'aujourd'hui si une date est présente sur le document.
 - totalHT : Montant Total Net HT de la facture (nombre décimal)
 - totalTVA : Montant Total TVA (nombre décimal)
 - totalTTC : Montant Total TTC (nombre décimal)

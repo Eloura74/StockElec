@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Lock, User } from 'lucide-react'
+import Link from 'next/link'
 import { login } from '@/app/actions/auth'
 
 export default function LoginPage() {
@@ -81,6 +82,15 @@ export default function LoginPage() {
             >
               {isPending ? 'Connexion en cours...' : 'Se Connecter'}
             </button>
+
+            <div className="text-center">
+              <Link 
+                href="/mot-de-passe-oublie"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
+                Mot de passe oublié ?
+              </Link>
+            </div>
           </form>
         </div>
       </div>

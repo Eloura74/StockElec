@@ -91,52 +91,85 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
 
   // EXTRACTION PDF IA
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = e.target.files
+    if (!files || files.length === 0) return
 
     setIsUploading(true)
-    const formData = new FormData()
-    formData.append('file', file)
+    
+    if (files.length === 1) {
+      // 1. Upload unitaire : pré-remplir le formulaire classique
+      const formData = new FormData()
+      formData.append('file', files[0])
 
-    try {
-      const res = await fetch('/api/factures/parse', {
-        method: 'POST',
-        body: formData
-      })
-      const data = await res.json()
-      if (data.items && data.items.length > 0) {
-        setLignes(prev => [...prev, ...data.items])
-        if (data.numeroFacture) setNumeroFacture(data.numeroFacture)
-        if (data.totalHT !== undefined && data.totalHT !== null) setTotalHT(data.totalHT)
-        if (data.totalTVA !== undefined && data.totalTVA !== null) setTotalTVA(data.totalTVA)
-        if (data.totalTTC !== undefined && data.totalTTC !== null) setTotalTTC(data.totalTTC)
-        if (data.dateEcheance) setDateEcheance(data.dateEcheance)
-        if (data.dateFacture) setDateFacture(data.dateFacture)
-        if (data.modePaiement) setModePaiement(data.modePaiement)
+      try {
+        const res = await fetch('/api/factures/parse', { method: 'POST', body: formData })
+        const data = await res.json()
+        if (data.items && data.items.length > 0) {
+          setLignes(prev => [...prev, ...data.items])
+          if (data.numeroFacture) setNumeroFacture(data.numeroFacture)
+          if (data.totalHT !== undefined && data.totalHT !== null) setTotalHT(data.totalHT)
+          if (data.totalTVA !== undefined && data.totalTVA !== null) setTotalTVA(data.totalTVA)
+          if (data.totalTTC !== undefined && data.totalTTC !== null) setTotalTTC(data.totalTTC)
+          if (data.dateEcheance) setDateEcheance(data.dateEcheance)
+          if (data.dateFacture) setDateFacture(data.dateFacture)
+          if (data.modePaiement) setModePaiement(data.modePaiement)
 
-        if (data.fournisseur) {
-          const fUpper = data.fournisseur.toUpperCase()
-          if (fUpper.includes('YESSS') || fUpper.includes('YESSE')) {
-            setFournisseur('Yesse elec')
-          } else if (fUpper.includes('REXEL')) {
-            setFournisseur('Rexel')
-          } else if (fUpper.includes('SONEPAR')) {
-            setFournisseur('Sonepar')
-          } else if (fUpper.includes('BALITRAN')) {
-            setFournisseur('Balitran')
-          } else {
-            setFournisseur('Autre')
+          if (data.fournisseur) {
+            const fUpper = data.fournisseur.toUpperCase()
+            if (fUpper.includes('YESSS') || fUpper.includes('YESSE')) setFournisseur('Yesse elec')
+            else if (fUpper.includes('REXEL')) setFournisseur('Rexel')
+            else if (fUpper.includes('SONEPAR')) setFournisseur('Sonepar')
+            else if (fUpper.includes('BALITRAN')) setFournisseur('Balitran')
+            else setFournisseur('Autre')
           }
+        } else {
+          alert("Aucun article n'a pu être extrait automatiquement. Vous pouvez les ajouter manuellement.")
         }
-      } else {
-        alert("Aucun article n'a pu être extrait automatiquement. Vous pouvez les ajouter manuellement.")
+      } catch (err) {
+        alert("Erreur lors de l'extraction de la facture.")
       }
-    } catch (err) {
-      alert("Erreur lors de l'extraction de la facture.")
-    } finally {
-      setIsUploading(false)
-      if (e.target) e.target.value = ''
+    } else {
+      // 2. Upload multiple : Traitement par lot (auto-save)
+      let succesCount = 0
+      let echecCount = 0
+      
+      for (let i = 0; i < files.length; i++) {
+        try {
+          const formData = new FormData()
+          formData.append('file', files[i])
+          const res = await fetch('/api/factures/parse', { method: 'POST', body: formData })
+          const data = await res.json()
+          
+          if (data.items && data.items.length > 0 && data.fournisseur && data.numeroFacture) {
+            let fName = data.fournisseur
+            const fUpper = fName.toUpperCase()
+            if (fUpper.includes('YESSS') || fUpper.includes('YESSE')) fName = 'Yesse elec'
+            else if (fUpper.includes('REXEL')) fName = 'Rexel'
+            else if (fUpper.includes('SONEPAR')) fName = 'Sonepar'
+            else if (fUpper.includes('BALITRAN')) fName = 'Balitran'
+            
+            await saveFactureAndCheckPrices(fName, data.numeroFacture, data.items, {
+              totalHT: data.totalHT || null,
+              totalTVA: data.totalTVA || null,
+              totalTTC: data.totalTTC || null,
+              dateEcheance: data.dateEcheance || null,
+              modePaiement: data.modePaiement || null,
+              dateFacture: data.dateFacture || null
+            })
+            succesCount++
+          } else {
+            echecCount++
+          }
+        } catch (e) {
+          echecCount++
+        }
+      }
+      alert(`Traitement par lot terminé.\n${succesCount} factures enregistrées avec succès.\n${echecCount > 0 ? echecCount + ' factures ont échoué.' : ''}`)
+      router.refresh()
     }
+
+    setIsUploading(false)
+    if (e.target) e.target.value = ''
   }
 
   const addLigne = () => {
@@ -407,19 +440,21 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
 
     filteredFactures.forEach(facture => {
       const dateFact = new Date(facture.dateFacture).toLocaleDateString("fr-FR")
-      const dateEch = facture.dateEcheance ? new Date(facture.dateEcheance).toLocaleDateString("fr-FR") : ''
 
       facture.lignes.forEach((ligne: any) => {
+        // Exclure les articles conformes pour plus de clarté
+        if (!ligne.alerteHausse && !ligne.alerteBaisse) return;
+
         const totalLigneHT = (ligne.quantite * ligne.prixUnitaire)
         const ecartUnitaire = ligne.prixUnitairePrecedent ? (ligne.prixUnitaire - ligne.prixUnitairePrecedent) : 0
         const surcoutTotal = ligne.alerteHausse ? (ecartUnitaire * ligne.quantite) : 0
+
+        const isPlusCher = ligne.alerteHausse && ligne.fournisseurPrecedent && ligne.fournisseurPrecedent !== facture.fournisseur
 
         rows.push({
           "Date Facture": dateFact,
           "Fournisseur": facture.fournisseur,
           "N° Facture": facture.numeroFacture,
-          "Date Échéance": dateEch,
-          "Mode Règlement": facture.modePaiement || '',
           "Chantier / Réf Client": ligne.chantier || 'STOCK',
           "Référence": ligne.reference,
           "Désignation": ligne.designation,
@@ -427,6 +462,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
           "Prix Unitaire Net HT (€)": ligne.prixUnitaire,
           "Total Ligne HT (€)": Number(totalLigneHT.toFixed(2)),
           "Meilleur Prix Hist. (€)": ligne.prixUnitairePrecedent || '',
+          "Comparatif Distributeurs": isPlusCher ? `⚠️ MOINS CHER CHEZ ${ligne.fournisseurPrecedent} (-${ecartUnitaire.toFixed(2)}€/u)` : (ligne.fournisseurPrecedent ? `Meilleur chez ${ligne.fournisseurPrecedent}` : '-'),
           "Écart Unitaire (€)": Number(ecartUnitaire.toFixed(2)),
           "Surcoût Hausse (€)": Number(surcoutTotal.toFixed(2)),
           "Statut Comparatif": ligne.alerteHausse ? 'HAUSSE' : ligne.alerteBaisse ? 'BAISSE' : 'CONFORME',
@@ -617,13 +653,14 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
             <div className="relative">
               <input 
                 type="file" 
+                multiple
                 accept="application/pdf"
                 onChange={handleFileUpload}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div className="flex items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 px-3 py-2 hover:bg-blue-100 transition-colors text-sm">
                 <Upload className="h-4 w-4" />
-                <span className="font-medium">{isUploading ? 'Lecture IA en cours...' : 'Glisser un PDF ici'}</span>
+                <span className="font-medium">{isUploading ? 'Lecture IA en cours...' : 'Glisser un ou des PDF'}</span>
               </div>
             </div>
           </div>
@@ -1394,7 +1431,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
                       formatter={(value: any) => [`${value} €`, 'Prix']}
                       labelFormatter={(label) => `Date: ${label}`}
                     />
-                    <Line type="monotone" dataKey="prix" stroke="#2563eb" strokeWidth={2.5} activeDot={{ r: 8 }} />
+                    <Line type="linear" dataKey="prix" stroke="#2563eb" strokeWidth={2.5} activeDot={{ r: 8 }} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
