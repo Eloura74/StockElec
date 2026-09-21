@@ -500,11 +500,27 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
     setChartRef(reference)
     setIsChartOpen(true)
     const data = await getPriceHistory(reference)
-    const formattedData = data.map((d: any) => ({
-      date: new Date(d.facture.dateFacture).toLocaleDateString("fr-FR"),
-      prix: d.prixUnitaire,
-      fournisseur: d.facture.fournisseur
-    }))
+    
+    // On rend la date unique (XAxis) pour éviter les bugs de survol Recharts si 2 factures ont la même date
+    const dateCounts: Record<string, number> = {}
+    
+    const formattedData = data.map((d: any) => {
+      let baseDate = new Date(d.facture.dateFacture).toLocaleDateString("fr-FR")
+      if (dateCounts[baseDate]) {
+        dateCounts[baseDate]++
+        baseDate = `${baseDate} (${dateCounts[baseDate]})`
+      } else {
+        dateCounts[baseDate] = 1
+      }
+      
+      return {
+        date: baseDate,
+        prix: d.prixUnitaire,
+        fournisseur: d.facture.fournisseur,
+        entreprise: d.facture.entreprise
+      }
+    })
+    
     setChartData(formattedData)
   }
 
@@ -1459,8 +1475,20 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
                     <XAxis dataKey="date" fontSize={12} />
                     <YAxis dataKey="prix" fontSize={12} unit="€" />
                     <Tooltip 
-                      formatter={(value: any) => [`${value} €`, 'Prix']}
-                      labelFormatter={(label) => `Date: ${label}`}
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div className="bg-white dark:bg-zinc-800 border dark:border-zinc-700 p-3 rounded-lg shadow-lg text-xs">
+                              <p className="font-bold mb-1 text-gray-800 dark:text-gray-200">{label}</p>
+                              <p className="text-blue-600 dark:text-blue-400 font-bold text-lg mb-1">{data.prix} € HT</p>
+                              <p className="text-gray-600 dark:text-gray-300">Fournisseur : <span className="font-semibold">{data.fournisseur}</span></p>
+                              {data.entreprise && <p className="text-gray-500 mt-0.5">🏢 {data.entreprise}</p>}
+                            </div>
+                          )
+                        }
+                        return null
+                      }}
                     />
                     <Line type="linear" dataKey="prix" stroke="#2563eb" strokeWidth={2.5} activeDot={{ r: 8 }} />
                   </LineChart>
