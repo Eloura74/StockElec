@@ -139,17 +139,25 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
           const formData = new FormData()
           formData.append('file', files[i])
           const res = await fetch('/api/factures/parse', { method: 'POST', body: formData })
+          
+          if (!res.ok) {
+            echecCount++
+            continue
+          }
+
           const data = await res.json()
           
-          if (data.items && data.items.length > 0 && data.fournisseur && data.numeroFacture) {
-            let fName = data.fournisseur
+          if (data.items && data.items.length > 0) {
+            let fName = data.fournisseur || fournisseur // Fallback au fournisseur sélectionné si l'IA ne le trouve pas
             const fUpper = fName.toUpperCase()
             if (fUpper.includes('YESSS') || fUpper.includes('YESSE')) fName = 'Yesse elec'
             else if (fUpper.includes('REXEL')) fName = 'Rexel'
             else if (fUpper.includes('SONEPAR')) fName = 'Sonepar'
             else if (fUpper.includes('BALITRAN')) fName = 'Balitran'
             
-            await saveFactureAndCheckPrices(fName, data.numeroFacture, data.items, {
+            const numFact = data.numeroFacture || `SANS-NUM-${Math.floor(Math.random() * 10000)}`
+            
+            await saveFactureAndCheckPrices(fName, numFact, data.items, {
               entreprise: selectedEntreprise,
               totalHT: data.totalHT || null,
               totalTVA: data.totalTVA || null,
