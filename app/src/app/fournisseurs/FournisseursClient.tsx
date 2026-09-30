@@ -13,6 +13,8 @@ import { saveConfigMail, testConfigMail, syncMailboxNow } from '@/app/actions/co
 import { useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 interface FournisseursClientProps {
   initialFactures: any[]
@@ -174,7 +176,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
           echecCount++
         }
       }
-      alert(`Traitement par lot terminé.\n${succesCount} factures enregistrées avec succès.\n${echecCount > 0 ? echecCount + ' factures ont échoué.' : ''}`)
+      console.log(`Traitement par lot terminé.\n${succesCount} factures enregistrées avec succès.\n${echecCount > 0 ? echecCount + ' factures ont échoué.' : ''}`)
       router.refresh()
     }
 
@@ -227,7 +229,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
     setIsSaving(false)
 
     if (res.success) {
-      alert("Facture enregistrée et contrôlée avec succès !")
+      console.log("Facture enregistrée et contrôlée avec succès !")
       setNumeroFacture('')
       setDateFacture('')
       setTotalHT('')
@@ -326,7 +328,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
     })
     setIsSavingMail(false)
     if (res.success) {
-      alert("Configuration de la boîte mail enregistrée avec succès !")
+      console.log("Configuration de la boîte mail enregistrée avec succès !")
       setMailConfig(prev => ({ ...prev, imapPassword: '' }))
       router.refresh()
     } else {
@@ -359,7 +361,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
       setAliasesList(prev => [res.alias, ...prev])
       setNewAliasCode('')
       setNewAliasRefInterne('')
-      alert("Équivalence enregistrée !")
+      console.log("Équivalence enregistrée !")
     } else {
       alert("Erreur lors de l'enregistrement de l'alias.")
     }
@@ -451,6 +453,9 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
 
     filteredFactures.forEach(facture => {
       const dateFact = new Date(facture.dateFacture).toLocaleDateString("fr-FR")
+      const calculatedTotalHT = facture.lignes.reduce((sum: number, l: any) => sum + (l.quantite * l.prixUnitaire), 0)
+      const finalTotalHT = facture.totalHT || calculatedTotalHT
+      const finalTotalTTC = facture.totalTTC || (finalTotalHT * 1.2)
 
       facture.lignes.forEach((ligne: any) => {
         // Exclure les articles conformes pour plus de clarté
@@ -464,10 +469,8 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
 
         rows.push({
           "Entreprise": facture.entreprise || 'CedricElec',
-          "Date Facture": dateFact,
+          "Date de bon": dateFact,
           "Fournisseur": facture.fournisseur,
-          "N° Facture": facture.numeroFacture,
-          "Chantier / Réf Client": ligne.chantier || 'STOCK',
           "Référence": ligne.reference,
           "Désignation": ligne.designation,
           "Quantité": ligne.quantite,
@@ -475,14 +478,14 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
           "Total Ligne HT (€)": Number(totalLigneHT.toFixed(2)),
           "Meilleur Prix Hist. (€)": ligne.prixUnitairePrecedent || '',
           "Comparatif Distributeurs": isPlusCher ? `⚠️ MOINS CHER CHEZ ${ligne.fournisseurPrecedent} (-${ecartUnitaire.toFixed(2)}€/u)` : (ligne.fournisseurPrecedent ? `Meilleur chez ${ligne.fournisseurPrecedent}` : '-'),
+          "Comparaison Tout Fournisseur": isPlusCher ? `Comparer ${facture.fournisseur} vs ${ligne.fournisseurPrecedent}` : '',
           "Écart Unitaire (€)": Number(ecartUnitaire.toFixed(2)),
           "Alerte Prix": ligne.alerteHausse ? '🔴 HAUSSE' : ligne.alerteBaisse ? '🟢 BAISSE' : '⚪ CONFORME',
-          "Surcoût Hausse (€)": Number(surcoutTotal.toFixed(2)),
-          "Statut Avoir": ligne.statutAvoir || (ligne.alerteHausse ? 'A_RECLAMER' : 'N/A'),
+          "Statut Avoir": ligne.statutAvoir === 'AVOIR_RECU' ? '✅ AVOIR REÇU' : (ligne.alerteHausse ? '⚠️ A RECLAMER' : 'N/A'),
           "N° Avoir Reçu": ligne.numeroAvoir || '',
           "Montant Avoir Reçu (€)": ligne.montantAvoir || '',
-          "Total Facture HT (€)": facture.totalHT || '',
-          "Total Facture TTC (€)": facture.totalTTC || ''
+          "Total Facture HT (€)": Number(finalTotalHT.toFixed(2)),
+          "Total Facture TTC (€)": Number(finalTotalTTC.toFixed(2))
         })
       })
     })
@@ -493,6 +496,53 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
     
     const today = new Date().toISOString().slice(0, 10)
     XLSX.writeFile(wb, `Export_Comptable_Factures_${today}.xlsx`)
+  }
+
+  // EXPORT PDF RENDU FINAL
+  const exportPDFComptable = () => {
+    try {
+      const doc = new jsPDF("landscape")
+      doc.setFontSize(18)
+      doc.text("Rapport d'analyse des factures", 14, 22)
+      doc.setFontSize(11)
+      doc.setTextColor(100)
+      doc.text(`Généré le : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}`, 14, 30)
+
+      const tableData: any[] = []
+      
+      filteredFactures.forEach(facture => {
+        facture.lignes.forEach((ligne: any) => {
+          if (!ligne.alerteHausse && !ligne.alerteBaisse) return;
+          const ecart = ligne.prixUnitairePrecedent ? (ligne.prixUnitaire - ligne.prixUnitairePrecedent).toFixed(2) : '0.00'
+          const surcout = ligne.alerteHausse ? (Number(ecart) * ligne.quantite).toFixed(2) : '0.00'
+          tableData.push([
+            facture.fournisseur,
+            facture.numeroFacture || "-",
+            ligne.reference,
+            ligne.designation,
+            ligne.quantite,
+            `${ligne.prixUnitaire.toFixed(2)} €`,
+            ligne.prixUnitairePrecedent ? `${ligne.prixUnitairePrecedent.toFixed(2)} €` : "-",
+            `${ecart} €`,
+            `${surcout} €`,
+            ligne.alerteHausse ? 'HAUSSE' : 'BAISSE'
+          ])
+        })
+      })
+
+      autoTable(doc, {
+        startY: 35,
+        head: [['Fournisseur', 'Facture', 'Référence', 'Désignation', 'Qté', 'P.U.', 'P.U. Hist.', 'Ecart', 'Surcoût', 'Statut']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [41, 128, 185] },
+        styles: { fontSize: 9 },
+      })
+
+      doc.save(`Rapport_Factures_${new Date().toISOString().split('T')[0]}.pdf`)
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   // GRAPHIQUE HISTORIQUE PRIX
@@ -916,13 +966,22 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
               <p className="text-xs text-gray-500 mt-0.5">Filtrage multi-critères, suivi des remboursements et export Excel.</p>
             </div>
             
-            <button 
-              onClick={exportExcelComptable}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95 self-start md:self-auto"
-              title="Exporter au format Excel avec toutes les colonnes comptables"
-            >
-              <Download className="h-4 w-4" /> Export Comptable (Excel)
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={exportExcelComptable}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95 self-start md:self-auto"
+                title="Exporter au format Excel avec toutes les colonnes comptables"
+              >
+                <Download className="h-4 w-4" /> Excel
+              </button>
+              <button 
+                onClick={exportPDFComptable}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95 self-start md:self-auto"
+                title="Exporter au format PDF le rendu final"
+              >
+                <Download className="h-4 w-4" /> PDF
+              </button>
+            </div>
           </div>
 
           {/* BARRE DE FILTRES */}
@@ -1044,15 +1103,6 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
                                 Total: {facture.totalTTC.toFixed(2)} € TTC {facture.dateEcheance ? `(Éch: ${new Date(facture.dateEcheance).toLocaleDateString("fr-FR")})` : ''}
                               </div>
                             )}
-                            {aDesHausses && (
-                              <button
-                                onClick={() => openEmailModalForGlobal(facture)}
-                                className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-semibold bg-zinc-800 dark:bg-zinc-200 text-white dark:text-black px-2.5 py-1 rounded-lg hover:bg-zinc-700 dark:hover:bg-zinc-300 transition-colors shadow-xs"
-                                title="Générer un e-mail récapitulant tous les avoirs de cette facture"
-                              >
-                                <MailCheck className="h-3 w-3" /> Avoir Global
-                              </button>
-                            )}
                           </div>
                         ) : (
                           <div className="text-xs text-gray-400 opacity-40 ml-2">↳</div>
@@ -1152,14 +1202,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
                         >
                           <ChartIcon className="h-3.5 w-3.5" /> Graph
                         </button>
-                        {ligne.alerteHausse && (
-                          <button 
-                            onClick={() => openEmailModalForLigne(facture, ligne)}
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold bg-red-600 text-white px-2.5 py-1 rounded-lg hover:bg-red-700 transition-colors shadow-xs"
-                          >
-                            <Mail className="h-3.5 w-3.5" /> Réclamer
-                          </button>
-                        )}
+
                       </td>
                     </tr>
                   )
