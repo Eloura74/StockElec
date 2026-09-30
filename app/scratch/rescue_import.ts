@@ -55,7 +55,7 @@ async function run() {
         }
       });
       count++;
-    } catch(e) {
+    } catch(e: any) {
       console.log('Erreur sur la ligne', i, reference, e.message);
     }
   }
