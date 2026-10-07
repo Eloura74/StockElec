@@ -42,6 +42,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
   const [isSaving, setIsSaving] = useState(false)
   const [updatingLigneId, setUpdatingLigneId] = useState<string | null>(null)
   const [deletingFactureId, setDeletingFactureId] = useState<string | null>(null)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
 
   // MODALE CONFIG MAIL
   const [isMailModalOpen, setIsMailModalOpen] = useState(false)
@@ -72,21 +73,6 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
   const [chartData, setChartData] = useState<any[]>([])
   const [chartRef, setChartRef] = useState('')
 
-  // MODALE EMAIL RECLAMATION
-  const [emailModal, setEmailModal] = useState<{
-    isOpen: boolean;
-    to: string;
-    subject: string;
-    body: string;
-    copied: boolean;
-  }>({
-    isOpen: false,
-    to: '',
-    subject: '',
-    body: '',
-    copied: false
-  })
-
   // FILTRES DE RECHERCHE
   const [searchQuery, setSearchQuery] = useState('')
   const [filterFournisseur, setFilterFournisseur] = useState('ALL')
@@ -104,6 +90,9 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
       // 1. Upload unitaire : pré-remplir le formulaire classique
       const formData = new FormData()
       formData.append('file', files[0])
+
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl)
+      setPdfUrl(URL.createObjectURL(files[0]))
 
       try {
         const res = await fetch('/api/factures/parse', { method: 'POST', body: formData })
@@ -245,6 +234,8 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
       setDateEcheance('')
       setModePaiement('')
       setLignes([])
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl)
+      setPdfUrl(null)
       router.refresh()
     } else {
       toast.error("Erreur : " + res.error)
@@ -381,78 +372,6 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
     if (res.success) {
       setAliasesList(prev => prev.filter(a => a.id !== id))
     }
-  }
-
-  // RECLAMATIONS EMAIL
-  const openEmailModalForLigne = (facture: any, ligne: any) => {
-    const subject = `Demande d'avoir - Facture ${facture.numeroFacture || '[NUMÉRO]'}`
-    let datePrecedenteText = ""
-    if (ligne.dateFacturePrecedente) {
-      datePrecedenteText = ` le ${new Date(ligne.dateFacturePrecedente).toLocaleDateString("fr-FR")}`
-    }
-    const numPrecedentText = ligne.numeroFacturePrecedente ? ` (Facture ${ligne.numeroFacturePrecedente})` : ""
-    const fournisseurPrecedentText = ligne.fournisseurPrecedent ? ` chez ${ligne.fournisseurPrecedent}` : ""
-
-    const diffUnitaire = ligne.prixUnitaire - (ligne.prixUnitairePrecedent || 0)
-    const diffTotale = diffUnitaire * (ligne.quantite || 1)
-    const chantierMention = ligne.chantier && ligne.chantier !== 'STOCK' ? `\nChantier / Réf client : ${ligne.chantier}` : ''
-
-    const body = 
-      `Bonjour,\n\n` +
-      `Nous avons constaté une anomalie de prix sur la facture ${facture.numeroFacture || '[NUMÉRO]'}.${chantierMention}\n\n` +
-      `Article concerné : ${ligne.designation} (Réf: ${ligne.reference})\n` +
-      `Quantité facturée : ${ligne.quantite}\n\n` +
-      `Prix historique enregistré${fournisseurPrecedentText}${datePrecedenteText}${numPrecedentText} : ${(ligne.prixUnitairePrecedent || 0).toFixed(2)} €\n` +
-      `Nouveau prix facturé : ${ligne.prixUnitaire.toFixed(2)} €\n` +
-      `Différence unitaire : +${diffUnitaire.toFixed(2)} €\n` +
-      `Surcoût total pour cette ligne : +${diffTotale.toFixed(2)} €\n\n` +
-      `Merci de bien vouloir vous aligner et nous établir un avoir de ${diffTotale.toFixed(2)} €.\n\n` +
-      `Cordialement,\nLa Comptabilité`
-
-    const to = `contact@${facture.fournisseur.toLowerCase().replace(/\s+/g, '')}.fr`
-    setEmailModal({
-      isOpen: true,
-      to,
-      subject,
-      body,
-      copied: false
-    })
-  }
-
-  const openEmailModalForGlobal = (facture: any) => {
-    const lignesEnHausse = facture.lignes.filter((l: any) => l.alerteHausse)
-    if (lignesEnHausse.length === 0) return
-
-    const subject = `Demande d'avoir global - Facture ${facture.numeroFacture || '[NUMÉRO]'}`
-    let totalAvoir = 0
-    let listeArticles = ''
-
-    lignesEnHausse.forEach((ligne: any) => {
-      const diffUnitaire = ligne.prixUnitaire - (ligne.prixUnitairePrecedent || 0)
-      const diffTotale = diffUnitaire * (ligne.quantite || 1)
-      totalAvoir += diffTotale
-
-      const chText = ligne.chantier && ligne.chantier !== 'STOCK' ? ` [Chantier: ${ligne.chantier}]` : ''
-      listeArticles += `- ${ligne.designation} (Réf: ${ligne.reference})${chText} x${ligne.quantite}\n`
-      listeArticles += `  Ancien prix : ${(ligne.prixUnitairePrecedent || 0).toFixed(2)} € -> Nouveau prix : ${ligne.prixUnitaire.toFixed(2)} € (Surcoût: +${diffTotale.toFixed(2)} €)\n\n`
-    })
-
-    const body = 
-      `Bonjour,\n\n` +
-      `Nous avons constaté plusieurs anomalies de prix sur la facture ${facture.numeroFacture || '[NUMÉRO]'}.\n\n` +
-      `Voici le détail des écarts constatés par rapport à nos prix historiques :\n\n` +
-      listeArticles +
-      `Merci de bien vouloir vous aligner et nous établir un avoir global de ${totalAvoir.toFixed(2)} € pour cette facture.\n\n` +
-      `Cordialement,\nLa Comptabilité`
-
-    const to = `contact@${facture.fournisseur.toLowerCase().replace(/\s+/g, '')}.fr`
-    setEmailModal({
-      isOpen: true,
-      to,
-      subject,
-      body,
-      copied: false
-    })
   }
 
   // EXPORT EXCEL COMPTABLE
@@ -663,8 +582,26 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
       
       {/* SECTION NOUVELLE FACTURE / SAISIE & IMPORT */}
-      <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+      <div className={`grid gap-6 ${pdfUrl ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+        
+        {pdfUrl && (
+          <div className="bg-zinc-800 rounded-2xl shadow-sm overflow-hidden h-auto min-h-[600px] lg:h-[800px] relative">
+             <iframe src={pdfUrl} className="absolute inset-0 w-full h-full border-0" title="Visionneuse PDF" />
+             <button 
+                onClick={() => {
+                  URL.revokeObjectURL(pdfUrl);
+                  setPdfUrl(null);
+                }}
+                className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white p-2 rounded-xl shadow-lg z-10 transition-colors"
+                title="Fermer le PDF"
+             >
+                <X className="h-4 w-4" />
+             </button>
+          </div>
+        )}
+
+        <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl p-6 shadow-sm h-fit">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div>
             <h2 className="text-xl font-bold flex items-center gap-2">
               <FileText className="h-6 w-6 text-blue-600" />
@@ -933,6 +870,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
             {isSaving ? 'Enregistrement en cours...' : 'Enregistrer & Contrôler les Prix'}
           </button>
         </div>
+      </div>
       </div>
 
       {/* SECTION HISTORIQUE, RECHERCHE ET SUIVI COMPTABLE */}
@@ -1553,97 +1491,6 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
           </div>
         </div>
       )}
-
-      {/* MODALE RECLAMATION EMAIL */}
-      {emailModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-3xl p-6 w-full max-w-2xl shadow-2xl space-y-4">
-            <div className="flex justify-between items-center pb-3 border-b dark:border-zinc-800">
-              <div className="flex items-center gap-2">
-                <div className="p-2.5 rounded-xl bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400">
-                  <Mail className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">Demande d'avoir prête à envoyer</h3>
-                  <p className="text-xs text-gray-500">Choisissez votre méthode d'envoi ou copiez le texte</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setEmailModal(prev => ({ ...prev, isOpen: false }))}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-sm">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Destinataire</label>
-                <input 
-                  type="text" 
-                  value={emailModal.to} 
-                  onChange={e => setEmailModal({ ...emailModal, to: e.target.value })}
-                  className="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-950 px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Objet</label>
-                <input 
-                  type="text" 
-                  value={emailModal.subject} 
-                  onChange={e => setEmailModal({ ...emailModal, subject: e.target.value })}
-                  className="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-950 px-3 py-2 text-sm font-medium"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Message</label>
-                <textarea 
-                  rows={8}
-                  value={emailModal.body} 
-                  onChange={e => setEmailModal({ ...emailModal, body: e.target.value })}
-                  className="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-950 p-3 text-xs font-mono whitespace-pre-wrap"
-                />
-              </div>
-            </div>
-
-            {/* ACTIONS */}
-            <div className="pt-2 flex flex-wrap gap-2 justify-end">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(`${emailModal.subject}\n\n${emailModal.body}`)
-                  setEmailModal(prev => ({ ...prev, copied: true }))
-                  setTimeout(() => setEmailModal(prev => ({ ...prev, copied: false })), 2500)
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-700 font-semibold text-xs transition-colors"
-              >
-                {emailModal.copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                {emailModal.copied ? 'Texte copié !' : 'Copier le message'}
-              </button>
-
-              <a
-                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailModal.to)}&su=${encodeURIComponent(emailModal.subject)}&body=${encodeURIComponent(emailModal.body)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition-colors shadow-md"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Ouvrir dans Gmail
-              </a>
-
-              <a
-                href={`mailto:${encodeURIComponent(emailModal.to)}?subject=${encodeURIComponent(emailModal.subject)}&body=${encodeURIComponent(emailModal.body)}`}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors shadow-md"
-              >
-                <Mail className="h-4 w-4" />
-                Ouvrir logiciel de messagerie
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-      
     </div>
   )
 }

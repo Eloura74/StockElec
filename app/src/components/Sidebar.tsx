@@ -21,6 +21,7 @@ export function Sidebar() {
     { href: "/mouvements", label: "Mouvements", icon: FileText },
     { href: "/reassort", label: "Réassort", icon: ArrowRightLeft },
     { href: "/fournisseurs", label: "Factures F.", icon: FileText },
+    { href: "/rentabilite", label: "Bilan Chantiers", icon: FileText },
     { href: "/journal", label: "Journal", icon: Shield },
     { href: "/guide", label: "Guide & Tuto", icon: BookOpen },
     { href: "/equipe", label: "Équipe", icon: Users },
