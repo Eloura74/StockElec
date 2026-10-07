@@ -3,13 +3,22 @@
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 
-export async function getMouvements() {
+export async function getMouvements(options?: { startDate?: Date, endDate?: Date }) {
+  const where: any = {}
+  if (options?.startDate || options?.endDate) {
+    where.date = {}
+    if (options.startDate) where.date.gte = options.startDate
+    if (options.endDate) where.date.lte = options.endDate
+  }
+
   return prisma.mouvement.findMany({
+    where,
     include: {
       article: true,
       chantier: true
     },
-    orderBy: { date: 'desc' }
+    orderBy: { date: 'desc' },
+    take: options?.startDate || options?.endDate ? 2000 : 200
   })
 }
 

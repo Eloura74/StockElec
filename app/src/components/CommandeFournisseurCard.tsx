@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Copy, Check, ShoppingCart, AlertCircle } from "lucide-react"
+import { toast } from "sonner"
 
 type OrderItem = {
   articleId: string
@@ -60,7 +61,7 @@ export function CommandeFournisseurCard({
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       console.error("Failed to copy text: ", err)
-      alert("Erreur lors de la copie de la commande.")
+      toast.error("Erreur lors de la copie de la commande.")
     }
   }
 

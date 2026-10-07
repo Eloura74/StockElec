@@ -1,15 +1,13 @@
 import { Package, Truck, AlertTriangle, TrendingDown, ArrowRight, Wrench, HardHat, ArrowRightLeft, FileText } from "lucide-react"
 import prisma from "@/lib/prisma"
 import Link from "next/link"
-import { calculerStockArticle } from "@/lib/stockUtils"
 import { DashboardCharts } from "@/components/DashboardCharts"
 import { ExportExcelComptableButton } from "@/components/ExportExcelComptableButton"
 
+import { getArticlesWithStocks } from "@/app/actions/articles"
+
 export default async function Home() {
-  // Récupérer les articles avec leurs mouvements pour calculer les vrais stocks
-  const articles = await prisma.article.findMany({
-    include: { mouvements: true }
-  })
+  const articles = await getArticlesWithStocks()
   
   // Calculer les stats réelles
   let articlesEnAlerte = 0
@@ -19,7 +17,7 @@ export default async function Home() {
   const alertesDetails = []
 
   for (const article of articles) {
-    const stock = calculerStockArticle(article, article.mouvements)
+    const stock = article.stockInfo
     const prix = article.prixUnitaire || 0
     valeurTotaleDépôt += stock.stockDepot * prix
     valeurTotaleChantiers += stock.stockChantiersTotal * prix
@@ -40,7 +38,7 @@ export default async function Home() {
   const topImmobilisations = [...articles]
     .map(article => ({
       article,
-      valeur: (calculerStockArticle(article, article.mouvements).stockDepot) * (article.prixUnitaire || 0)
+      valeur: article.stockInfo.stockDepot * (article.prixUnitaire || 0)
     }))
     .filter(item => item.valeur > 0)
     .sort((a, b) => b.valeur - a.valeur)
@@ -57,7 +55,7 @@ export default async function Home() {
 
   // Export Excel Data Prep
   const dataDepot = articles.map(article => {
-    const stock = calculerStockArticle(article, article.mouvements)
+    const stock = article.stockInfo
     return {
       "Référence": article.reference,
       "Désignation": article.designation,
@@ -235,16 +233,12 @@ export default async function Home() {
           </div>
           <div className="p-6">
               {articles.map((article: any) => {
-                const stockInfo = calculerStockArticle(article, article.mouvements)
+                const stockInfo = article.stockInfo
                 if (!stockInfo.enAlerte) return null;
 
-                // Trouver le dernier mouvement qui a fait baisser le stock
-                const derniersMouvements = (article.mouvements || []).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                const dernierMvt = derniersMouvements.find((m: any) => m.type === 'Depart' || m.type === 'Consomme' || m.type === 'Perte');
-                let raison = "";
-                if (dernierMvt) {
-                  raison = `Dernière baisse : ${dernierMvt.type} (${dernierMvt.quantite}) le ${new Date(dernierMvt.date).toLocaleDateString('fr-FR')}`;
-                }
+                // On ne dispose pas des mouvements de l'article ici avec getArticlesWithStocks
+                // donc la raison précise n'est pas affichée pour éviter un chargement complet de la BDD.
+                const raison = "";
 
                 // Quantité à commander = (seuil * 2) - stock
                 const aCommander = Math.max(0, (article.stockMinimum * 2) - stockInfo.stockDepot);

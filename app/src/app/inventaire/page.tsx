@@ -1,9 +1,9 @@
-import { getArticles } from "@/app/actions/articles"
+import { getArticlesWithStocks } from "@/app/actions/articles"
 import { InventaireForm } from "@/components/InventaireForm"
 import { PackageSearch } from "lucide-react"
 
 export default async function InventairePage() {
-  const articles = await getArticles()
+  const articles = await getArticlesWithStocks()
 
   return (
     <div className="space-y-6">

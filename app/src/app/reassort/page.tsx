@@ -1,15 +1,13 @@
-import { getArticles } from "@/app/actions/articles"
-import { calculerStockArticle } from "@/lib/stockUtils"
+import { getArticlesWithStocks } from "@/app/actions/articles"
 import { ShoppingCart } from "lucide-react"
 import { CommandeFournisseurCard } from "@/components/CommandeFournisseurCard"
 
 export default async function ReassortPage() {
-  const articles = await getArticles()
+  const articles = await getArticlesWithStocks()
   
   // Filtrer les articles en alerte
   const aCommander = articles.map(article => {
-    const stockInfo = calculerStockArticle(article, article.mouvements)
-    return { article, stockInfo }
+    return { article, stockInfo: article.stockInfo }
   }).filter(item => item.stockInfo.enAlerte)
 
   // Grouper par fournisseur (le nom du fournisseur)

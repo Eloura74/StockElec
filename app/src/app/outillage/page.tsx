@@ -4,6 +4,7 @@ import { Plus } from "lucide-react"
 import { OutillageCard } from "@/components/OutillageCard"
 import { EmpruntOutillageForm } from "@/components/EmpruntOutillageForm"
 import { getOutillages } from "@/app/actions/outillage"
+import { getSession } from "@/lib/auth"
 
 export default async function OutillagePage() {
   const outillages = await getOutillages()
@@ -12,6 +13,9 @@ export default async function OutillagePage() {
     where: { statut: 'Actif' },
     orderBy: { nom: 'asc' }
   })
+  
+  const session = await getSession()
+  const isGerant = session?.role === 'GERANT'
 
   // Stats rapides
   const total = outillages.length
@@ -26,10 +30,12 @@ export default async function OutillagePage() {
           <h1 className="text-3xl font-bold tracking-tight">Outillage</h1>
           <p className="text-gray-500 dark:text-zinc-400 mt-1">Gérez vos machines et équipements onéreux.</p>
         </div>
-        <Link href="/outillage/nouveau" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2">
-          <Plus className="h-4 w-4" />
-          Ajouter un outil
-        </Link>
+        {isGerant && (
+          <Link href="/outillage/nouveau" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2">
+            <Plus className="h-4 w-4" />
+            Ajouter un outil
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">

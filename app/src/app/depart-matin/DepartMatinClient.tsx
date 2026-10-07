@@ -5,6 +5,7 @@ import { Plus, Minus, Search, ScanBarcode, Box, Truck, CheckCircle2, RotateCcw, 
 import { validerDepartMatin } from "@/app/actions/depart"
 import { validerRetourChantier } from "@/app/actions/retour"
 import { BarcodeScanner } from "@/components/BarcodeScanner"
+import { toast } from "sonner"
 
 type Article = { id: string, designation: string, reference: string, codeBarre: string | null, stockActuel: number, stockMinimum: number }
 type Chantier = { id: string, nom: string }
@@ -51,7 +52,7 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
         setIsScanning(false)
       }
     } else {
-      alert("Code barre introuvable en stock : " + decodedText)
+      toast.error("Code barre introuvable en stock : " + decodedText)
     }
   }
 
@@ -63,8 +64,8 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
   }
 
   const handleValider = async () => {
-    if (!chantierId) return alert("Veuillez sélectionner un chantier.")
-    if (panier.length === 0) return alert("Votre liste est vide.")
+    if (!chantierId) return toast.error("Veuillez sélectionner un chantier.")
+    if (panier.length === 0) return toast.error("Votre liste est vide.")
     
     setIsSubmitting(true)
     try {
@@ -87,12 +88,13 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
         setPanier([])
         setChantierId("")
         setObservation("")
+        toast.success(mode === "DEPART" ? "Départ validé avec succès !" : "Retour validé avec succès !")
         setTimeout(() => setSuccess(false), 5000)
       } else {
-        alert("Erreur: " + res.error)
+        toast.error("Erreur: " + res.error)
       }
     } catch (e: any) {
-      alert("Erreur de connexion")
+      toast.error("Erreur de connexion")
     }
     setIsSubmitting(false)
   }

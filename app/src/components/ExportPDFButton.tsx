@@ -5,6 +5,7 @@ import { Download } from "lucide-react"
 import { calculerStockArticle } from "@/lib/stockUtils"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
+import { toast } from "sonner"
 
 export function ExportPDFButton({ articles }: { articles: any[] }) {
   const [isExporting, setIsExporting] = useState(false)
@@ -76,7 +77,7 @@ export function ExportPDFButton({ articles }: { articles: any[] }) {
       doc.save(`Inventaire_Stock_${new Date().toISOString().split('T')[0]}.pdf`)
     } catch (error) {
       console.error("Erreur lors de l'export PDF:", error)
-      alert("Une erreur est survenue lors de la génération du PDF.")
+      toast.error("Une erreur est survenue lors de la génération du PDF.")
     } finally {
       setIsExporting(false)
     }

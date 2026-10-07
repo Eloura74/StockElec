@@ -3,6 +3,8 @@
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { parseDateFlexible } from '@/lib/date-parser'
+import { getSession } from '@/lib/auth'
+import { logAudit } from '@/lib/audit'
 
 export interface SaveFactureOptions {
   entreprise?: string
@@ -21,6 +23,9 @@ export async function saveFactureAndCheckPrices(
   options: SaveFactureOptions = {}
 ) {
   try {
+    const session = await getSession()
+    if (!session) return { success: false, error: "Non autorisé." }
+
     const dateFactureParsed = parseDateFlexible(options.dateFacture) || new Date()
 
     const dateEcheanceParsed = parseDateFlexible(options.dateEcheance)
@@ -40,52 +45,59 @@ export async function saveFactureAndCheckPrices(
       }
     })
 
+    // 2. Pré-chargement des alias et de l'historique pour éviter les requêtes N+1
+    const referenceList = lignes.map(l => l.reference)
+    const aliases = await prisma.referenceAlias.findMany({
+      where: {
+        fournisseur: fournisseur,
+        aliasFournisseur: { in: referenceList }
+      }
+    })
+    const aliasMap = new Map(aliases.map(a => [a.aliasFournisseur, a.referenceCanonique]))
+
+    const canonicalRefs = Array.from(new Set(lignes.map(l => aliasMap.get(l.reference) || l.reference)))
+    
+    const historicalPrices = await prisma.ligneFactureFournisseur.findMany({
+      where: {
+        reference: { in: canonicalRefs },
+        prixUnitaire: { gt: 0 }
+      },
+      include: {
+        facture: true
+      }
+    })
+
+    const historyMap = new Map<string, any[]>()
+    for (const hp of historicalPrices) {
+      if (!historyMap.has(hp.reference)) {
+        historyMap.set(hp.reference, [])
+      }
+      historyMap.get(hp.reference)!.push(hp)
+    }
+
     const resultLignes = []
 
     for (const ligne of lignes) {
-      // Résoudre l'alias éventuel
-      const alias = await prisma.referenceAlias.findUnique({
-        where: {
-          fournisseur_aliasFournisseur: {
-            fournisseur: fournisseur,
-            aliasFournisseur: ligne.reference
-          }
-        }
-      })
-      const referenceToUse = alias ? alias.referenceCanonique : ligne.reference
+      const referenceToUse = aliasMap.get(ligne.reference) || ligne.reference
+      const history = historyMap.get(referenceToUse) || []
 
-      // Rechercher le meilleur prix historique pour cette référence tous fournisseurs confondus (hors avoirs/gratuités)
-      const bestPriceLigne = await prisma.ligneFactureFournisseur.findFirst({
-        where: {
-          reference: referenceToUse,
-          prixUnitaire: { gt: 0 }
-        },
-        orderBy: {
-          prixUnitaire: 'asc'
-        },
-        include: {
-          facture: true
-        }
-      })
+      let previousPriceLigne = null
+      if (history.length > 0) {
+        // On trie l'historique par date décroissante pour obtenir le prix le plus récent
+        const sortedHistory = [...history].sort((a, b) => b.facture.dateFacture.getTime() - a.facture.dateFacture.getTime())
+        previousPriceLigne = sortedHistory[0]
+      }
 
-      const prixPrecedent = bestPriceLigne ? bestPriceLigne.prixUnitaire : null
-      const dateFacturePrecedente = bestPriceLigne ? bestPriceLigne.facture.dateFacture : null
-      const numeroFacturePrecedente = bestPriceLigne ? bestPriceLigne.facture.numeroFacture : null
-      const fournisseurPrecedent = bestPriceLigne ? bestPriceLigne.facture.fournisseur : null
+      const prixPrecedent = previousPriceLigne ? previousPriceLigne.prixUnitaire : null
+      const dateFacturePrecedente = previousPriceLigne ? previousPriceLigne.facture.dateFacture : null
+      const numeroFacturePrecedente = previousPriceLigne ? previousPriceLigne.facture.numeroFacture : null
+      const fournisseurPrecedent = previousPriceLigne ? previousPriceLigne.facture.fournisseur : null
       
       const alerteHausse = prixPrecedent !== null && Number(ligne.prixUnitaire) > Number(prixPrecedent)
 
-      // Détecter une baisse significative (inférieur de 5% à la moyenne)
       let alerteBaisse = false
-      const allPrices = await prisma.ligneFactureFournisseur.findMany({
-        where: { 
-          reference: referenceToUse,
-          prixUnitaire: { gt: 0 }
-        },
-        select: { prixUnitaire: true }
-      })
-      if (allPrices.length > 0) {
-        const avg = allPrices.reduce((acc, curr) => acc + curr.prixUnitaire, 0) / allPrices.length
+      if (history.length > 0) {
+        const avg = history.reduce((acc, curr) => acc + curr.prixUnitaire, 0) / history.length
         if (Number(ligne.prixUnitaire) < avg * 0.95 && Number(ligne.prixUnitaire) > 0) {
           alerteBaisse = true
         }
@@ -132,6 +144,9 @@ export async function updateStatutAvoir(
   montantAvoir?: number | null
 ) {
   try {
+    const session = await getSession()
+    if (!session) return { success: false, error: "Non autorisé." }
+
     const dataToUpdate: any = { statutAvoir }
     if (numeroAvoir !== undefined) dataToUpdate.numeroAvoir = numeroAvoir
     if (montantAvoir !== undefined) dataToUpdate.montantAvoir = montantAvoir
@@ -216,9 +231,18 @@ export async function getMultiReferencesPrices(references: string[]) {
 
 export async function deleteFacture(factureId: string) {
   try {
+    const session = await getSession()
+    if (!session) return { success: false, error: "Non autorisé." }
+
+    const facture = await prisma.factureFournisseur.findUnique({ where: { id: factureId } })
+    if (!facture) return { success: false, error: "Facture introuvable." }
+
     await prisma.factureFournisseur.delete({
       where: { id: factureId }
     })
+    
+    await logAudit('SUPPRESSION', 'FACTURE', `La facture ${facture.fournisseur} n°${facture.numeroFacture || '?'} a été supprimée.`)
+    
     revalidatePath('/fournisseurs')
     return { success: true }
   } catch (error: any) {

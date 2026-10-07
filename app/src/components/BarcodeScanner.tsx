@@ -39,9 +39,27 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
           },
           (decodedText) => {
             // Succès
-            // html5-qrcode a tendance à scanner plusieurs fois de suite, 
-            // on arrête le scanner dès la première lecture pour éviter les appels multiples
             if (scannerRef.current?.isScanning) {
+              // Beep sonore
+              try {
+                const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+                const oscillator = audioCtx.createOscillator()
+                const gainNode = audioCtx.createGain()
+                oscillator.type = 'sine'
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime) // Note A5
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime)
+                oscillator.connect(gainNode)
+                gainNode.connect(audioCtx.destination)
+                oscillator.start()
+                oscillator.stop(audioCtx.currentTime + 0.1)
+              } catch (e) {
+                console.warn("AudioContext not supported", e)
+              }
+              // Vibration
+              if (navigator.vibrate) {
+                navigator.vibrate(200)
+              }
+
               scannerRef.current.stop().then(() => {
                 onScan(decodedText)
               }).catch(err => console.error(err))

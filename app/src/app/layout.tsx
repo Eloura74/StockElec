@@ -4,6 +4,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 import { getSession } from "@/lib/auth";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,6 +47,7 @@ export default async function RootLayout({
           <main className={`flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50/20 dark:bg-zinc-900/20 ${!showSidebar ? 'p-0 md:p-0' : ''}`}>
             {children}
           </main>
+          <Toaster position="bottom-right" richColors theme="system" />
         </ThemeProvider>
       </body>
     </html>

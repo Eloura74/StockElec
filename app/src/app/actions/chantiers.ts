@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { calculerResteSurChantier } from "@/lib/stockUtils"
+import { logAudit } from "@/lib/audit"
 
 export async function getChantiers() {
   return prisma.chantier.findMany({
@@ -24,9 +25,15 @@ export async function createChantier(formData: FormData) {
 }
 
 export async function deleteChantier(id: string) {
+  const chantier = await prisma.chantier.findUnique({ where: { id } })
+  if (!chantier) return
+
   await prisma.chantier.delete({
     where: { id }
   })
+  
+  await logAudit('SUPPRESSION', 'CHANTIER', `Le chantier "${chantier.nom}" a été supprimé définitivement.`)
+  
   revalidatePath("/chantiers")
 }
 
@@ -93,6 +100,8 @@ export async function cloturerChantier(id: string) {
     where: { id },
     data: { statut: "Terminé" }
   })
+
+  await logAudit('MODIFICATION', 'CHANTIER', `Le chantier "${chantier.nom}" a été clôturé avec rapatriement automatique du matériel.`)
 
   revalidatePath("/chantiers")
   revalidatePath(`/chantiers/${id}`)

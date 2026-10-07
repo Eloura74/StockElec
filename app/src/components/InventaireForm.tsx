@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { Camera, CheckCircle2, AlertTriangle, Scale, PlusCircle, Edit3, X, Save, Search } from 'lucide-react'
-import { calculerStockArticle } from '@/lib/stockUtils'
 import { corrigerStock } from '@/app/actions/mouvements'
 import { creerArticleEtStock, updateInfosRapides } from '@/app/actions/articles'
 
@@ -42,9 +41,8 @@ export function InventaireForm({ articles }: { articles: any[] }) {
   }, [selectedArticleId, articles])
 
   const stockTheorique = useMemo(() => {
-    if (!selectedArticle) return 0
-    const info = calculerStockArticle(selectedArticle, selectedArticle.mouvements || [])
-    return info.stockDepot
+    if (!selectedArticle || !selectedArticle.stockInfo) return 0
+    return selectedArticle.stockInfo.stockDepot
   }, [selectedArticle])
 
   const ecart = useMemo(() => {

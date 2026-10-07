@@ -1,7 +1,7 @@
-import prisma from "@/lib/prisma"
 import { getSession } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { InventaireClient } from "./InventaireClient"
+import { getArticlesWithStocks } from "@/app/actions/articles"
 
 export default async function InventaireRapidePage() {
   const session = await getSession()
@@ -9,29 +9,16 @@ export default async function InventaireRapidePage() {
     redirect("/login")
   }
 
-  const articlesDb = await prisma.article.findMany({
-    include: {
-      mouvements: true
-    },
-    orderBy: {
-      designation: 'asc'
-    }
-  })
+  const articlesDb = await getArticlesWithStocks()
 
-  // Calcul du stock
   const articles = articlesDb.map(art => {
-    let stock = 0
-    art.mouvements.forEach(m => {
-      if (['Achat', 'Retour', 'Correction_Plus'].includes(m.type)) stock += m.quantite
-      if (['Depart', 'Consomme', 'Perte', 'Correction_Moins'].includes(m.type)) stock -= m.quantite
-    })
     return {
       id: art.id,
       reference: art.reference,
       designation: art.designation,
       codeBarre: art.codeBarre,
       categorie: art.categorie || "Sans catégorie",
-      stockActuel: stock
+      stockActuel: art.stockInfo.stockDepot
     }
   })
 

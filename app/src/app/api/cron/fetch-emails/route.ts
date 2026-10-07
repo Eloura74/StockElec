@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const result = await syncMailboxNow();
+  const result = await syncMailboxNow({ isCron: true });
   if (result.success) {
     return NextResponse.json(result);
   } else {

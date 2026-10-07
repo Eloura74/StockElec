@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai';
+import { getSession } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     
@@ -94,7 +98,20 @@ Sois exhaustif et extrait l'intégralité des lignes d'articles de chaque page.`
     ]);
 
     const responseText = result.response.text();
-    const parsed = JSON.parse(responseText);
+    let cleanedText = responseText.trim();
+    if (cleanedText.startsWith('```json')) {
+      cleanedText = cleanedText.replace(/^```json/, '').replace(/```$/, '').trim();
+    } else if (cleanedText.startsWith('```')) {
+      cleanedText = cleanedText.replace(/^```/, '').replace(/```$/, '').trim();
+    }
+    
+    let parsed;
+    try {
+      parsed = JSON.parse(cleanedText);
+    } catch (e) {
+      console.error("Erreur parsing JSON Gemini:", e, "Texte brut:", responseText);
+      return NextResponse.json({ error: "L'IA a renvoyé un format illisible. Veuillez réessayer." }, { status: 500 });
+    }
     
     const extractedFournisseur = parsed.fournisseur ? parsed.fournisseur.trim() : null;
     const extractedNumeroFacture = parsed.numeroFacture ? parsed.numeroFacture.trim() : null;

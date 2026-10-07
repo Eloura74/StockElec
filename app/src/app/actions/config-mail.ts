@@ -6,9 +6,13 @@ import { revalidatePath } from 'next/cache'
 import { simpleParser } from 'mailparser'
 import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai'
 import { saveFactureAndCheckPrices } from './factures'
+import { getSession } from '@/lib/auth'
 
 export async function getConfigMail() {
   try {
+    const session = await getSession()
+    if (!session) return null
+
     const config = await prisma.configMail.findFirst()
     if (!config) {
       return {
@@ -35,6 +39,9 @@ export async function saveConfigMail(data: {
   nomBoite?: string
 }) {
   try {
+    const session = await getSession()
+    if (!session) return { success: false, error: "Non autorisé." }
+
     const existing = await prisma.configMail.findFirst()
     
     if (existing) {
@@ -77,6 +84,9 @@ export async function testConfigMail(data: {
   imapPassword?: string
 }) {
   try {
+    const session = await getSession()
+    if (!session) return { success: false, error: "Non autorisé." }
+
     // Si pas de mot de passe fourni, on va chercher celui enregistré en base
     let passwordToUse = data.imapPassword
     if (!passwordToUse) {
@@ -124,8 +134,13 @@ export async function testConfigMail(data: {
   }
 }
 
-export async function syncMailboxNow() {
+export async function syncMailboxNow(options?: { isCron?: boolean }) {
   try {
+    if (!options?.isCron) {
+      const session = await getSession()
+      if (!session) return { success: false, error: "Non autorisé." }
+    }
+
     const config = await prisma.configMail.findFirst()
     
     const host = config?.imapHost || process.env.IMAP_HOST
@@ -222,7 +237,21 @@ Extrais les totaux financiers, le nom du fournisseur, le numéro de facture, l'�
               prompt
             ])
 
-            const parsed = JSON.parse(result.response.text())
+            const responseText = result.response.text();
+            let cleanedText = responseText.trim();
+            if (cleanedText.startsWith('```json')) {
+              cleanedText = cleanedText.replace(/^```json/, '').replace(/```$/, '').trim();
+            } else if (cleanedText.startsWith('```')) {
+              cleanedText = cleanedText.replace(/^```/, '').replace(/```$/, '').trim();
+            }
+            
+            let parsed;
+            try {
+              parsed = JSON.parse(cleanedText);
+            } catch (e) {
+              console.error("Erreur parsing JSON Gemini dans le mail:", e);
+              continue;
+            }
             if (parsed.fournisseur && parsed.numeroFacture && Array.isArray(parsed.lignes) && parsed.lignes.length > 0) {
               const fournisseur = parsed.fournisseur.trim()
               const numeroFacture = parsed.numeroFacture.trim()

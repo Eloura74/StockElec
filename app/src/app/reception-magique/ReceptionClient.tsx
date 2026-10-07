@@ -5,6 +5,7 @@ import { FileUp, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
 import * as XLSX from "xlsx"
 import { validerReceptionMagique, ReceptionItem } from "@/app/actions/reception-magique"
 import Link from "next/link"
+import { toast } from "sonner"
 
 type ParsedRow = ReceptionItem & {
   estConnu: boolean
@@ -66,7 +67,7 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
 
         setRows(parsed)
       } catch (err) {
-        alert("Erreur lors de la lecture du fichier.")
+        toast.error("Erreur lors de la lecture du fichier.")
       }
       setIsParsing(false)
     }
@@ -81,15 +82,16 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
 
   const handleValider = async () => {
     const toImport = rows.filter(r => r.selected).map(r => ({ reference: r.reference, designation: r.designation, quantite: r.quantite }))
-    if (toImport.length === 0) return alert("Rien à importer.")
+    if (toImport.length === 0) return toast.error("Rien à importer.")
 
     setIsSubmitting(true)
     const res = await validerReceptionMagique(toImport)
     if (res.success && res.report) {
       setReport(res.report)
       setRows([])
+      toast.success("Importation terminée !")
     } else {
-      alert("Erreur lors de l'importation: " + res.error)
+      toast.error("Erreur lors de l'importation: " + res.error)
     }
     setIsSubmitting(false)
   }

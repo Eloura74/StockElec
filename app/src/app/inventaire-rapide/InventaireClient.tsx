@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Search, ScanBarcode, Box, CheckCircle2 } from "lucide-react"
 import { corrigerStock } from "@/app/actions/inventaire"
 import { BarcodeScanner } from "@/components/BarcodeScanner"
+import { toast } from "sonner"
 
 type Article = {
   id: string
@@ -35,7 +36,7 @@ export function InventaireClient({ articles }: { articles: Article[] }) {
       handleSelectArticle(found)
       setIsScanning(false)
     } else {
-      alert("Code barre introuvable : " + decodedText)
+      toast.error("Code barre introuvable : " + decodedText)
     }
   }
 
@@ -50,11 +51,11 @@ export function InventaireClient({ articles }: { articles: Article[] }) {
     if (!selectedArticle) return
     const stockInt = parseInt(vraiStock, 10)
     if (isNaN(stockInt) || stockInt < 0) {
-      return alert("Veuillez entrer un nombre valide positif ou nul.")
+      return toast.error("Veuillez entrer un nombre valide positif ou nul.")
     }
 
     if (stockInt === selectedArticle.stockActuel) {
-      return alert("Le stock réel renseigné est identique au stock actuel enregistré.")
+      return toast.error("Le stock réel renseigné est identique au stock actuel enregistré.")
     }
 
     setIsSubmitting(true)
@@ -66,9 +67,10 @@ export function InventaireClient({ articles }: { articles: Article[] }) {
       
       // La page mère devra rafraichir les données, Next.js va revalider le path.
       setVraiStock("")
+      toast.success("Stock mis à jour avec succès.")
       setTimeout(() => setSuccess(false), 3000)
     } else {
-      alert("Erreur: " + res.error)
+      toast.error("Erreur: " + res.error)
     }
     setIsSubmitting(false)
   }

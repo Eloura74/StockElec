@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { FileDown, CheckCircle } from "lucide-react"
+import { toast } from "sonner"
 import { marquerFournisseurCommeCommande } from "@/app/actions/reassort"
 
 type ReassortItem = {
@@ -52,7 +53,7 @@ export function ReassortButtons({ fournisseur, items }: { fournisseur: string, i
       }))
       await marquerFournisseurCommeCommande(lignes)
       setLoading(false)
-      alert("La commande a été ajoutée au stock avec succès !")
+      toast.success("La commande a été ajoutée au stock avec succès !")
     }
   }
 

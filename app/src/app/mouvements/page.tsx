@@ -9,21 +9,21 @@ import { MouvementsFilters } from "./MouvementsFilters"
 
 export default async function MouvementsPage({ searchParams }: { searchParams: Promise<{ start?: string, end?: string }> }) {
   const { start, end } = await searchParams
-  
-  let mouvements = await getMouvements()
-  const articles = await getArticles()
-  const chantiers = await getChantiers()
+  let startDate: Date | undefined
+  let endDate: Date | undefined
 
   if (start) {
-    const startDate = new Date(start)
+    startDate = new Date(start)
     startDate.setHours(0, 0, 0, 0)
-    mouvements = mouvements.filter(m => m.date >= startDate)
   }
   if (end) {
-    const endDate = new Date(end)
+    endDate = new Date(end)
     endDate.setHours(23, 59, 59, 999)
-    mouvements = mouvements.filter(m => m.date <= endDate)
   }
+
+  let mouvements = await getMouvements({ startDate, endDate })
+  const articles = await getArticles()
+  const chantiers = await getChantiers()
 
   return (
     <div className="space-y-6">

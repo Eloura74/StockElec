@@ -15,6 +15,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { toast } from 'sonner'
 
 interface FournisseursClientProps {
   initialFactures: any[]
@@ -126,10 +127,10 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
             else setFournisseur('Autre')
           }
         } else {
-          alert("Aucun article n'a pu être extrait automatiquement. Vous pouvez les ajouter manuellement.")
+          toast.warning("Aucun article n'a pu être extrait automatiquement. Vous pouvez les ajouter manuellement.")
         }
       } catch (err) {
-        alert("Erreur lors de l'extraction de la facture.")
+        toast.error("Erreur lors de l'extraction de la facture.")
       }
     } else {
       // 2. Upload multiple : Traitement par lot (auto-save)
@@ -176,7 +177,13 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
           echecCount++
         }
       }
-      console.log(`Traitement par lot terminé.\n${succesCount} factures enregistrées avec succès.\n${echecCount > 0 ? echecCount + ' factures ont échoué.' : ''}`)
+      
+      if (succesCount > 0) {
+        toast.success(`${succesCount} factures enregistrées avec succès.`)
+      }
+      if (echecCount > 0) {
+        toast.error(`${echecCount} factures ont échoué.`)
+      }
       router.refresh()
     }
 
@@ -204,8 +211,8 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
   }
 
   const handleSave = async () => {
-    if (!numeroFacture) return alert("Veuillez saisir un numéro de facture")
-    if (lignes.length === 0) return alert("Veuillez ajouter au moins une ligne")
+    if (!numeroFacture) return toast.error("Veuillez saisir un numéro de facture")
+    if (lignes.length === 0) return toast.error("Veuillez ajouter au moins une ligne")
 
     setIsSaving(true)
     
@@ -229,7 +236,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
     setIsSaving(false)
 
     if (res.success) {
-      console.log("Facture enregistrée et contrôlée avec succès !")
+      toast.success("Facture enregistrée et contrôlée avec succès !")
       setNumeroFacture('')
       setDateFacture('')
       setTotalHT('')
@@ -240,7 +247,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
       setLignes([])
       router.refresh()
     } else {
-      alert("Erreur : " + res.error)
+      toast.error("Erreur : " + res.error)
     }
   }
 
@@ -255,9 +262,10 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
     setDeletingFactureId(null)
 
     if (res.success) {
+      toast.success("Facture supprimée.")
       router.refresh()
     } else {
-      alert("Erreur : " + res.error)
+      toast.error("Erreur : " + res.error)
     }
   }
 
@@ -328,11 +336,11 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
     })
     setIsSavingMail(false)
     if (res.success) {
-      console.log("Configuration de la boîte mail enregistrée avec succès !")
+      toast.success("Configuration de la boîte mail enregistrée avec succès !")
       setMailConfig(prev => ({ ...prev, imapPassword: '' }))
       router.refresh()
     } else {
-      alert("Erreur : " + res.error)
+      toast.error("Erreur : " + res.error)
     }
   }
 
@@ -352,7 +360,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
   // GESTION DES ALIAS
   const handleAddAlias = async () => {
     if (!newAliasCode.trim() || !newAliasRefInterne.trim()) {
-      return alert("Veuillez remplir les deux références.")
+      return toast.error("Veuillez remplir les deux références.")
     }
     setIsAddingAlias(true)
     const res = await createAlias(newAliasFournisseur, newAliasCode.trim(), newAliasRefInterne.trim())
@@ -361,9 +369,9 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
       setAliasesList(prev => [res.alias, ...prev])
       setNewAliasCode('')
       setNewAliasRefInterne('')
-      console.log("Équivalence enregistrée !")
+      toast.success("Équivalence enregistrée !")
     } else {
-      alert("Erreur lors de l'enregistrement de l'alias.")
+      toast.error("Erreur lors de l'enregistrement de l'alias.")
     }
   }
 

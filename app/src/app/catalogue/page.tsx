@@ -1,9 +1,8 @@
-import { getArticles, createArticle, deleteArticle } from "@/app/actions/articles"
+import { getArticlesWithStocks, createArticle, deleteArticle } from "@/app/actions/articles"
 import { entrerStockRapide } from "@/app/actions/mouvements"
 import { Plus, AlertTriangle, Trash2 } from "lucide-react"
 import { DeleteButton } from "@/components/DeleteButton"
 import { ScannerInput } from "@/components/ScannerInput"
-import { calculerStockArticle } from "@/lib/stockUtils"
 import Link from "next/link"
 import { SearchInput } from "@/components/SearchInput"
 import { ExportPDFButton } from "@/components/ExportPDFButton"
@@ -11,10 +10,10 @@ import { CatalogueFilters } from "./CatalogueFilters"
 
 export default async function CataloguePage({ searchParams }: { searchParams: Promise<{ q?: string, f?: string, c?: string, p?: string, alert?: string }> }) {
   const { q, f, c, p, alert } = await searchParams
-  let articles = await getArticles()
+  let articles = await getArticlesWithStocks()
   
   if (alert === 'true') {
-    articles = articles.filter((a: any) => calculerStockArticle(a, a.mouvements).enAlerte)
+    articles = articles.filter((a: any) => a.stockInfo.enAlerte)
   }
 
   if (q) {
@@ -171,7 +170,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
                     </tr>
                   ) : (
                     paginatedArticles.map((article: any) => {
-                      const stockInfo = calculerStockArticle(article, article.mouvements)
+                      const stockInfo = article.stockInfo
                       const enAlerte = stockInfo.enAlerte
                       return (
                         <tr key={article.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-950">
@@ -228,7 +227,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
                 <div className="p-8 text-center text-gray-500 dark:text-zinc-400">Aucun article dans le catalogue.</div>
               ) : (
                 paginatedArticles.map((article: any) => {
-                  const stockInfo = calculerStockArticle(article, article.mouvements)
+                  const stockInfo = article.stockInfo
                   const enAlerte = stockInfo.enAlerte
                   return (
                     <div key={article.id} className="p-4 bg-white dark:bg-zinc-900 space-y-3">
