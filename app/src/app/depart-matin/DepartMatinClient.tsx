@@ -5,12 +5,13 @@ import { Plus, Minus, Search, ScanBarcode, Box, Truck, CheckCircle2, RotateCcw, 
 import { validerDepartMatin } from "@/app/actions/depart"
 import { validerRetourChantier } from "@/app/actions/retour"
 import { BarcodeScanner } from "@/components/BarcodeScanner"
+import { EmpruntOutillageForm } from "@/components/EmpruntOutillageForm"
 import { toast } from "sonner"
 
 type Article = { id: string, designation: string, reference: string, codeBarre: string | null, stockActuel: number, stockMinimum: number }
 type Chantier = { id: string, nom: string }
 
-export function DepartMatinClient({ chantiers, articles, username }: { chantiers: Chantier[], articles: Article[], username: string }) {
+export function DepartMatinClient({ chantiers, articles, outillages, username }: { chantiers: Chantier[], articles: Article[], outillages: any[], username: string }) {
   const [chantierId, setChantierId] = useState<string>("")
   const [search, setSearch] = useState("")
   const [panier, setPanier] = useState<{article: Article, quantite: number}[]>([])
@@ -18,7 +19,7 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
-  const [mode, setMode] = useState<"DEPART" | "VERIF" | "RETOUR">("DEPART")
+  const [mode, setMode] = useState<"DEPART" | "VERIF" | "RETOUR" | "OUTILLAGE">("DEPART")
   const [lastAdded, setLastAdded] = useState<string | null>(null)
 
   const [chantierSearchQuery, setChantierSearchQuery] = useState("")
@@ -128,6 +129,12 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
           Retour
         </button>
         <button 
+          onClick={() => setMode("OUTILLAGE")}
+          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "OUTILLAGE" ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10" : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"}`}
+        >
+          Outillage
+        </button>
+        <button 
           onClick={() => setMode("VERIF")}
           className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "VERIF" ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10" : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"}`}
         >
@@ -199,6 +206,12 @@ export function DepartMatinClient({ chantiers, articles, username }: { chantiers
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {mode === "OUTILLAGE" && (
+        <div className="animate-in slide-in-from-bottom-2 fade-in">
+          <EmpruntOutillageForm outillages={outillages} chantiers={chantiers} />
         </div>
       )}
 

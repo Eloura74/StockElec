@@ -5,6 +5,7 @@ import { DepartMatinClient } from "./DepartMatinClient"
 import { LogOut } from "lucide-react"
 import { logout } from "@/app/actions/auth"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { getOutillages } from "@/app/actions/outillage"
 
 export default async function DepartMatinPage() {
   const session = await getSession()
@@ -39,11 +40,12 @@ export default async function DepartMatinPage() {
     }
   })
 
+  const outillages = await getOutillages()
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col">
       {/* Header Mobile / Tablette (Pas de sidebar) */}
-      <header className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-white/10 p-4 flex justify-between items-center shadow-md dark:shadow-lg">
+      <header className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-white/10 p-4 flex justify-between items-center shadow-sm dark:shadow-lg">
         <div>
           <h1 className="text-xl font-black tracking-tight text-gray-900 dark:text-white">Départ Chantier</h1>
           <p className="text-sm font-medium text-gray-500 dark:text-zinc-400">Connecté : <span className="text-blue-600 dark:text-indigo-400">{session.username}</span></p>
@@ -59,7 +61,7 @@ export default async function DepartMatinPage() {
       </header>
 
       <main className="flex-1 p-4 sm:p-6 lg:max-w-4xl lg:mx-auto w-full selection:bg-indigo-500/30">
-        <DepartMatinClient chantiers={chantiers} articles={articlesWithStock} username={session.username} />
+        <DepartMatinClient chantiers={chantiers} articles={articlesWithStock} outillages={outillages} username={session.username} />
       </main>
     </div>
   )
