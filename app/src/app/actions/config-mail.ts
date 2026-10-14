@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma'
 import { ImapFlow } from 'imapflow'
 import { revalidatePath } from 'next/cache'
 import { simpleParser } from 'mailparser'
-import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai'
+import { parseInvoiceWithGemini } from '@/lib/gemini-factures'
 import { saveFactureAndCheckPrices } from './factures'
 import { getSession } from '@/lib/auth'
 
@@ -178,78 +178,13 @@ export async function syncMailboxNow(options?: { isCron?: boolean }) {
           const pdfAttachment = parsedMail.attachments?.find((att: any) => att.contentType === 'application/pdf')
 
           if (pdfAttachment && pdfAttachment.content) {
-            const apiKey = process.env.GEMINI_API_KEY
-            if (!apiKey) {
-              console.warn("Clé GEMINI_API_KEY manquante pour la relève automatique.")
-              continue
-            }
-
-            const base64Data = (pdfAttachment.content as Buffer).toString('base64')
-            const genAI = new GoogleGenerativeAI(apiKey)
-            
-            const responseSchema: Schema = {
-              type: SchemaType.OBJECT,
-              properties: {
-                fournisseur: { type: SchemaType.STRING },
-                numeroFacture: { type: SchemaType.STRING },
-                dateFacture: { type: SchemaType.STRING },
-                totalHT: { type: SchemaType.NUMBER },
-                totalTVA: { type: SchemaType.NUMBER },
-                totalTTC: { type: SchemaType.NUMBER },
-                dateEcheance: { type: SchemaType.STRING },
-                modePaiement: { type: SchemaType.STRING },
-                lignes: {
-                  type: SchemaType.ARRAY,
-                  items: {
-                    type: SchemaType.OBJECT,
-                    properties: {
-                      reference: { type: SchemaType.STRING },
-                      designation: { type: SchemaType.STRING },
-                      quantite: { type: SchemaType.NUMBER },
-                      prixUnitaire: { type: SchemaType.NUMBER },
-                      chantier: { type: SchemaType.STRING },
-                    },
-                    required: ['reference', 'designation', 'quantite', 'prixUnitaire'],
-                  }
-                }
-              },
-              required: ['fournisseur', 'numeroFacture', 'lignes'],
-            }
-
-            const model = genAI.getGenerativeModel({
-              model: "gemini-1.5-pro",
-              generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: responseSchema,
-              }
-            })
-
-            const prompt = `Tu es un assistant expert en facturation de matériel électrique pour artisans (Rexel, Sonepar, YESSS, etc.).
-Extrais les totaux financiers, le nom du fournisseur, le numéro de facture, l'échéance, la date d'émission ou date de livraison (au format JJ/MM/AAAA ou AAAA-MM-JJ) et toutes les lignes avec références, désignations, quantités, prix unitaires nets et chantiers imputés.`
-
-            const result = await model.generateContent([
-              {
-                inlineData: {
-                  data: base64Data,
-                  mimeType: "application/pdf"
-                }
-              },
-              prompt
-            ])
-
-            const responseText = result.response.text();
-            let cleanedText = responseText.trim();
-            if (cleanedText.startsWith('```json')) {
-              cleanedText = cleanedText.replace(/^```json/, '').replace(/```$/, '').trim();
-            } else if (cleanedText.startsWith('```')) {
-              cleanedText = cleanedText.replace(/^```/, '').replace(/```$/, '').trim();
-            }
-            
             let parsed;
             try {
-              parsed = JSON.parse(cleanedText);
-            } catch (e) {
-              console.error("Erreur parsing JSON Gemini dans le mail:", e);
+              const base64Data = (pdfAttachment.content as Buffer).toString('base64');
+              const mimeType = pdfAttachment.contentType || 'application/pdf';
+              parsed = await parseInvoiceWithGemini(base64Data, mimeType);
+            } catch (err) {
+              console.error("[Email Sync] Erreur lors de l'analyse IA de la pièce jointe:", err);
               continue;
             }
             if (parsed.fournisseur && parsed.numeroFacture && Array.isArray(parsed.lignes) && parsed.lignes.length > 0) {

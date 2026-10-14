@@ -115,11 +115,14 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
             else if (fUpper.includes('BALITRAN')) setFournisseur('Balitran')
             else setFournisseur('Autre')
           }
+          toast.success(`Facture analysée : ${data.items.length} article(s) extrait(s)`)
+        } else if (!res.ok || data.error) {
+          toast.error(data.error || "Erreur lors de l'extraction de la facture.")
         } else {
           toast.warning("Aucun article n'a pu être extrait automatiquement. Vous pouvez les ajouter manuellement.")
         }
       } catch (err) {
-        toast.error("Erreur lors de l'extraction de la facture.")
+        toast.error("Erreur de connexion lors de l'extraction de la facture.")
       }
     } else {
       // 2. Upload multiple : Traitement par lot (auto-save)
