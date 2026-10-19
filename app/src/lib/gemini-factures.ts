@@ -74,7 +74,7 @@ Pour chaque article facturé :
 - reference : La référence produit exacte du catalogue
 - designation : La description / désignation du produit
 - quantite : La quantité facturée (nombre)
-- prixUnitaire : Le prix unitaire NET HT après remise (hors TVA)
+- prixUnitaire : Le prix unitaire NET HT réel par unité individuelle (par mètre pour les câbles/couronnes, par pièce pour les vis/bornes). ATTENTION : chez les distributeurs électriques (Rexel, Sonepar, YESSS), les câbles sont souvent tarifés au 1000m ou au 100 avec forte remise. Tu dois IMPÉRATIVEMENT diviser le montant net HT de la ligne par la quantité pour obtenir le vrai prix unitaire net (ex: 500m à 325€ net = 0.65€/m, et SURTOUT PAS le tarif brut catalogue de 4334€/1000m). Le produit (quantité x prixUnitaire) d'une seule ligne ne doit JAMAIS dépasser le total HT de la facture.
 - chantier : L'imputation analytique / nom du chantier ou référence client rattachée à cet article ou au bon de livraison (ex: "SCI PELICAN", "HARVEY", "CASSIOPEE", "WELDOM", "STOCK"). Si aucune mention de chantier n'est spécifiée, indiquer "STOCK".
 
 Sois exhaustif et extrait l'intégralité des lignes d'articles de chaque page.`;

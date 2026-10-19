@@ -30,6 +30,22 @@ export async function saveFactureAndCheckPrices(
 
     const dateEcheanceParsed = parseDateFlexible(options.dateEcheance)
 
+    // Vérification anti-doublon de facture
+    if (numeroFacture && numeroFacture.trim()) {
+      const existing = await prisma.factureFournisseur.findFirst({
+        where: {
+          fournisseur: { equals: fournisseur.trim(), mode: 'insensitive' },
+          numeroFacture: { equals: numeroFacture.trim(), mode: 'insensitive' }
+        }
+      })
+      if (existing) {
+        return { 
+          success: false, 
+          error: `La facture ${numeroFacture} du fournisseur ${fournisseur} existe déjà dans le système. Aucun doublon créé.` 
+        }
+      }
+    }
+
     // 1. Sauvegarde de l'en-tête de facture
     const facture = await prisma.factureFournisseur.create({
       data: {
@@ -103,16 +119,29 @@ export async function saveFactureAndCheckPrices(
         }
       }
 
-      const diffUnitaire = alerteHausse && prixPrecedent ? Number(ligne.prixUnitaire) - Number(prixPrecedent) : 0
-      const montantEstimeAvoir = diffUnitaire * (Number(ligne.quantite) || 1)
+      const qte = parseInt(String(ligne.quantite), 10) || 1
+      let pu = parseFloat(String(ligne.prixUnitaire)) || 0
+
+      // Protection anti-anomalie tarif /1000m ou /100 (câbles, visserie, etc.)
+      const totalHTFacture = options.totalHT || 0
+      if (totalHTFacture > 0 && (qte * pu) > totalHTFacture * 1.05) {
+        if ((qte * (pu / 1000)) <= totalHTFacture * 1.1) {
+          pu = Math.round((pu / 1000) * 10000) / 10000
+        } else if ((qte * (pu / 100)) <= totalHTFacture * 1.1) {
+          pu = Math.round((pu / 100) * 10000) / 10000
+        }
+      }
+
+      const diffUnitaire = alerteHausse && prixPrecedent ? pu - Number(prixPrecedent) : 0
+      const montantEstimeAvoir = diffUnitaire * qte
 
       const savedLigne = await prisma.ligneFactureFournisseur.create({
         data: {
           factureId: facture.id,
           reference: referenceToUse,
           designation: ligne.designation,
-          quantite: parseInt(String(ligne.quantite), 10) || 1,
-          prixUnitaire: parseFloat(String(ligne.prixUnitaire)) || 0,
+          quantite: qte,
+          prixUnitaire: pu,
           prixUnitairePrecedent: prixPrecedent,
           fournisseurPrecedent: fournisseurPrecedent,
           dateFacturePrecedente: dateFacturePrecedente,

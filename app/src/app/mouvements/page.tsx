@@ -21,7 +21,7 @@ export default async function MouvementsPage({ searchParams }: { searchParams: P
     endDate.setHours(23, 59, 59, 999)
   }
 
-  let mouvements = await getMouvements({ startDate, endDate })
+  const mouvements = await getMouvements({ startDate, endDate })
   const articles = await getArticles()
   const chantiers = await getChantiers()
 
@@ -90,7 +90,7 @@ export default async function MouvementsPage({ searchParams }: { searchParams: P
                           {mvt.chantier?.nom && <div className="font-medium text-gray-900 dark:text-zinc-50">{mvt.chantier.nom}</div>}
                           {mvt.utilisateur && <div className="text-xs text-blue-600 bg-blue-50 inline-block px-2 py-0.5 rounded mt-1">Par: {mvt.utilisateur}</div>}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500 dark:text-zinc-400 max-w-[150px]" title={mvt.observation || ""}>
+                        <td className="px-4 py-3 text-sm text-gray-500 dark:text-zinc-400 max-w-37.5 truncate" title={mvt.observation || ""}>
                           {mvt.observation || '-'}
                         </td>
                         <td className="px-4 py-3 text-right">

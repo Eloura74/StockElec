@@ -26,7 +26,20 @@ export async function getAchatsParChantier() {
         stats[c] = { totalAchats: 0, fournisseurs: new Set(), lignes: [], datePremierAchat: null, dateDernierAchat: null }
       }
       
-      const coutLigne = l.quantite * l.prixUnitaire
+      let coutLigne = l.quantite * l.prixUnitaire
+      const fTotal = l.facture?.totalHT || 0
+      
+      // Sécurité anti-anomalie : si une ligne dépasse le total HT de sa facture (tarif /1000 ou /100)
+      if (fTotal > 0 && coutLigne > fTotal * 1.05) {
+        if (coutLigne / 1000 <= fTotal * 1.1) {
+          coutLigne = coutLigne / 1000
+        } else if (coutLigne / 100 <= fTotal * 1.1) {
+          coutLigne = coutLigne / 100
+        } else {
+          coutLigne = Math.min(coutLigne, fTotal)
+        }
+      }
+
       stats[c].totalAchats += coutLigne
       
       const dateFacture = l.facture?.dateFacture

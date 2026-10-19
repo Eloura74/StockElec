@@ -1,10 +1,17 @@
 import { Sidebar } from '@/components/Sidebar'
 import { RentabiliteClient } from './RentabiliteClient'
 import { getAchatsParChantier } from '@/app/actions/rentabilite'
+import { getSession } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
 export default async function RentabilitePage() {
+  const session = await getSession()
+  if (!session || session.role !== 'GERANT') {
+    redirect('/')
+  }
+
   const chantiersData = await getAchatsParChantier()
 
   return (

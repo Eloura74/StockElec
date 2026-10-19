@@ -202,7 +202,6 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
                                 <input type="number" name="quantite" defaultValue="1" min="1" className="w-16 rounded border px-2 py-1 text-xs" />
                                 <button type="submit" title="Ajouter du stock" className="rounded bg-green-100 p-1 text-green-700 hover:bg-green-200">
                                   +
-                                  +
                                 </button>
                               </form>
                               <Link href={`/catalogue/${article.id}`} className="rounded p-1 text-blue-500 hover:bg-blue-50" title="Modifier/Détails">

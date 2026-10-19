@@ -2,8 +2,19 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getSession } from './lib/auth'
 
-// Specify which routes are protected
-const protectedRoutes = ['/', '/catalogue', '/chantiers', '/reassort', '/inventaire', '/equipe']
+// Specify which routes are protected (Gérant only)
+const protectedRoutes = [
+  '/', 
+  '/catalogue', 
+  '/chantiers', 
+  '/reassort', 
+  '/inventaire', 
+  '/equipe', 
+  '/fournisseurs', 
+  '/rentabilite', 
+  '/reception-magique', 
+  '/journal'
+]
 const chefRoutes = ['/depart-matin']
 
 export async function middleware(request: NextRequest) {
