@@ -21,9 +21,10 @@ interface FournisseursClientProps {
   initialFactures: any[]
   initialConfigMail: any
   initialAliases: any[]
+  initialChantiers?: { id: string; nom: string; statut: string }[]
 }
 
-export function FournisseursClient({ initialFactures, initialConfigMail, initialAliases }: FournisseursClientProps) {
+export function FournisseursClient({ initialFactures, initialConfigMail, initialAliases, initialChantiers = [] }: FournisseursClientProps) {
   const router = useRouter()
 
   // FORMULAIRE FACTURE
@@ -37,12 +38,23 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
   const [modePaiement, setModePaiement] = useState('')
   const [lignes, setLignes] = useState<any[]>([])
   const [selectedEntreprise, setSelectedEntreprise] = useState<string>('CedricElec')
+  const [bulkChantier, setBulkChantier] = useState('')
   
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [updatingLigneId, setUpdatingLigneId] = useState<string | null>(null)
   const [deletingFactureId, setDeletingFactureId] = useState<string | null>(null)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+
+  const handleApplyChantierToAll = (chantierName: string) => {
+    if (!chantierName.trim()) {
+      toast.warning("Veuillez sélectionner ou saisir un nom de chantier.")
+      return
+    }
+    const val = chantierName.trim()
+    setLignes(prev => prev.map(l => ({ ...l, chantier: val })))
+    toast.success(`Chantier "${val}" affecté à l'ensemble des ${lignes.length} ligne(s).`)
+  }
 
   // MODALE CONFIG MAIL
   const [isMailModalOpen, setIsMailModalOpen] = useState(false)
@@ -761,6 +773,40 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
           </div>
         </div>
 
+        {/* OUTIL D'AFFECTATION RAPIDE DU CHANTIER */}
+        {lignes.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 mb-4 bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-xl">
+            <div className="flex items-center gap-2 text-xs font-medium text-blue-900 dark:text-blue-300">
+              <Building2 className="h-4 w-4" />
+              <span>Affecter un chantier à toutes les lignes ({lignes.length}) :</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input 
+                type="text" 
+                list="chantiers-suggestions" 
+                placeholder="Ex: MESSARDIERE, STOCK..."
+                value={bulkChantier}
+                onChange={e => setBulkChantier(e.target.value)}
+                className="p-1.5 text-xs rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-zinc-900 min-w-50"
+              />
+              <button
+                type="button"
+                onClick={() => handleApplyChantierToAll(bulkChantier)}
+                className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors cursor-pointer"
+              >
+                Appliquer à tout
+              </button>
+            </div>
+          </div>
+        )}
+
+        <datalist id="chantiers-suggestions">
+          <option value="STOCK">STOCK (Dépôt)</option>
+          {initialChantiers.map(c => (
+            <option key={c.id || c.nom} value={c.nom}>{c.nom} {c.statut ? `(${c.statut})` : ''}</option>
+          ))}
+        </datalist>
+
         {/* TABLEAU DES LIGNES */}
         <div className="border rounded-xl overflow-x-auto mb-6">
           <table className="w-full text-left text-sm min-w-175">
@@ -783,6 +829,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
                     <td className="p-2">
                       <input 
                         type="text" 
+                        list="chantiers-suggestions"
                         value={ligne.chantier || 'STOCK'} 
                         onChange={e => updateLigne(ligne.id, 'chantier', e.target.value)} 
                         className="w-full p-2 border rounded-lg dark:border-zinc-700 dark:bg-zinc-950 font-medium" 

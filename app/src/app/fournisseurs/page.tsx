@@ -4,6 +4,7 @@ import { getAliases } from '@/app/actions/alias'
 import { FournisseursClient } from './FournisseursClient'
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import prisma from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,10 +15,14 @@ export default async function FournisseursPage() {
     redirect('/')
   }
 
-  const [factures, configMail, aliases] = await Promise.all([
+  const [factures, configMail, aliases, chantiers] = await Promise.all([
     getFactures(),
     getConfigMail(),
-    getAliases()
+    getAliases(),
+    prisma.chantier.findMany({ 
+      select: { id: true, nom: true, statut: true }, 
+      orderBy: { nom: 'asc' } 
+    })
   ])
 
   return (
@@ -35,6 +40,7 @@ export default async function FournisseursPage() {
         initialFactures={factures} 
         initialConfigMail={configMail}
         initialAliases={aliases}
+        initialChantiers={chantiers}
       />
     </div>
   )

@@ -1,13 +1,11 @@
 import { getAuditLogs } from "@/lib/audit"
-import { Shield, Trash2, Edit, Plus, AlertCircle } from "lucide-react"
+import { Shield, Trash2, Edit, Plus, AlertCircle, Download } from "lucide-react"
 import { getSession } from "@/lib/auth"
 import { redirect } from "next/navigation"
 
 export default async function JournalPage() {
   const session = await getSession()
   if (!session) redirect('/login')
-  // Optionnel : Restreindre la vue aux gérants si besoin plus tard
-  // if (session.role !== 'GERANT') redirect('/')
 
   const logs = await getAuditLogs()
 
@@ -31,16 +29,28 @@ export default async function JournalPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+          <div className="p-2 bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded-lg">
             <Shield className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50">Journal d'Activité</h1>
-            <p className="text-sm text-gray-500 dark:text-zinc-400">Historique des actions critiques (suppressions, modifications).</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50">Journal d'Activité & Sauvegardes</h1>
+            <p className="text-sm text-gray-500 dark:text-zinc-400">Historique des actions critiques et instantanés de sécurité.</p>
           </div>
         </div>
+
+        {session.role === 'GERANT' && (
+          <a
+            href="/api/backup/export"
+            download
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-gray-700 dark:text-zinc-200 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-700 shadow-sm transition-colors cursor-pointer"
+            title="Télécharger une sauvegarde complète de la base de données"
+          >
+            <Download className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span>Sauvegarder la base (JSON)</span>
+          </a>
+        )}
       </div>
 
       <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden">
