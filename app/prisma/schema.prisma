@@ -22,6 +22,8 @@ model Article {
   codeBarre            String?     @unique
   referenceFournisseur String?   // Ex: REX-1234
   fournisseur          String?   // Ex: Rexel
+  marque               String?   // Ex: Hager, Legrand (fabricant)
+  emplacement          String?   // Ex: A1, C7 (rayonnage au dépôt)
   retourAttendu        Boolean     @default(false)
   
   // Computed via queries, but we can store initial stock

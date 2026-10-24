@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { calculerStocksDepuisAgregats } from "@/lib/stockUtils"
 
 export async function getArticles() {
   return prisma.article.findMany({
@@ -19,49 +20,7 @@ export async function getArticlesWithStocks() {
     _sum: { quantite: true }
   })
   
-  const stockMap = new Map()
-  for (const agg of aggregations) {
-    if (!stockMap.has(agg.articleId)) {
-       stockMap.set(agg.articleId, { stockDepot: 0, stockChantiersTotal: 0 })
-    }
-    const current = stockMap.get(agg.articleId)
-    const sum = agg._sum.quantite || 0
-    const type = agg.type
-    
-    switch (type) {
-      case "Achat":
-      case "Correction":
-      case "Correction_Plus":
-        current.stockDepot += sum
-        break
-      case "Correction_Moins":
-        current.stockDepot -= sum
-        break
-      case "Depart":
-        current.stockDepot -= sum
-        current.stockChantiersTotal += sum
-        break
-      case "Retour":
-        current.stockChantiersTotal -= sum
-        current.stockDepot += sum
-        break
-      case "Consomme":
-      case "Perte":
-        if (agg.chantierId) {
-          current.stockChantiersTotal -= sum
-        } else {
-          current.stockDepot -= sum
-        }
-        break
-    }
-  }
-
-  stockMap.forEach((current) => {
-    if (current.stockChantiersTotal < 0) {
-      current.stockDepot += current.stockChantiersTotal
-      current.stockChantiersTotal = 0
-    }
-  })
+  const stockMap = calculerStocksDepuisAgregats(aggregations)
 
   return articles.map(art => {
     const s = stockMap.get(art.id) || { stockDepot: 0, stockChantiersTotal: 0 }

@@ -87,3 +87,64 @@ export function calculerResteSurChantier(mouvementsChantier: Mouvement[]): Recor
 
   return stockParArticle
 }
+
+export type AgregatMouvement = {
+  articleId: string
+  type: string
+  chantierId: string | null
+  _sum: { quantite: number | null }
+}
+
+/**
+ * Calcule, à partir d'un `groupBy(['articleId','type','chantierId'])` sur les mouvements,
+ * le delta de stock dépôt (hors stockInitial) et le stock total en chantier par article.
+ * Source unique utilisée par le catalogue et par l'import Excel.
+ */
+export function calculerStocksDepuisAgregats(
+  aggregations: AgregatMouvement[]
+): Map<string, { stockDepot: number; stockChantiersTotal: number }> {
+  const stockMap = new Map<string, { stockDepot: number; stockChantiersTotal: number }>()
+  for (const agg of aggregations) {
+    if (!stockMap.has(agg.articleId)) {
+      stockMap.set(agg.articleId, { stockDepot: 0, stockChantiersTotal: 0 })
+    }
+    const current = stockMap.get(agg.articleId)!
+    const sum = agg._sum.quantite || 0
+
+    switch (agg.type) {
+      case "Achat":
+      case "Correction":
+      case "Correction_Plus":
+        current.stockDepot += sum
+        break
+      case "Correction_Moins":
+        current.stockDepot -= sum
+        break
+      case "Depart":
+        current.stockDepot -= sum
+        current.stockChantiersTotal += sum
+        break
+      case "Retour":
+        current.stockChantiersTotal -= sum
+        current.stockDepot += sum
+        break
+      case "Consomme":
+      case "Perte":
+        if (agg.chantierId) {
+          current.stockChantiersTotal -= sum
+        } else {
+          current.stockDepot -= sum
+        }
+        break
+    }
+  }
+
+  stockMap.forEach((current) => {
+    if (current.stockChantiersTotal < 0) {
+      current.stockDepot += current.stockChantiersTotal
+      current.stockChantiersTotal = 0
+    }
+  })
+
+  return stockMap
+}

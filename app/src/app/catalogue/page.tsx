@@ -1,6 +1,6 @@
 import { getArticlesWithStocks, createArticle, deleteArticle } from "@/app/actions/articles"
 import { entrerStockRapide } from "@/app/actions/mouvements"
-import { Plus, AlertTriangle, Trash2 } from "lucide-react"
+import { Plus, AlertTriangle, Trash2, FileSpreadsheet } from "lucide-react"
 import { DeleteButton } from "@/components/DeleteButton"
 import { ScannerInput } from "@/components/ScannerInput"
 import Link from "next/link"
@@ -46,9 +46,17 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <h1 className="text-3xl font-bold tracking-tight">Mon Stock</h1>
           <ExportPDFButton articles={articles} />
+          <Link
+            href="/catalogue/import"
+            className="flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-700 dark:text-zinc-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors shadow-xs"
+            title="Importer des articles depuis un fichier Excel (.xlsx, .csv)"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Importer Excel</span>
+          </Link>
         </div>
         <SearchInput />
       </div>
