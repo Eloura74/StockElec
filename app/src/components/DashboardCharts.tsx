@@ -2,74 +2,21 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
+export interface ChartDataPoint {
+  name: string
+  [key: string]: any
+}
+
 export function DashboardCharts({ 
-  mouvementsRecents, 
-  articles 
+  sortiesData, 
+  pieData,
+  topConsoData
 }: { 
-  mouvementsRecents: any[],
-  articles: any[]
+  sortiesData: ChartDataPoint[]
+  pieData: ChartDataPoint[]
+  topConsoData: ChartDataPoint[]
 }) {
-  // 1. Préparer les données pour le graphique des sorties (Départs et Consommés sur les 7 derniers jours)
-  const last7Days = [...Array(7)].map((_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    return d.toLocaleDateString('fr-FR', { weekday: 'short' });
-  }).reverse();
-
-  const sortiesData = last7Days.map(dayStr => ({
-    name: dayStr,
-    sorties: 0
-  }));
-
-  mouvementsRecents.forEach(mvt => {
-    if (mvt.type === 'Depart' || mvt.type === 'Consomme') {
-      const dayStr = new Date(mvt.date).toLocaleDateString('fr-FR', { weekday: 'short' });
-      const dayData = sortiesData.find(d => d.name === dayStr);
-      if (dayData) {
-        dayData.sorties += mvt.quantite;
-      }
-    }
-  });
-
-  // 2. Préparer les données pour le graphique de répartition de la valeur par catégorie
-  const categoriesMap = new Map<string, number>();
-  
-  articles.forEach(article => {
-    let stockCourant = 0;
-    (article.mouvements || []).forEach((mvt: any) => {
-      if (mvt.type === 'Achat' || mvt.type === 'Retour') stockCourant += mvt.quantite;
-      if (mvt.type === 'Depart' || mvt.type === 'Consomme' || mvt.type === 'Perte') stockCourant -= mvt.quantite;
-    });
-    
-    if (stockCourant > 0) {
-      const val = stockCourant * (article.prixUnitaire || 0);
-      const cat = article.categorie || 'Autre';
-      categoriesMap.set(cat, (categoriesMap.get(cat) || 0) + val);
-    }
-  });
-
-  const pieData = Array.from(categoriesMap.entries())
-    .map(([name, value]) => ({ name, value }))
-    .filter(item => item.value > 0);
-
-  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b'];
-
-  // 3. Top 5 des articles les plus consommés
-  const consoMap = new Map<string, number>();
-  articles.forEach(article => {
-    let consoTotal = 0;
-    (article.mouvements || []).forEach((mvt: any) => {
-      if (mvt.type === 'Consomme' || mvt.type === 'Depart') {
-        consoTotal += mvt.quantite;
-      }
-    });
-    if (consoTotal > 0) consoMap.set(article.designation, consoTotal);
-  });
-
-  const topConsoData = Array.from(consoMap.entries())
-    .map(([name, quantite]) => ({ name, quantite }))
-    .sort((a, b) => b.quantite - a.quantite)
-    .slice(0, 5);
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b']
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

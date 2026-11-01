@@ -60,18 +60,70 @@ export default async function Home() {
     }
   });
 
-  // Export Excel Data Prep
-  const dataDepot = articles.map(article => {
-    const stock = article.stockInfo
-    return {
-      "Référence": article.reference,
-      "Désignation": article.designation,
-      "Catégorie": article.categorie || "-",
-      "Stock Dépôt": stock.stockDepot,
-      "Prix Unitaire (€)": article.prixUnitaire || 0,
-      "Valeur Totale (€)": stock.stockDepot * (article.prixUnitaire || 0)
+  // Préparation optimisée des graphiques côté serveur (charge ultra-légère pour le client)
+  const categoriesMap = new Map<string, number>();
+  for (const article of articles) {
+    if (article.stockInfo.stockDepot > 0) {
+      const val = article.stockInfo.stockDepot * (article.prixUnitaire || 0);
+      const cat = article.categorie || 'Autre';
+      categoriesMap.set(cat, (categoriesMap.get(cat) || 0) + val);
     }
-  })
+  }
+  const pieData = Array.from(categoriesMap.entries())
+    .map(([name, value]) => ({ name, value }))
+    .filter(item => item.value > 0);
+
+  const last7Days = [...Array(7)].map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d.toLocaleDateString('fr-FR', { weekday: 'short' });
+  });
+
+  const sortiesData = last7Days.map(dayStr => ({ name: dayStr, sorties: 0 }));
+
+  const septJoursAvant = new Date();
+  septJoursAvant.setDate(septJoursAvant.getDate() - 7);
+  const mouvements7Jours = await prisma.mouvement.findMany({
+    where: {
+      date: { gte: septJoursAvant },
+      type: { in: ['Depart', 'Consomme'] }
+    },
+    include: { article: true }
+  });
+
+  mouvements7Jours.forEach(mvt => {
+    const dayStr = new Date(mvt.date).toLocaleDateString('fr-FR', { weekday: 'short' });
+    const dayData = sortiesData.find(d => d.name === dayStr);
+    if (dayData) {
+      dayData.sorties += mvt.quantite;
+    }
+  });
+
+  const consoMap = new Map<string, number>();
+  mouvements7Jours.forEach(mvt => {
+    if (mvt.article?.designation) {
+      consoMap.set(mvt.article.designation, (consoMap.get(mvt.article.designation) || 0) + mvt.quantite);
+    }
+  });
+  const topConsoData = Array.from(consoMap.entries())
+    .map(([name, quantite]) => ({ name, quantite }))
+    .sort((a, b) => b.quantite - a.quantite)
+    .slice(0, 5);
+
+  // Export Excel Data Prep (uniquement articles ayant du stock physique valorisable)
+  const dataDepot = articles
+    .filter(article => article.stockInfo.stockDepot > 0)
+    .map(article => {
+      const stock = article.stockInfo
+      return {
+        "Référence": article.reference,
+        "Désignation": article.designation,
+        "Catégorie": article.categorie || "-",
+        "Stock Dépôt": stock.stockDepot,
+        "Prix Unitaire (€)": article.prixUnitaire || 0,
+        "Valeur Totale (€)": stock.stockDepot * (article.prixUnitaire || 0)
+      }
+    })
 
   const chantiersComplets = await prisma.chantier.findMany({
     include: {
@@ -210,7 +262,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <DashboardCharts mouvementsRecents={recentMouvements} articles={articles} />
+      <DashboardCharts sortiesData={sortiesData} pieData={pieData} topConsoData={topConsoData} />
 
       <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
         {/* Top 3 Immobilisations */}
@@ -247,16 +299,9 @@ export default async function Home() {
             <span className="text-xs font-medium text-red-600 bg-red-100 px-2 py-1 rounded-full">{articlesEnAlerte} alertes</span>
           </div>
           <div className="p-6">
-              {articles.map((article: any) => {
-                const stockInfo = article.stockInfo
-                if (!stockInfo.enAlerte) return null;
-
-                // On ne dispose pas des mouvements de l'article ici avec getArticlesWithStocks
-                // donc la raison précise n'est pas affichée pour éviter un chargement complet de la BDD.
-                const raison = "";
-
-                // Quantité à commander = (seuil * 2) - stock
-                const aCommander = Math.max(0, (article.stockMinimum * 2) - stockInfo.stockDepot);
+            {alertesDetails.length > 0 ? (
+              alertesDetails.slice(0, 5).map(({ article, stock }) => {
+                const aCommander = Math.max(0, (article.stockMinimum * 2) - stock.stockDepot);
 
                 return (
                   <div key={article.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
@@ -265,12 +310,11 @@ export default async function Home() {
                       <div>
                         <p className="font-medium text-gray-900 dark:text-zinc-50">{article.designation}</p>
                         <p className="text-xs text-gray-500 dark:text-zinc-400">{article.reference}</p>
-                        {raison && <p className="text-xs text-orange-600 mt-1">{raison}</p>}
                       </div>
                     </div>
                     <div className="text-right flex flex-col gap-1">
                       <div className="flex flex-col items-end">
-                        <span className="font-bold text-red-600">{stockInfo.stockDepot} {article.unite}</span>
+                        <span className="font-bold text-red-600">{stock.stockDepot} {article.unite}</span>
                         <span className="text-xs text-gray-500 dark:text-zinc-400">Seuil: {article.stockMinimum}</span>
                       </div>
                       {aCommander > 0 && (
@@ -281,12 +325,12 @@ export default async function Home() {
                     </div>
                   </div>
                 )
-              })}
-              {articlesEnAlerte === 0 && (
-                <div className="p-8 text-center text-gray-500 dark:text-zinc-400 text-sm">
-                  Aucun article en rupture de stock.
-                </div>
-              )}
+              })
+            ) : (
+              <div className="p-8 text-center text-gray-500 dark:text-zinc-400 text-sm">
+                Aucun article en rupture de stock.
+              </div>
+            )}
             
             {alertesDetails.length > 5 && (
               <div className="p-3 text-center bg-gray-50 dark:bg-zinc-950">
