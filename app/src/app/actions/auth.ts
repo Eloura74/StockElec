@@ -25,61 +25,76 @@ async function initAdmin() {
 }
 
 export async function login(formData: FormData) {
-  await initAdmin()
+  try {
+    await initAdmin()
 
-  const username = (formData.get("username") as string).toLowerCase().trim()
-  const password = formData.get("password") as string
+    const rawUsername = formData.get("username")
+    const rawPassword = formData.get("password")
 
-  const user = await (prisma as any).user.findUnique({
-    where: { username }
-  })
-
-  if (!user) {
-    return { error: "Identifiant ou mot de passe incorrect." }
-  }
-
-  // Rétrocompatibilité : si le mot de passe n'est pas haché (ne commence pas par $2a$ ou $2b$ ou $2y$)
-  let isPasswordValid = false;
-  if (!user.password.startsWith("$2")) {
-    isPasswordValid = (user.password === password);
-    // Si valide, on le met à jour avec le hash silencieusement pour le migrer
-    if (isPasswordValid) {
-      const newHash = await bcrypt.hash(password, 10);
-      await (prisma as any).user.update({
-        where: { id: user.id },
-        data: { password: newHash }
-      });
+    if (!rawUsername || !rawPassword) {
+      return { error: "Veuillez renseigner un identifiant et un mot de passe." }
     }
-  } else {
-    isPasswordValid = await bcrypt.compare(password, user.password);
-  }
 
-  if (!isPasswordValid) {
-    return { error: "Identifiant ou mot de passe incorrect." }
-  }
+    const username = String(rawUsername).toLowerCase().trim()
+    const password = String(rawPassword)
 
-  // Création de la session
-  const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-  const sessionData = { 
-    userId: user.id, 
-    username: user.username, 
-    role: user.role 
-  }
-  
-  const sessionToken = await encrypt(sessionData)
-  
-  const cookieStore = await cookies()
-  cookieStore.set("session", sessionToken, { 
-    expires, 
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === "production" 
-  })
+    const user = await (prisma as any).user.findUnique({
+      where: { username }
+    })
 
-  // Redirection selon le rôle
-  if (user.role === 'GERANT') {
-    redirect("/")
-  } else {
-    redirect("/depart-matin")
+    if (!user) {
+      return { error: "Identifiant ou mot de passe incorrect." }
+    }
+
+    // Rétrocompatibilité : si le mot de passe n'est pas haché (ne commence pas par $2a$ ou $2b$ ou $2y$)
+    let isPasswordValid = false;
+    if (!user.password.startsWith("$2")) {
+      isPasswordValid = (user.password === password);
+      // Si valide, on le met à jour avec le hash silencieusement pour le migrer
+      if (isPasswordValid) {
+        const newHash = await bcrypt.hash(password, 10);
+        await (prisma as any).user.update({
+          where: { id: user.id },
+          data: { password: newHash }
+        });
+      }
+    } else {
+      isPasswordValid = await bcrypt.compare(password, user.password);
+    }
+
+    if (!isPasswordValid) {
+      return { error: "Identifiant ou mot de passe incorrect." }
+    }
+
+    // Création de la session
+    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    const sessionData = { 
+      userId: user.id, 
+      username: user.username, 
+      role: user.role 
+    }
+    
+    const sessionToken = await encrypt(sessionData)
+    
+    const cookieStore = await cookies()
+    cookieStore.set("session", sessionToken, { 
+      expires, 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === "production" 
+    })
+
+    // Redirection selon le rôle
+    if (user.role === 'GERANT') {
+      redirect("/")
+    } else {
+      redirect("/depart-matin")
+    }
+  } catch (error: any) {
+    if (error?.message === 'NEXT_REDIRECT' || error?.digest?.startsWith('NEXT_REDIRECT')) {
+      throw error
+    }
+    console.error("Erreur serveur login:", error)
+    return { error: "Erreur de connexion au serveur ou à la base de données. Veuillez réessayer." }
   }
 }
 

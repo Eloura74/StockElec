@@ -53,8 +53,9 @@ export default function LoginPage() {
                   required
                   name="username"
                   type="text"
+                  autoComplete="username"
                   placeholder="ex: cedricelec ou max"
-                  className="block w-full pl-10 rounded-lg border-gray-300 dark:border-zinc-700 px-4 py-3 bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-50 focus:bg-white dark:bg-zinc-900 focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                  className="block w-full pl-10 rounded-lg border-gray-300 dark:border-zinc-700 px-4 py-3 bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-50 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 focus:ring-blue-500 transition-colors"
                 />
               </div>
             </div>
@@ -69,8 +70,9 @@ export default function LoginPage() {
                   required
                   name="password"
                   type="password"
+                  autoComplete="current-password"
                   placeholder="••••••••"
-                  className="block w-full pl-10 rounded-lg border-gray-300 dark:border-zinc-700 px-4 py-3 bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-50 focus:bg-white dark:bg-zinc-900 focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                  className="block w-full pl-10 rounded-lg border-gray-300 dark:border-zinc-700 px-4 py-3 bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-50 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 focus:ring-blue-500 transition-colors"
                 />
               </div>
             </div>
