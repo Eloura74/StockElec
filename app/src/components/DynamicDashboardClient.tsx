@@ -162,20 +162,13 @@ export function DynamicDashboardClient({
       {/* 1. HERO CARROUSEL INTERACTIF // VITRINE DYNAMIQUE         */}
       {/* ========================================================= */}
       <div 
-        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-[#111622] shadow-sm"
+        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-[#111622]/90 backdrop-blur-md shadow-sm"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Arrière-plan CédricElec haute définition avec fondu */}
-        <div 
-          className="absolute inset-0 bg-cover bg-right sm:bg-center bg-no-repeat opacity-20 dark:opacity-35 pointer-events-none transition-opacity"
-          style={{ backgroundImage: `url('/images/cedricelec_bg.jpg')` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-transparent dark:from-[#111622] dark:via-[#111622]/80 dark:to-transparent pointer-events-none" />
-
         {/* Contenu des Slides avec transition fluide */}
         <div 
-          className="relative z-10 flex transition-transform duration-500 ease-out"
+          className="flex transition-transform duration-500 ease-out"
           style={{ transform: `translateX(-${currentHeroSlide * 100}%)` }}
         >
           {/* SLIDE 1 : SYNTHÈSE GLOBALE */}

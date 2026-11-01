@@ -62,9 +62,9 @@ export default async function RootLayout({
                 showSidebar ? "p-4 sm:p-6 lg:p-8" : "p-0"
               }`}
             >
-              {/* Fond d'ambiance CédricElec haute définition */}
+              {/* Fond d'ambiance CédricElec haute définition (filigrane subtil) */}
               <div 
-                className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center bg-no-repeat opacity-[0.06] dark:opacity-[0.18] transition-opacity duration-500"
+                className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center bg-no-repeat opacity-[0.04] dark:opacity-[0.09] transition-opacity duration-500"
                 style={{ backgroundImage: `url('/images/cedricelec_bg.jpg')` }}
               />
               <div className="relative z-10">
