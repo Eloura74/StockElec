@@ -6,6 +6,7 @@ import { getSession } from "@/lib/auth";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CyberThemeProvider } from "@/components/CyberThemeProvider";
 import { ThemeSettingsModal } from "@/components/ThemeSettingsModal";
+import { CommandPalette } from "@/components/CommandPalette";
 import { Toaster } from "sonner";
 
 const inter = Inter({ 
@@ -74,6 +75,9 @@ export default async function RootLayout({
 
             {/* Modale des paramètres de finitions & thèmes */}
             <ThemeSettingsModal />
+
+            {/* Palette de commandes globales (Ctrl + K) */}
+            <CommandPalette />
 
             <Toaster 
               position="bottom-right" 

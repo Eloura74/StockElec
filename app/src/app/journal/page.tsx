@@ -28,23 +28,27 @@ export default async function JournalPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded-lg">
-            <Shield className="w-6 h-6" />
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40">
+              Traçabilité & Sécurité
+            </span>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50">Journal d'Activité & Sauvegardes</h1>
-            <p className="text-sm text-gray-500 dark:text-zinc-400">Historique des actions critiques et instantanés de sécurité.</p>
-          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            Journal d'Audit & Sécurité
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            Historique horodaté des actions critiques, mouvements de stock et sauvegardes certifiées de Quentin Électricité.
+          </p>
         </div>
 
         {session.role === 'GERANT' && (
           <a
             href="/api/backup/export"
             download
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-gray-700 dark:text-zinc-200 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-700 shadow-sm transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#111622] border border-slate-200/80 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-[#161d2d] shadow-2xs transition-all tactile-btn cursor-pointer"
             title="Télécharger une sauvegarde complète de la base de données"
           >
             <Download className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -53,10 +57,10 @@ export default async function JournalPage() {
         )}
       </div>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden">
+      <div className="prestige-card rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs">
         {logs.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 dark:text-zinc-400">
-            Aucun événement enregistré.
+          <div className="p-12 text-center text-slate-400 text-xs">
+            Aucun événement enregistré pour le moment.
           </div>
         ) : (
           <div className="overflow-x-auto">

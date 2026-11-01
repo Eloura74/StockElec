@@ -162,7 +162,7 @@ export function DynamicDashboardClient({
       {/* 1. HERO CARROUSEL INTERACTIF // VITRINE DYNAMIQUE         */}
       {/* ========================================================= */}
       <div 
-        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-[#111622]/90 backdrop-blur-md shadow-sm"
+        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-[#111622]/90 backdrop-blur-md shadow-sm electric-conduit prestige-sheen"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -387,7 +387,7 @@ export function DynamicDashboardClient({
             {/* KPI 1 : Articles */}
             <div 
               onClick={() => setActiveTab("general")}
-              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-blue-500/40 dark:hover:border-blue-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer"
+              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-blue-500/40 dark:hover:border-blue-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer prestige-sheen overflow-hidden"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
@@ -434,7 +434,7 @@ export function DynamicDashboardClient({
             {/* KPI 2 : Chantiers */}
             <div 
               onClick={() => setActiveTab("chantiers")}
-              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-emerald-500/40 dark:hover:border-emerald-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer"
+              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-emerald-500/40 dark:hover:border-emerald-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer prestige-sheen overflow-hidden"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
@@ -473,7 +473,7 @@ export function DynamicDashboardClient({
             {/* KPI 3 : Valeur Dépôt */}
             <div 
               onClick={() => setActiveTab("finance")}
-              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-amber-500/40 dark:hover:border-amber-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer"
+              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-amber-500/40 dark:hover:border-amber-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer prestige-sheen overflow-hidden"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
@@ -512,7 +512,7 @@ export function DynamicDashboardClient({
             {/* KPI 4 : Valeur Chantiers */}
             <div 
               onClick={() => setActiveTab("chantiers")}
-              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-indigo-500/40 dark:hover:border-indigo-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer"
+              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-indigo-500/40 dark:hover:border-indigo-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer prestige-sheen overflow-hidden"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
@@ -551,7 +551,7 @@ export function DynamicDashboardClient({
             {/* KPI 5 : Alertes Stock */}
             <div 
               onClick={() => setActiveTab("alertes")}
-              className={`group relative p-4.5 rounded-2xl border transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer hover:shadow-xl hover:-translate-y-1.5 ${
+              className={`group relative p-4.5 rounded-2xl border transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer hover:shadow-xl hover:-translate-y-1.5 prestige-sheen overflow-hidden ${
                 articlesEnAlerte > 0
                   ? "bg-rose-50/70 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40 hover:border-rose-500"
                   : "bg-white dark:bg-[#111622] border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:border-slate-300 dark:hover:border-white/20"

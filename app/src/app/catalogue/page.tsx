@@ -7,6 +7,7 @@ import Link from "next/link"
 import { SearchInput } from "@/components/SearchInput"
 import { ExportPDFButton } from "@/components/ExportPDFButton"
 import { CatalogueFilters } from "./CatalogueFilters"
+import { CopyReferenceButton } from "@/components/CopyReferenceButton"
 
 export default async function CataloguePage({ 
   searchParams 
@@ -407,9 +408,9 @@ export default async function CataloguePage({
                                 {article.designation}
                               </Link>
 
-                              <p className="font-mono text-[11px] text-slate-400 dark:text-slate-500">
-                                {article.reference}
-                              </p>
+                              <div className="flex items-center gap-1.5 pt-0.5">
+                                <CopyReferenceButton text={article.reference} />
+                              </div>
                             </div>
                           </td>
 
@@ -581,9 +582,14 @@ export default async function CataloguePage({
                           >
                             {article.designation}
                           </Link>
-                          <p className="text-xs text-slate-400 font-mono mt-0.5">
-                            {article.reference} {article.referenceFournisseur ? `• ${article.referenceFournisseur}` : ''}
-                          </p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <CopyReferenceButton text={article.reference} />
+                            {article.referenceFournisseur && (
+                              <span className="text-[11px] text-slate-400 font-mono">
+                                • {article.referenceFournisseur}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {article.prixUnitaire > 0 && (
                           <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tabular-nums">

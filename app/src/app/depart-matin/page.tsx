@@ -43,18 +43,34 @@ export default async function DepartMatinPage() {
   const outillages = await getOutillages()
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f17] flex flex-col">
       {/* Header Mobile / Tablette (Pas de sidebar) */}
-      <header className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-white/10 p-4 flex justify-between items-center shadow-sm dark:shadow-lg">
-        <div>
-          <h1 className="text-xl font-black tracking-tight text-gray-900 dark:text-white">Départ Chantier</h1>
-          <p className="text-sm font-medium text-gray-500 dark:text-zinc-400">Connecté : <span className="text-blue-600 dark:text-indigo-400">{session.username}</span></p>
+      <header className="bg-white dark:bg-[#0c1017] border-b border-slate-200/80 dark:border-white/[0.08] p-4 flex justify-between items-center shadow-xs electric-conduit">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-xl overflow-hidden shadow-sm ring-1 ring-slate-200 dark:ring-white/10 shrink-0 bg-slate-900">
+            <img 
+              src="/images/cedricelec_badge.jpg" 
+              alt="CédricElec" 
+              className="h-full w-full object-cover" 
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">Départ Chantier Camion</h1>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40">Express</span>
+            </div>
+            <p className="text-xs font-medium text-slate-400 dark:text-slate-500">Connecté : <span className="font-semibold text-slate-700 dark:text-slate-300">{session.username}</span></p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <form action={logout}>
-            <button type="submit" className="bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 ring-1 ring-gray-200 dark:ring-white/10 p-2.5 rounded-xl transition-all shadow-sm">
-              <LogOut className="w-5 h-5 text-gray-700 dark:text-zinc-300" />
+            <button 
+              type="submit" 
+              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer"
+              title="Se déconnecter"
+            >
+              <LogOut className="w-5 h-5" />
             </button>
           </form>
         </div>

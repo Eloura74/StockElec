@@ -19,9 +19,19 @@ export default async function ReassortPage() {
   }, {})
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50">Réassort & Commandes</h1>
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-in fade-in duration-200">
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40">
+            Approvisionnements & Commandes
+          </span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          Réassort Fournisseurs
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          Génération automatique des besoins de réapprovisionnement groupés par fournisseur (Rexel, Sonepar, etc.).
+        </p>
       </div>
 
       {Object.keys(parFournisseur).length === 0 ? (

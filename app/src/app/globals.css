@@ -239,5 +239,145 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* ========================================================= */
+/* ANIMATIONS SIGNATURE ÉLECTRICITÉ & EFFETS LUMINEUX HAUTE PRÉCISION */
+/* ========================================================= */
+
+@keyframes electric-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.electric-conduit {
+  position: relative;
+  overflow: hidden;
+}
+
+.electric-conduit::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent 0%, var(--accent-color) 50%, transparent 100%);
+  animation: electric-sweep 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  opacity: 0.85;
+}
+
+@keyframes subtle-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-float-slow {
+  animation: subtle-float 4.5s ease-in-out infinite;
+}
+
+@keyframes radar-ripple {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 var(--accent-color);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 6px transparent;
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 transparent;
+    opacity: 0;
+  }
+}
+
+.radar-beacon {
+  position: relative;
+}
+
+.radar-beacon::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  animation: radar-ripple 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Boutons tactiles avec micro-ressort */
+.tactile-btn {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.tactile-btn:hover {
+  transform: translateY(-1px);
+}
+
+.tactile-btn:active {
+  transform: translateY(0.5px) scale(0.98);
+}
+
+/* Badges avec lueur énergétique CédricElec */
+.badge-electric {
+  background: var(--accent-soft);
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  box-shadow: 0 0 10px -2px var(--accent-soft);
+}
+
+/* Reflet spéculaire sur les cartes de haute finition */
+.prestige-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.prestige-sheen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 45%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 55%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  transition: left 0.8s ease-in-out;
+  pointer-events: none;
+}
+
+.prestige-sheen:hover::before {
+  left: 150%;
+}
+
+/* Stagger entrance pour listes et tableaux */
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 
 
