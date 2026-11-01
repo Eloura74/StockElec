@@ -212,4 +212,32 @@ button:focus-visible {
   outline: none;
 }
 
+/* Finitions & Lueurs Prestige */
+.prestige-input {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.prestige-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.glow-hover:hover {
+  box-shadow: 0 0 20px -3px var(--accent-soft);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-pill {
+  background: rgba(17, 22, 34, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+
 
