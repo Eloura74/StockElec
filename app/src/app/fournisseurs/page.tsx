@@ -29,8 +29,11 @@ export default async function FournisseursPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Contrôle Fournisseurs & Comptabilité</h1>
-          <p className="text-gray-500 dark:text-zinc-400 mt-2">
+          <span className="inline-block mb-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40">
+            Achats &amp; Factures
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Contrôle Fournisseurs & Comptabilité</h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Vérifiez les prix de vos factures, affectez les chantiers et suivez vos avoirs en toute simplicité.
           </p>
         </div>

@@ -35,12 +35,12 @@ export default async function ReassortPage() {
       </div>
 
       {Object.keys(parFournisseur).length === 0 ? (
-        <div className="rounded-xl border bg-white dark:bg-zinc-900 p-12 text-center shadow-sm">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-            <ShoppingCart className="h-6 w-6 text-emerald-600" />
+        <div className="prestige-sheen rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] p-12 text-center shadow-2xs animate-slide-up">
+          <div className="radar-beacon animate-float-slow mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 ring-1 ring-emerald-200/70 dark:ring-emerald-800/40">
+            <ShoppingCart className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-zinc-50">Tout est en ordre !</h3>
-          <p className="mt-2 text-gray-500 dark:text-zinc-400">Aucun article n'est actuellement sous son seuil d'alerte.</p>
+          <h3 className="mt-4 text-lg font-bold tracking-tight text-slate-900 dark:text-white">Tout est en ordre !</h3>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Aucun article n'est actuellement sous son seuil d'alerte.</p>
         </div>
       ) : (
         <div className="space-y-8">

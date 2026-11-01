@@ -16,10 +16,13 @@ export default async function RentabilitePage() {
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <header>
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+        <span className="inline-block mb-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40">
+          Rentabilité
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
           Bilan Financier & Chantiers
         </h1>
-        <p className="text-gray-500 mt-2 text-sm">
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
           Suivi des coûts d'achats matériels ventilés par chantier depuis les factures.
         </p>
       </header>

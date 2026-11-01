@@ -20,10 +20,10 @@ export default async function JournalPage() {
 
   const getBadgeClass = (action: string) => {
     switch (action) {
-      case 'SUPPRESSION': return "bg-red-100 text-red-800 border-red-200"
-      case 'MODIFICATION': return "bg-orange-100 text-orange-800 border-orange-200"
-      case 'CREATION': return "bg-emerald-100 text-emerald-800 border-emerald-200"
-      default: return "bg-gray-100 text-gray-800 border-gray-200"
+      case 'SUPPRESSION': return "bg-red-50 text-red-700 border-red-200/70 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800/40"
+      case 'MODIFICATION': return "bg-orange-50 text-orange-700 border-orange-200/70 dark:bg-orange-950/50 dark:text-orange-300 dark:border-orange-800/40"
+      case 'CREATION': return "bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/40"
+      default: return "bg-slate-100 text-slate-700 border-slate-200/70 dark:bg-white/[0.06] dark:text-slate-300 dark:border-white/10"
     }
   }
 
@@ -57,6 +57,25 @@ export default async function JournalPage() {
         )}
       </div>
 
+      {logs.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Événements', value: logs.length, tone: 'text-slate-900 dark:text-white' },
+            { label: 'Créations', value: logs.filter((l) => l.action === 'CREATION').length, tone: 'text-emerald-600 dark:text-emerald-400' },
+            { label: 'Modifications', value: logs.filter((l) => l.action === 'MODIFICATION').length, tone: 'text-orange-600 dark:text-orange-400' },
+            { label: 'Suppressions', value: logs.filter((l) => l.action === 'SUPPRESSION').length, tone: 'text-red-600 dark:text-red-400' },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="prestige-sheen rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] px-4 py-3 shadow-2xs"
+            >
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{stat.label}</div>
+              <div className={`mt-1 text-2xl font-extrabold tabular-nums ${stat.tone}`}>{stat.value}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="prestige-card rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs">
         {logs.length === 0 ? (
           <div className="p-12 text-center text-slate-400 text-xs">
@@ -65,23 +84,27 @@ export default async function JournalPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-gray-50 dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800">
+              <thead className="bg-slate-50/80 dark:bg-white/[0.03] border-b border-slate-200/80 dark:border-white/[0.08]">
                 <tr>
-                  <th className="px-6 py-4 font-medium text-gray-500 dark:text-zinc-400">Date</th>
-                  <th className="px-6 py-4 font-medium text-gray-500 dark:text-zinc-400">Utilisateur</th>
-                  <th className="px-6 py-4 font-medium text-gray-500 dark:text-zinc-400">Action</th>
-                  <th className="px-6 py-4 font-medium text-gray-500 dark:text-zinc-400">Entité</th>
-                  <th className="px-6 py-4 font-medium text-gray-500 dark:text-zinc-400">Détails</th>
+                  <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Date</th>
+                  <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Utilisateur</th>
+                  <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Action</th>
+                  <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Entité</th>
+                  <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Détails</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
-                {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-zinc-950/50">
-                    <td className="px-6 py-3 text-gray-500 dark:text-zinc-400 whitespace-nowrap">
+              <tbody className="divide-y divide-slate-100 dark:divide-white/[0.06]">
+                {logs.map((log, index) => (
+                  <tr
+                    key={log.id}
+                    className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors animate-slide-up"
+                    style={{ animationDelay: `${Math.min(index, 12) * 30}ms`, animationFillMode: 'both' }}
+                  >
+                    <td className="px-6 py-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap tabular-nums">
                       {new Date(log.date).toLocaleDateString('fr-FR')} à {new Date(log.date).toLocaleTimeString('fr-FR')}
                     </td>
                     <td className="px-6 py-3">
-                      <span className="font-semibold text-gray-900 dark:text-zinc-50">{log.user}</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">{log.user}</span>
                     </td>
                     <td className="px-6 py-3">
                       <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getBadgeClass(log.action)}`}>
@@ -89,10 +112,10 @@ export default async function JournalPage() {
                         {log.action}
                       </div>
                     </td>
-                    <td className="px-6 py-3 font-medium text-gray-700 dark:text-zinc-300">
+                    <td className="px-6 py-3 font-medium text-slate-700 dark:text-slate-300">
                       {log.entite}
                     </td>
-                    <td className="px-6 py-3 text-gray-600 dark:text-zinc-400">
+                    <td className="px-6 py-3 text-slate-600 dark:text-slate-400">
                       {log.details}
                     </td>
                   </tr>
