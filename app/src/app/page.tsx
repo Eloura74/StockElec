@@ -13,6 +13,8 @@ export default async function Home() {
   let articlesEnAlerte = 0
   let valeurTotaleDépôt = 0
   let valeurTotaleChantiers = 0
+  let articlesEnStockCount = 0
+  let totalPiecesStock = 0
   
   const alertesDetails = []
 
@@ -22,6 +24,11 @@ export default async function Home() {
     valeurTotaleDépôt += stock.stockDepot * prix
     valeurTotaleChantiers += stock.stockChantiersTotal * prix
     
+    if (stock.stockDepot > 0 || stock.stockChantiersTotal > 0) {
+      articlesEnStockCount++
+      totalPiecesStock += Math.max(0, stock.stockDepot) + Math.max(0, stock.stockChantiersTotal)
+    }
+
     if (stock.enAlerte) {
       articlesEnAlerte++
       alertesDetails.push({
@@ -140,8 +147,16 @@ export default async function Home() {
               <Package className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Total Articles</p>
-              <h2 className="text-2xl font-black text-gray-900 dark:text-zinc-50 mt-1">{articlesCount}</h2>
+              <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Articles en Stock</p>
+              <div className="flex items-baseline gap-2 mt-1">
+                <h2 className="text-2xl font-black text-gray-900 dark:text-zinc-50">{articlesEnStockCount}</h2>
+                <span className="text-xs text-gray-500 font-medium">réf. ({totalPiecesStock} pièces)</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                <Link href="/catalogue" className="hover:underline hover:text-blue-600">
+                  {articlesCount.toLocaleString('fr-FR')} au catalogue
+                </Link>
+              </p>
             </div>
           </div>
         </div>
