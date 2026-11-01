@@ -166,9 +166,16 @@ export function DynamicDashboardClient({
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
+        {/* Arrière-plan CédricElec haute définition avec fondu */}
+        <div 
+          className="absolute inset-0 bg-cover bg-right sm:bg-center bg-no-repeat opacity-20 dark:opacity-35 pointer-events-none transition-opacity"
+          style={{ backgroundImage: `url('/images/cedricelec_bg.jpg')` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-transparent dark:from-[#111622] dark:via-[#111622]/80 dark:to-transparent pointer-events-none" />
+
         {/* Contenu des Slides avec transition fluide */}
         <div 
-          className="flex transition-transform duration-500 ease-out"
+          className="relative z-10 flex transition-transform duration-500 ease-out"
           style={{ transform: `translateX(-${currentHeroSlide * 100}%)` }}
         >
           {/* SLIDE 1 : SYNTHÈSE GLOBALE */}

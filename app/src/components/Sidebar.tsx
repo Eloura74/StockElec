@@ -106,11 +106,12 @@ export function Sidebar() {
         {/* Brand Header */}
         <div className="p-4 border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01]">
           <Link href="/" className="flex items-center gap-3 group focus:outline-none">
-            <div 
-              className="h-9 w-9 rounded-xl flex items-center justify-center text-white shadow-xs group-hover:scale-102 transition-transform"
-              style={{ backgroundColor: currentThemeConfig.colorHex }}
-            >
-              <Zap className="h-4.5 w-4.5 fill-current" />
+            <div className="h-9 w-9 rounded-xl overflow-hidden shadow-sm ring-1 ring-slate-200/80 dark:ring-white/10 group-hover:scale-105 transition-transform shrink-0 bg-slate-900">
+              <img 
+                src="/images/cedricelec_badge.jpg" 
+                alt="CédricElec" 
+                className="h-full w-full object-cover" 
+              />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -123,7 +124,7 @@ export function Sidebar() {
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate">
-                Quentin Électricité
+                CédricElec • Quentin Elec
               </p>
             </div>
           </Link>
@@ -266,11 +267,12 @@ export function Sidebar() {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 focus:outline-none"
             >
-              <div 
-                className="h-8.5 w-8.5 rounded-xl flex items-center justify-center text-white shadow-xs"
-                style={{ backgroundColor: currentThemeConfig.colorHex }}
-              >
-                <Zap className="h-4.5 w-4.5 fill-current" />
+              <div className="h-8.5 w-8.5 rounded-xl overflow-hidden shadow-sm ring-1 ring-slate-200/80 dark:ring-white/10 shrink-0 bg-slate-900">
+                <img 
+                  src="/images/cedricelec_badge.jpg" 
+                  alt="CédricElec" 
+                  className="h-full w-full object-cover" 
+                />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
@@ -282,7 +284,7 @@ export function Sidebar() {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                  Quentin Électricité
+                  CédricElec • Quentin Elec
                 </p>
               </div>
             </Link>

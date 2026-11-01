@@ -23,30 +23,40 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative bg-slate-50 dark:bg-[#0b0f17] selection:bg-blue-600/15 selection:text-blue-900 dark:selection:text-blue-200">
+    <div className="min-h-dvh flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative bg-slate-900 selection:bg-blue-600/15 selection:text-blue-200 overflow-hidden">
+      {/* Fond d'écran CédricElec haute définition avec filtre sombre & verre dépoli */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 dark:opacity-45 pointer-events-none"
+        style={{ backgroundImage: `url('/images/cedricelec_bg.jpg')` }}
+      />
+      <div className="absolute inset-0 bg-slate-950/75 dark:bg-[#070b12]/80 backdrop-blur-[2px] pointer-events-none" />
       
       {/* Sélecteur de mode en haut à droite */}
       <div className="absolute top-5 right-5 z-20 flex items-center gap-2">
         <ThemeToggle variant="segmented" />
       </div>
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        {/* Logo Haut de Gamme */}
-        <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md mx-auto mb-4">
-          <Zap className="h-7 w-7 fill-white" />
+      <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md text-center">
+        {/* Logo CédricElec Prestige */}
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl overflow-hidden ring-2 ring-white/15 shadow-xl mx-auto mb-4 bg-slate-900">
+          <img 
+            src="/images/cedricelec_badge.jpg" 
+            alt="CédricElec" 
+            className="h-full w-full object-cover" 
+          />
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-1.5">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             StockElec
           </h1>
-          <span className="text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300">
+          <span className="text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-md bg-white/10 text-slate-200">
             Pro
           </span>
         </div>
 
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-          Plateforme de pilotage et gestion • Quentin Électricité
+        <p className="text-xs sm:text-sm text-slate-400">
+          Plateforme de pilotage et gestion • CédricElec & Quentin Électricité
         </p>
       </div>
 
