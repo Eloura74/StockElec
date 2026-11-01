@@ -29,9 +29,10 @@ export function ExportExcelComptableButton({
     <button 
       type="button"
       onClick={exportExcel}
-      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm flex items-center gap-2"
+      className="bg-white dark:bg-[#111622] hover:bg-slate-50 dark:hover:bg-[#161d2d] text-emerald-700 dark:text-emerald-400 border border-slate-200/80 dark:border-white/10 px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer"
     >
-      <FileSpreadsheet className="w-4 h-4" /> Export Comptable (Excel)
+      <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+      <span>Export Comptable</span>
     </button>
   )
 }

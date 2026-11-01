@@ -11,9 +11,10 @@ export function CloturerButton() {
           e.preventDefault();
         }
       }}
-      className="flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 shadow-sm transition-colors"
+      className="inline-flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2 text-sm font-semibold shadow-xs hover:shadow-sm active:scale-95 transition-all cursor-pointer"
     >
-      <CheckCircle2 className="w-4 h-4" /> Clôturer
+      <CheckCircle2 className="w-4 h-4" />
+      <span>Clôturer</span>
     </button>
   )
 }
