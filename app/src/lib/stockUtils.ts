@@ -55,7 +55,7 @@ export function calculerStockArticle(article: Article, mouvements: Mouvement[]):
     stockInitial: article.stockInitial,
     stockDepot,
     stockChantiersTotal,
-    enAlerte: stockDepot <= article.stockMinimum
+    enAlerte: article.stockMinimum > 0 ? stockDepot <= article.stockMinimum : stockDepot < 0
   }
 }
 

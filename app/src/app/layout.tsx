@@ -1,26 +1,34 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 import { getSession } from "@/lib/auth";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { CyberThemeProvider } from "@/components/CyberThemeProvider";
+import { ThemeSettingsModal } from "@/components/ThemeSettingsModal";
 import { Toaster } from "sonner";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: "swap"
+});
 
 export const metadata: Metadata = {
-  title: "StockPro - Gestion de Chantiers",
-  description: "Gestion des stocks, dépôts et chantiers",
+  title: "StockElec — Pilotage & Gestion des Chantiers",
+  description: "Plateforme professionnelle d'élite pour la gestion des stocks, chantiers et outillages de Quentin Électricité",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "StockPro",
+    title: "StockElec",
   },
 };
 
-export const viewport = {
-  themeColor: "#f8fafc",
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0f17" }
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -32,22 +40,44 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getSession();
-  const showSidebar = session?.role === 'GERANT';
+  const showSidebar = session?.role === "GERANT";
 
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${inter.className} flex h-dvh bg-white dark:bg-zinc-950 text-gray-900 dark:text-zinc-50 antialiased overflow-hidden transition-colors`}>
+      <body
+        suppressHydrationWarning
+        className={`${inter.className} flex h-dvh bg-slate-50 dark:bg-[#0b0f17] text-slate-900 dark:text-slate-100 antialiased overflow-hidden selection:bg-blue-600/15 selection:text-blue-900 dark:selection:text-blue-200`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {showSidebar && <Sidebar />}
-          <main className={`flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50/20 dark:bg-zinc-900/20 ${!showSidebar ? 'p-0 md:p-0' : ''}`}>
-            {children}
-          </main>
-          <Toaster position="bottom-right" richColors theme="system" />
+          <CyberThemeProvider>
+            {showSidebar && <Sidebar />}
+            
+            <main
+              className={`flex-1 overflow-y-auto relative ${
+                showSidebar ? "p-4 sm:p-6 lg:p-8" : "p-0"
+              }`}
+            >
+              {children}
+            </main>
+
+            {/* Modale des paramètres de finitions & thèmes */}
+            <ThemeSettingsModal />
+
+            <Toaster 
+              position="bottom-right" 
+              richColors 
+              theme="system"
+              toastOptions={{
+                className: "text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#111622]/95 shadow-xl text-slate-900 dark:text-white",
+                duration: 3500
+              }}
+            />
+          </CyberThemeProvider>
         </ThemeProvider>
       </body>
     </html>

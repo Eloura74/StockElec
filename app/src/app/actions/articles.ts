@@ -31,7 +31,7 @@ export async function getArticlesWithStocks() {
         stockInitial: art.stockInitial,
         stockDepot: stockDepotFinal,
         stockChantiersTotal: s.stockChantiersTotal,
-        enAlerte: stockDepotFinal <= art.stockMinimum
+        enAlerte: art.stockMinimum > 0 ? stockDepotFinal <= art.stockMinimum : stockDepotFinal < 0
       }
     }
   })

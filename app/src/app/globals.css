@@ -1,26 +1,169 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ========================================================= */
+/* PALETTES DE FINITION HAUT DE GAMME // STOCKELEC PRESTIGE  */
+/* ========================================================= */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-glass: rgba(255, 255, 255, 0.95);
+  --border: #e2e8f0;
+  --primary: #2563eb;
+  --accent-color: #3b82f6;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+}
+
+.dark {
+  --background: #0b0f17;
+  --foreground: #f8fafc;
+  --surface: #111622;
+  --surface-glass: rgba(17, 22, 34, 0.92);
+  --border: rgba(255, 255, 255, 0.08);
+  --primary: #3b82f6;
+  --accent-color: #60a5fa;
+  --accent-soft: rgba(59, 130, 246, 0.12);
+}
+
+/* Finition 1 : Bleu Saphir (Signature) */
+[data-cyber-theme="cyan"] {
+  --primary: #2563eb;
+  --accent-color: #3b82f6;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+}
+.dark[data-cyber-theme="cyan"] {
+  --primary: #3b82f6;
+  --accent-color: #60a5fa;
+  --accent-soft: rgba(59, 130, 246, 0.12);
+}
+
+/* Finition 2 : Émeraude Impérial (Prestige) */
+[data-cyber-theme="emerald"] {
+  --primary: #059669;
+  --accent-color: #10b981;
+  --accent-soft: rgba(5, 150, 105, 0.08);
+}
+.dark[data-cyber-theme="emerald"] {
+  --primary: #10b981;
+  --accent-color: #34d399;
+  --accent-soft: rgba(16, 185, 129, 0.12);
+}
+
+/* Finition 3 : Ambre & Cuivre Noble (Atelier Électricien) */
+[data-cyber-theme="amber"] {
+  --primary: #d97706;
+  --accent-color: #f59e0b;
+  --accent-soft: rgba(217, 119, 6, 0.08);
+}
+.dark[data-cyber-theme="amber"] {
+  --primary: #f59e0b;
+  --accent-color: #fbbf24;
+  --accent-soft: rgba(245, 158, 11, 0.12);
+}
+
+/* Finition 4 : Indigo Profond (Studio) */
+[data-cyber-theme="violet"] {
+  --primary: #4f46e5;
+  --accent-color: #6366f1;
+  --accent-soft: rgba(79, 70, 229, 0.08);
+}
+.dark[data-cyber-theme="violet"] {
+  --primary: #6366f1;
+  --accent-color: #818cf8;
+  --accent-soft: rgba(99, 102, 241, 0.12);
+}
+
+/* Finition 5 : Titane & Graphite (Minimal) */
+[data-cyber-theme="stealth"] {
+  --primary: #334155;
+  --accent-color: #64748b;
+  --accent-soft: rgba(51, 65, 85, 0.08);
+}
+.dark[data-cyber-theme="stealth"] {
+  --primary: #94a3b8;
+  --accent-color: #cbd5e1;
+  --accent-soft: rgba(148, 163, 184, 0.12);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-border-subtle: var(--border);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base styles */
+html {
+  color-scheme: light dark;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Cartes Haute Précision - Finition Haut de Gamme */
+.prestige-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .prestige-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Chiffres tabulaires */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbars Subtiles & Élégantes */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Utilitaires de carrousels & glissement fluide */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Contours de focus soignés */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: none;
+}
+

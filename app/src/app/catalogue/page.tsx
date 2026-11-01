@@ -8,9 +8,20 @@ import { SearchInput } from "@/components/SearchInput"
 import { ExportPDFButton } from "@/components/ExportPDFButton"
 import { CatalogueFilters } from "./CatalogueFilters"
 
-export default async function CataloguePage({ searchParams }: { searchParams: Promise<{ q?: string, f?: string, c?: string, p?: string, alert?: string }> }) {
-  const { q, f, c, p, alert } = await searchParams
-  let articles = await getArticlesWithStocks()
+export default async function CataloguePage({ searchParams }: { searchParams: Promise<{ q?: string, f?: string, c?: string, p?: string, alert?: string, stock?: string }> }) {
+  const { q, f, c, p, alert, stock } = await searchParams
+  const allArticles = await getArticlesWithStocks()
+
+  // Métriques globales du catalogue pour les onglets
+  const totalCatalogue = allArticles.length
+  const totalEnStock = allArticles.filter((a: any) => a.stockInfo.stockDepot > 0 || a.stockInfo.stockChantiersTotal > 0).length
+  const totalAlertes = allArticles.filter((a: any) => a.stockInfo.enAlerte).length
+  
+  let articles = allArticles
+
+  if (stock === 'in_stock') {
+    articles = articles.filter((a: any) => a.stockInfo.stockDepot > 0 || a.stockInfo.stockChantiersTotal > 0)
+  }
   
   if (alert === 'true') {
     articles = articles.filter((a: any) => a.stockInfo.enAlerte)
@@ -33,10 +44,18 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
     articles = articles.filter((a: any) => a.categorie === c)
   }
 
-  const fournisseurs = Array.from(new Set(articles.map((a: any) => a.fournisseur).filter(Boolean))) as string[]
-  const categories = Array.from(new Set(articles.map((a: any) => a.categorie).filter(Boolean))) as string[]
+  const fournisseurs = Array.from(new Set(allArticles.map((a: any) => a.fournisseur).filter(Boolean))) as string[]
+  const categories = Array.from(new Set(allArticles.map((a: any) => a.categorie).filter(Boolean))) as string[]
   fournisseurs.sort()
   categories.sort()
+
+  // Tri prioritaire : les articles avec du stock physique en premier, puis ordre alphabétique
+  articles.sort((a: any, b: any) => {
+    const stockA = (a.stockInfo.stockDepot > 0 || a.stockInfo.stockChantiersTotal > 0) ? 1 : 0
+    const stockB = (b.stockInfo.stockDepot > 0 || b.stockInfo.stockChantiersTotal > 0) ? 1 : 0
+    if (stockA !== stockB) return stockB - stockA
+    return a.reference.localeCompare(b.reference)
+  })
 
   const currentPage = parseInt(p || "1", 10)
   const pageSize = 50
@@ -47,7 +66,12 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-tight">Mon Stock</h1>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Mon Stock</h1>
+            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">{totalEnStock} référence{totalEnStock > 1 ? "s" : ""} en stock</span> · {totalCatalogue.toLocaleString('fr-FR')} références au catalogue
+            </p>
+          </div>
           <ExportPDFButton articles={articles} />
           <Link
             href="/catalogue/import"
@@ -65,7 +89,10 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
         fournisseurs={fournisseurs} 
         categories={categories} 
         totalPages={totalPages} 
-        currentPage={currentPage} 
+        currentPage={currentPage}
+        totalCatalogue={totalCatalogue}
+        totalEnStock={totalEnStock}
+        totalAlertes={totalAlertes}
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -193,7 +220,13 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
                           <td className="px-4 py-3 text-gray-600 dark:text-zinc-300">
                             {article.referenceFournisseur || '-'}
                           </td>
-                          <td className={`px-4 py-3 text-center font-bold ${enAlerte ? 'text-red-600' : 'text-green-600'}`}>
+                          <td className={`px-4 py-3 text-center ${
+                            enAlerte 
+                              ? 'font-bold text-red-600' 
+                              : stockInfo.stockDepot > 0 
+                                ? 'font-bold text-emerald-600 dark:text-emerald-400' 
+                                : 'text-gray-400 dark:text-zinc-500'
+                          }`}>
                             {stockInfo.stockDepot} {article.unite}
                             {enAlerte && <AlertTriangle className="inline-block ml-1 h-4 w-4" />}
                           </td>
@@ -250,7 +283,13 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
                       <div className="flex gap-4 text-sm bg-gray-50 dark:bg-zinc-950 p-3 rounded-lg border border-gray-100 dark:border-zinc-800">
                         <div className="flex-1">
                           <div className="text-gray-500 dark:text-zinc-400 text-xs mb-1">Stock Dépôt</div>
-                          <div className={`font-bold text-lg ${enAlerte ? 'text-red-600' : 'text-green-600'}`}>
+                          <div className={`font-bold text-lg ${
+                            enAlerte 
+                              ? 'text-red-600' 
+                              : stockInfo.stockDepot > 0 
+                                ? 'text-emerald-600 dark:text-emerald-400' 
+                                : 'text-gray-400 dark:text-zinc-500 font-normal'
+                          }`}>
                             {stockInfo.stockDepot} <span className="text-sm font-normal">{article.unite}</span>
                             {enAlerte && <AlertTriangle className="inline-block ml-1 h-4 w-4" />}
                           </div>

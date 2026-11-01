@@ -1,144 +1,395 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, HardHat, FileText, ArrowRightLeft, Wrench, PackageSearch, Users, LogOut, Scan, Wand2, Menu, X, BookOpen, Shield } from "lucide-react";
+import { 
+  Home, 
+  Package, 
+  HardHat, 
+  FileText, 
+  ArrowRightLeft, 
+  Wrench, 
+  PackageSearch, 
+  Users, 
+  LogOut, 
+  Wand2, 
+  Menu, 
+  X, 
+  BookOpen, 
+  Shield,
+  Zap,
+  Palette
+} from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { ThemeToggle } from "./ThemeToggle";
+import { useCyberTheme } from "./CyberThemeProvider";
+
+interface NavLink {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+interface NavSection {
+  title: string;
+  links: NavLink[];
+}
 
 export function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { setIsSettingsOpen, currentThemeConfig, mounted } = useCyberTheme();
 
-  const links = [
-    { href: "/", label: "Tableau de bord", icon: Home },
-    { href: "/catalogue", label: "Mon Stock", icon: Package },
-    { href: "/chantiers", label: "Chantiers", icon: HardHat },
-    { href: "/outillage", label: "Outillage", icon: Wrench },
-    { href: "/inventaire", label: "Inventaire", icon: PackageSearch },
-    { href: "/reception-magique", label: "Réception Auto", icon: Wand2 },
-    { href: "/mouvements", label: "Mouvements", icon: FileText },
-    { href: "/reassort", label: "Réassort", icon: ArrowRightLeft },
-    { href: "/fournisseurs", label: "Factures F.", icon: FileText },
-    { href: "/rentabilite", label: "Bilan Chantiers", icon: FileText },
-    { href: "/journal", label: "Journal", icon: Shield },
-    { href: "/guide", label: "Guide & Tuto", icon: BookOpen },
-    { href: "/equipe", label: "Équipe", icon: Users },
+  // Support touche Échap pour fermer le menu mobile
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
+  // Bloquer le défilement du fond quand le menu mobile est ouvert
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  const navSections: NavSection[] = [
+    {
+      title: "Pilotage",
+      links: [
+        { href: "/", label: "Tableau de bord", icon: Home },
+        { href: "/catalogue", label: "Mon Stock", icon: Package },
+        { href: "/chantiers", label: "Chantiers", icon: HardHat },
+        { href: "/outillage", label: "Outillage", icon: Wrench },
+        { href: "/inventaire", label: "Inventaire", icon: PackageSearch },
+      ],
+    },
+    {
+      title: "Logistique & Flux",
+      links: [
+        { href: "/reception-magique", label: "Réception Factures", icon: Wand2 },
+        { href: "/mouvements", label: "Mouvements", icon: FileText },
+        { href: "/reassort", label: "Réassort", icon: ArrowRightLeft },
+        { href: "/fournisseurs", label: "Fournisseurs", icon: FileText },
+        { href: "/rentabilite", label: "Rentabilité", icon: FileText },
+      ],
+    },
+    {
+      title: "Système",
+      links: [
+        { href: "/journal", label: "Journal d'Audit", icon: Shield },
+        { href: "/guide", label: "Guide & Aide", icon: BookOpen },
+        { href: "/equipe", label: "Équipe & Accès", icon: Users },
+        { href: "/parametres", label: "Préférences & Thèmes", icon: Palette },
+      ],
+    },
   ];
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <div className="flex h-dvh w-64 flex-col border-r bg-gray-50 dark:bg-zinc-950/40 dark:bg-gray-900/40 px-4 py-6 shadow-sm">
-          <div className="flex items-center gap-2 px-2 pb-6">
-            <HardHat className="h-6 w-6 text-blue-600" />
-            <span className="text-lg font-bold tracking-tight">StockPro</span>
-          </div>
-          
-          <nav className="flex flex-1 flex-col gap-1 text-sm font-medium">
-            {links.map((link) => {
-              const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== "/");
-              const Icon = link.icon;
-              return (
-                <Link 
-                  key={link.href}
-                  href={link.href} 
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-                    isActive 
-                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" 
-                      : "text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 dark:bg-zinc-800 hover:text-gray-900 dark:text-gray-400 dark:text-zinc-500 dark:hover:bg-gray-800 dark:hover:text-gray-50"
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                  {link.label}
-                </Link>
-              )
-            })}
-          </nav>
-          
-          <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
-            <div className="flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-zinc-500">
-              Thème
-              <ThemeToggle />
+      {/* ========================================================= */}
+      {/* DESKTOP SIDEBAR — ÉLÉGANTE, PRESTIGIEUSE & ÉPURÉE         */}
+      {/* ========================================================= */}
+      <aside className="hidden md:flex h-dvh w-64 flex-col border-r border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0c1017] shrink-0 select-none transition-colors">
+        
+        {/* Brand Header */}
+        <div className="p-4 border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01]">
+          <Link href="/" className="flex items-center gap-3 group focus:outline-none">
+            <div 
+              className="h-9 w-9 rounded-xl flex items-center justify-center text-white shadow-xs group-hover:scale-102 transition-transform"
+              style={{ backgroundColor: currentThemeConfig.colorHex }}
+            >
+              <Zap className="h-4.5 w-4.5 fill-current" />
             </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold tracking-tight text-slate-900 dark:text-white text-sm">
+                  StockElec
+                </span>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300">
+                  Pro
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate">
+                Quentin Électricité
+              </p>
+            </div>
+          </Link>
+        </div>
+
+        {/* Navigation Sections */}
+        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-4 text-sm">
+          {navSections.map((section) => (
+            <div key={section.title} className="space-y-1">
+              <p className="px-2.5 text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+                {section.title}
+              </p>
+
+              <div className="space-y-0.5">
+                {section.links.map((link) => {
+                  const isActive =
+                    pathname === link.href ||
+                    (pathname.startsWith(link.href) && link.href !== "/");
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`group flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-medium transition-all duration-150 cursor-pointer ${
+                        isActive
+                          ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-2xs font-semibold"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <Icon className={`h-4 w-4 shrink-0 ${
+                          isActive 
+                            ? "text-white dark:text-slate-950" 
+                            : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"
+                        }`} />
+                        <span className="truncate">{link.label}</span>
+                      </div>
+
+                      {isActive && (
+                        <span 
+                          className="h-1.5 w-1.5 rounded-full shrink-0"
+                          style={{ backgroundColor: currentThemeConfig.colorHex }}
+                        />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Footer: Finition & Utilisateur */}
+        <div className="p-3 border-t border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01] space-y-2.5">
+          {/* Bouton de sélection de finition */}
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(true)}
+            className="w-full flex items-center justify-between p-2 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] hover:bg-slate-50 dark:hover:bg-[#161d2d] text-slate-700 dark:text-slate-300 transition-all cursor-pointer group shadow-2xs"
+            title="Personnaliser les finitions de couleur"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className="h-2.5 w-2.5 rounded-full shrink-0 ring-2 ring-white dark:ring-[#0c1017]"
+                style={{ backgroundColor: currentThemeConfig.colorHex }}
+              />
+              <span className="text-xs truncate text-slate-600 dark:text-slate-300">
+                Finition : <span suppressHydrationWarning className="font-semibold text-slate-900 dark:text-white">{mounted ? currentThemeConfig.name : "Bleu Saphir"}</span>
+              </span>
+            </div>
+            <Palette className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors" />
+          </button>
+
+          {/* Sélecteur Mode Clair / Sombre */}
+          <ThemeToggle variant="segmented" className="w-full flex justify-between" />
+
+          {/* Profil utilisateur & Déconnexion */}
+          <div className="pt-2 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="h-7 w-7 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center font-semibold text-xs shrink-0">
+                Q
+              </div>
+              <div className="truncate">
+                <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 leading-tight truncate">Quentin Elec</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-tight">Gérant</p>
+              </div>
+            </div>
+
             <form action={logout}>
-              <button 
-                type="submit" 
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors dark:text-red-400 dark:hover:bg-red-900/30"
+              <button
+                type="submit"
+                title="Se déconnecter"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer"
+                aria-label="Se déconnecter"
               >
-                <LogOut className="h-5 w-5" />
-                <span className="font-medium text-sm">Déconnexion</span>
+                <LogOut className="h-4 w-4" />
               </button>
             </form>
           </div>
         </div>
-      </div>
+      </aside>
 
-      {/* Mobile Navigation - FAB & Fullscreen Menu */}
+      {/* ========================================================= */}
+      {/* MOBILE TRIGGER & DRAWER                                   */}
+      {/* ========================================================= */}
       <div className="md:hidden">
-        {/* FAB */}
-        <button 
+        {/* Floating Trigger Button (FAB) */}
+        <button
+          type="button"
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-40 bg-blue-600 text-white p-4 rounded-full shadow-xl shadow-blue-600/30 active:scale-95 transition-transform"
+          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 bg-slate-900 text-white dark:bg-white dark:text-slate-950 pl-4 pr-5 py-3 rounded-full shadow-lg active:scale-95 transition-all border border-white/10 cursor-pointer"
+          aria-label="Ouvrir le menu de navigation"
         >
-          <Menu className="h-7 w-7" />
+          <Menu className="h-4.5 w-4.5" />
+          <span className="text-xs font-semibold">Menu</span>
         </button>
 
-        {/* Fullscreen Overlay */}
+        {/* Backdrop sombre */}
         {isOpen && (
-          <div className="fixed inset-0 z-50 bg-white dark:bg-zinc-900 flex flex-col animate-in slide-in-from-bottom-2 fade-in duration-200">
-            <div className="flex justify-between items-center p-4 border-b dark:border-gray-800 dark:bg-gray-900">
-              <div className="flex items-center gap-3">
-                <HardHat className="h-7 w-7 text-blue-600 dark:text-blue-400" />
-                <span className="text-2xl font-black tracking-tight dark:text-white">StockPro</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ThemeToggle />
-                <button 
-                  onClick={() => setIsOpen(false)}
-                  className="p-3 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 transition-colors"
-                >
-                  <X className="h-7 w-7" />
-                </button>
-              </div>
-            </div>
-            <nav className="flex-1 overflow-y-auto p-4 space-y-3 pb-24 dark:bg-zinc-950">
-              {links.map((link) => {
-                const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== "/");
-                const Icon = link.icon;
-                return (
-                  <Link 
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setIsOpen(false)}
-                    className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                      isActive 
-                        ? "bg-blue-50 text-blue-700 font-bold border border-blue-100 shadow-sm" 
-                        : "bg-gray-50 dark:bg-zinc-950 text-gray-700 dark:text-zinc-200 font-medium border border-transparent hover:border-gray-200 dark:border-zinc-800"
-                    }`}
-                  >
-                    <Icon className={`h-6 w-6 ${isActive ? 'text-blue-600' : 'text-gray-400 dark:text-zinc-500'}`} />
-                    <span className="text-lg">{link.label}</span>
-                  </Link>
-                )
-              })}
-              
-              <div className="mt-8 pt-4 border-t border-gray-100 dark:border-zinc-800">
-                <form action={logout}>
-                  <button 
-                    type="submit" 
-                    className="flex w-full items-center gap-4 p-4 rounded-2xl bg-red-50 text-red-700 font-bold border border-red-100 hover:bg-red-100 transition-colors"
-                  >
-                    <LogOut className="h-6 w-6 text-red-600" />
-                    <span className="text-lg">Déconnexion</span>
-                  </button>
-                </form>
-              </div>
-            </nav>
-          </div>
+          <div
+            className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
         )}
+
+        {/* Mobile Drawer */}
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu principal de navigation"
+          className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-[82vw] max-w-sm flex-col bg-white dark:bg-[#0c1017] shadow-2xl transition-transform duration-300 ease-in-out border-r border-slate-200/80 dark:border-white/[0.08] ${
+            isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          {/* Mobile Drawer Header */}
+          <div className="p-4 border-b border-slate-100 dark:border-white/[0.06] flex items-center justify-between">
+            <Link
+              href="/"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 focus:outline-none"
+            >
+              <div 
+                className="h-8.5 w-8.5 rounded-xl flex items-center justify-center text-white shadow-xs"
+                style={{ backgroundColor: currentThemeConfig.colorHex }}
+              >
+                <Zap className="h-4.5 w-4.5 fill-current" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold tracking-tight text-slate-900 dark:text-white text-sm">
+                    StockElec
+                  </span>
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300">
+                    Pro
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                  Quentin Électricité
+                </p>
+              </div>
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Fermer le menu"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex-1 overflow-y-auto px-3.5 py-4 space-y-4">
+            {navSections.map((section) => (
+              <div key={section.title} className="space-y-1">
+                <p className="px-2.5 text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+                  {section.title}
+                </p>
+                <div className="space-y-0.5">
+                  {section.links.map((link) => {
+                    const isActive =
+                      pathname === link.href ||
+                      (pathname.startsWith(link.href) && link.href !== "/");
+                    const Icon = link.icon;
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setIsOpen(false)}
+                        className={`group flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-medium transition-all ${
+                          isActive
+                            ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-2xs font-semibold"
+                            : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className={`h-4.5 w-4.5 shrink-0 ${
+                            isActive 
+                              ? "text-white dark:text-slate-950" 
+                              : "text-slate-400 dark:text-slate-500"
+                          }`} />
+                          <span>{link.label}</span>
+                        </div>
+                        {isActive && (
+                          <span 
+                            className="h-1.5 w-1.5 rounded-full shrink-0"
+                            style={{ backgroundColor: currentThemeConfig.colorHex }}
+                          />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </nav>
+
+          {/* Mobile Drawer Footer */}
+          <div className="p-4 border-t border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01] space-y-3">
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                setIsSettingsOpen(true);
+              }}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] text-slate-700 dark:text-slate-300 text-xs shadow-2xs"
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: currentThemeConfig.colorHex }}
+                />
+                <span>
+                  Finition : <span suppressHydrationWarning className="font-semibold text-slate-900 dark:text-white">{mounted ? currentThemeConfig.name : "Bleu Saphir"}</span>
+                </span>
+              </div>
+              <Palette className="h-4 w-4 text-slate-400" />
+            </button>
+
+            <ThemeToggle variant="segmented" className="w-full flex justify-between" />
+
+            <div className="pt-2 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center font-semibold text-xs">
+                  Q
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">Quentin Elec</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500">Gérant</p>
+                </div>
+              </div>
+
+              <form action={logout}>
+                <button
+                  type="submit"
+                  className="p-2 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                  aria-label="Se déconnecter"
+                >
+                  <LogOut className="h-4.5 w-4.5" />
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
