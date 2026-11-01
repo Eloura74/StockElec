@@ -427,11 +427,11 @@ export default async function CataloguePage({
                             </div>
                           </td>
 
-                          {/* 3. Stock Dépôt avec indicateurs visuels */}
+                          {/* 3. Stock Dépôt avec indicateurs visuels et info-bulle dynamique au survol */}
                           <td className="px-4 py-3.5 text-center">
                             {hasStock ? (
-                              <div className="inline-flex flex-col items-center">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 font-bold text-xs shadow-2xs tabular-nums">
+                              <div className="relative group/stock inline-flex flex-col items-center cursor-help">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 font-bold text-xs shadow-2xs tabular-nums group-hover/stock:scale-105 transition-transform">
                                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 live-dot"></span>
                                   <span>{stockInfo.stockDepot} {article.unite || 'u'}</span>
                                 </span>
@@ -440,16 +440,47 @@ export default async function CataloguePage({
                                     Seuil: {article.stockMinimum}
                                   </span>
                                 )}
+
+                                {/* Info-bulle dynamique au survol */}
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/stock:flex flex-col items-center z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+                                  <div className="bg-slate-900/95 dark:bg-[#0c1017]/95 text-white backdrop-blur-md border border-white/10 rounded-xl px-3 py-2 text-[11px] shadow-xl whitespace-nowrap space-y-1">
+                                    <div className="flex items-center justify-between gap-3 text-emerald-400 font-bold">
+                                      <span>Stock Dépôt :</span>
+                                      <span>{stockInfo.stockDepot} {article.unite || 'u'}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-3 text-slate-400">
+                                      <span>En Chantier :</span>
+                                      <span>{stockInfo.stockChantiersTotal} {article.unite || 'u'}</span>
+                                    </div>
+                                    {article.prixUnitaire > 0 && (
+                                      <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-1 text-slate-300 font-semibold">
+                                        <span>Valorisation dépôt :</span>
+                                        <span className="text-amber-300">{(stockInfo.stockDepot * article.prixUnitaire).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € HT</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="w-2 h-2 bg-slate-900/95 rotate-45 -mt-1 border-r border-b border-white/10"></div>
+                                </div>
                               </div>
                             ) : enAlerte ? (
-                              <div className="inline-flex flex-col items-center">
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 font-bold text-xs tabular-nums">
+                              <div className="relative group/alerte inline-flex flex-col items-center cursor-help">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 font-bold text-xs tabular-nums group-hover/alerte:scale-105 transition-transform">
                                   <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
                                   <span>0 {article.unite || 'u'}</span>
                                 </span>
                                 <span className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold mt-0.5">
                                   Alerte rupture
                                 </span>
+
+                                {/* Info-bulle dynamique au survol */}
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/alerte:flex flex-col items-center z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+                                  <div className="bg-slate-900/95 dark:bg-[#0c1017]/95 text-white backdrop-blur-md border border-white/10 rounded-xl px-3 py-2 text-[11px] shadow-xl whitespace-nowrap space-y-0.5">
+                                    <p className="font-bold text-rose-400">Rupture de Stock Détectée</p>
+                                    <p className="text-slate-400">Seuil de sécurité : {article.stockMinimum} {article.unite || 'u'}</p>
+                                    <p className="text-blue-300 font-semibold pt-0.5">À commander d'urgence</p>
+                                  </div>
+                                  <div className="w-2 h-2 bg-slate-900/95 rotate-45 -mt-1 border-r border-b border-white/10"></div>
+                                </div>
                               </div>
                             ) : (
                               <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">
@@ -458,13 +489,24 @@ export default async function CataloguePage({
                             )}
                           </td>
 
-                          {/* 4. En Chantier */}
+                          {/* 4. En Chantier avec info-bulle dynamique au survol */}
                           <td className="px-4 py-3.5 text-center">
                             {stockInfo.stockChantiersTotal > 0 ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold text-xs tabular-nums">
-                                <Truck className="w-3 h-3 text-blue-500" />
-                                <span>{stockInfo.stockChantiersTotal} {article.unite || 'u'}</span>
-                              </span>
+                              <div className="relative group/chantier inline-flex flex-col items-center cursor-help">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold text-xs tabular-nums group-hover/chantier:scale-105 transition-transform">
+                                  <Truck className="w-3 h-3 text-blue-500" />
+                                  <span>{stockInfo.stockChantiersTotal} {article.unite || 'u'}</span>
+                                </span>
+
+                                {/* Info-bulle dynamique au survol */}
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/chantier:flex flex-col items-center z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+                                  <div className="bg-slate-900/95 dark:bg-[#0c1017]/95 text-white backdrop-blur-md border border-white/10 rounded-xl px-3 py-2 text-[11px] shadow-xl whitespace-nowrap space-y-0.5">
+                                    <p className="font-bold text-blue-400">Matériel déployé sur chantier</p>
+                                    <p className="text-slate-400">{stockInfo.stockChantiersTotal} {article.unite || 'u'} actuellement installés ou réservés sur site</p>
+                                  </div>
+                                  <div className="w-2 h-2 bg-slate-900/95 rotate-45 -mt-1 border-r border-b border-white/10"></div>
+                                </div>
+                              </div>
                             ) : (
                               <span className="text-slate-300 dark:text-slate-600">—</span>
                             )}

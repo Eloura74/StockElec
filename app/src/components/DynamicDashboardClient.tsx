@@ -382,15 +382,18 @@ export function DynamicDashboardClient({
       {/* ========================================================= */}
       {activeTab === "general" && (
         <div className="space-y-6 animate-in fade-in duration-150">
-          {/* 5 Indicateurs Clés (KPIs) */}
+          {/* 5 Indicateurs Clés (KPIs) avec survols dynamiques & informations contextuelles */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
             {/* KPI 1 : Articles */}
-            <div className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs flex flex-col justify-between gap-3">
+            <div 
+              onClick={() => setActiveTab("general")}
+              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-blue-500/40 dark:hover:border-blue-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
                   Articles en Stock
                 </span>
-                <div className="h-8 w-8 rounded-xl bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-xl bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                   <Package className="h-4 w-4" />
                 </div>
               </div>
@@ -403,20 +406,41 @@ export function DynamicDashboardClient({
                 </div>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
                   {(totalPiecesStock ?? 0) > 0 ? `${totalPiecesStock?.toLocaleString('fr-FR')} pièces · ` : ""}
-                  <Link href="/catalogue" className="hover:underline hover:text-blue-500">
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">
                     {articlesCount.toLocaleString('fr-FR')} au catalogue
-                  </Link>
+                  </span>
                 </p>
+              </div>
+
+              {/* Volet dynamique révélé au survol */}
+              <div className="max-h-0 opacity-0 group-hover:max-h-32 group-hover:opacity-100 overflow-hidden transition-all duration-300 ease-out border-t border-transparent group-hover:border-slate-100 dark:group-hover:border-white/[0.06] pt-0 group-hover:pt-2">
+                <div className="text-[11px] space-y-1 bg-blue-50/60 dark:bg-blue-950/30 p-2.5 rounded-xl border border-blue-200/50 dark:border-blue-800/40 text-blue-950 dark:text-blue-200">
+                  <p className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Stock physique :</span>
+                    <span className="font-bold">{totalPiecesStock ?? 0} unités</span>
+                  </p>
+                  <p className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Taux approvisionné :</span>
+                    <span className="font-bold">{((articlesEnStockCount ?? 0) / Math.max(1, articlesCount) * 100).toFixed(1)}%</span>
+                  </p>
+                  <div className="pt-1 text-[10px] text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1">
+                    <span>Explorer le catalogue en stock</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* KPI 2 : Chantiers */}
-            <div className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs flex flex-col justify-between gap-3">
+            <div 
+              onClick={() => setActiveTab("chantiers")}
+              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-emerald-500/40 dark:hover:border-emerald-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
                   Chantiers Actifs
                 </span>
-                <div className="h-8 w-8 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-slate-800 dark:text-emerald-400 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-slate-800 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                   <Truck className="h-4 w-4" />
                 </div>
               </div>
@@ -426,15 +450,36 @@ export function DynamicDashboardClient({
                 </h2>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">en cours d'exécution</p>
               </div>
+
+              {/* Volet dynamique révélé au survol */}
+              <div className="max-h-0 opacity-0 group-hover:max-h-32 group-hover:opacity-100 overflow-hidden transition-all duration-300 ease-out border-t border-transparent group-hover:border-slate-100 dark:group-hover:border-white/[0.06] pt-0 group-hover:pt-2">
+                <div className="text-[11px] space-y-1 bg-emerald-50/60 dark:bg-emerald-950/30 p-2.5 rounded-xl border border-emerald-200/50 dark:border-emerald-800/40 text-emerald-950 dark:text-emerald-200">
+                  <p className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Chantier phare :</span>
+                    <span className="font-bold truncate max-w-[90px]">{chantiersList[0]?.nom || "Aucun"}</span>
+                  </p>
+                  <p className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Total sur site :</span>
+                    <span className="font-bold">{valeurTotaleChantiers.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</span>
+                  </p>
+                  <div className="pt-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                    <span>Voir le portefeuille chantiers</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* KPI 3 : Valeur Dépôt */}
-            <div className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs flex flex-col justify-between gap-3">
+            <div 
+              onClick={() => setActiveTab("finance")}
+              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-amber-500/40 dark:hover:border-amber-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
                   Valeur Dépôt
                 </span>
-                <div className="h-8 w-8 rounded-xl bg-amber-50 text-amber-600 dark:bg-slate-800 dark:text-amber-400 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-xl bg-amber-50 text-amber-600 dark:bg-slate-800 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                   <Package className="h-4 w-4" />
                 </div>
               </div>
@@ -444,15 +489,36 @@ export function DynamicDashboardClient({
                 </h2>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">matériel disponible</p>
               </div>
+
+              {/* Volet dynamique révélé au survol */}
+              <div className="max-h-0 opacity-0 group-hover:max-h-32 group-hover:opacity-100 overflow-hidden transition-all duration-300 ease-out border-t border-transparent group-hover:border-slate-100 dark:group-hover:border-white/[0.06] pt-0 group-hover:pt-2">
+                <div className="text-[11px] space-y-1 bg-amber-50/60 dark:bg-amber-950/30 p-2.5 rounded-xl border border-amber-200/50 dark:border-amber-800/40 text-amber-950 dark:text-amber-200">
+                  <p className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Moyenne / réf :</span>
+                    <span className="font-bold">{(valeurTotaleDépôt / Math.max(1, articlesEnStockCount || 1)).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</span>
+                  </p>
+                  <p className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Disponibilité :</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">Immédiate</span>
+                  </p>
+                  <div className="pt-1 text-[10px] text-amber-700 dark:text-amber-400 font-semibold flex items-center gap-1">
+                    <span>Ouvrir l'analyse financière</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* KPI 4 : Valeur Chantiers */}
-            <div className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs flex flex-col justify-between gap-3">
+            <div 
+              onClick={() => setActiveTab("chantiers")}
+              className="group relative p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-indigo-500/40 dark:hover:border-indigo-400/40 transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
                   Valeur Chantiers
                 </span>
-                <div className="h-8 w-8 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                   <Wrench className="h-4 w-4" />
                 </div>
               </div>
@@ -462,19 +528,40 @@ export function DynamicDashboardClient({
                 </h2>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">en cours d'installation</p>
               </div>
+
+              {/* Volet dynamique révélé au survol */}
+              <div className="max-h-0 opacity-0 group-hover:max-h-32 group-hover:opacity-100 overflow-hidden transition-all duration-300 ease-out border-t border-transparent group-hover:border-slate-100 dark:group-hover:border-white/[0.06] pt-0 group-hover:pt-2">
+                <div className="text-[11px] space-y-1 bg-indigo-50/60 dark:bg-indigo-950/30 p-2.5 rounded-xl border border-indigo-200/50 dark:border-indigo-800/40 text-indigo-950 dark:text-indigo-200">
+                  <p className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Part du capital :</span>
+                    <span className="font-bold">{((valeurTotaleChantiers / Math.max(1, valeurTotaleDépôt + valeurTotaleChantiers)) * 100).toFixed(1)}%</span>
+                  </p>
+                  <p className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Affectation :</span>
+                    <span className="font-bold">Chantiers clients</span>
+                  </p>
+                  <div className="pt-1 text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1">
+                    <span>Inspecter les affectations</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* KPI 5 : Alertes Stock */}
-            <div className={`p-4.5 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${
-              articlesEnAlerte > 0
-                ? "bg-rose-50/70 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40"
-                : "bg-white dark:bg-[#111622] border-slate-200/80 dark:border-white/[0.08] shadow-2xs"
-            }`}>
+            <div 
+              onClick={() => setActiveTab("alertes")}
+              className={`group relative p-4.5 rounded-2xl border transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer hover:shadow-xl hover:-translate-y-1.5 ${
+                articlesEnAlerte > 0
+                  ? "bg-rose-50/70 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40 hover:border-rose-500"
+                  : "bg-white dark:bg-[#111622] border-slate-200/80 dark:border-white/[0.08] shadow-2xs hover:border-slate-300 dark:hover:border-white/20"
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <span className={`text-[11px] font-semibold tracking-wider uppercase ${articlesEnAlerte > 0 ? "text-rose-700 dark:text-rose-400" : "text-slate-500 dark:text-slate-400"}`}>
                   Alertes Stock
                 </span>
-                <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${
+                <div className={`h-8 w-8 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 ${
                   articlesEnAlerte > 0 
                     ? "bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300" 
                     : "bg-slate-100 dark:bg-slate-800 text-slate-500"
@@ -487,6 +574,27 @@ export function DynamicDashboardClient({
                   {articlesEnAlerte.toLocaleString('fr-FR')}
                 </h2>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">articles à réapprovisionner</p>
+              </div>
+
+              {/* Volet dynamique révélé au survol */}
+              <div className="max-h-0 opacity-0 group-hover:max-h-32 group-hover:opacity-100 overflow-hidden transition-all duration-300 ease-out border-t border-transparent group-hover:border-slate-100 dark:group-hover:border-white/[0.06] pt-0 group-hover:pt-2">
+                <div className={`text-[11px] space-y-1 p-2.5 rounded-xl border ${
+                  articlesEnAlerte > 0 
+                    ? "bg-rose-100/70 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/40 text-rose-950 dark:text-rose-200" 
+                    : "bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-800/40 text-emerald-950 dark:text-emerald-200"
+                }`}>
+                  <p className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">État du stock :</span>
+                    <span className="font-bold">{articlesEnAlerte > 0 ? "Ruptures détectées" : "Optimal"}</span>
+                  </p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                    {articlesEnAlerte > 0 ? "Commandes suggérées prêtes" : "Tous les seuils de sécurité sont respectés"}
+                  </p>
+                  <div className={`pt-1 text-[10px] font-semibold flex items-center gap-1 ${articlesEnAlerte > 0 ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"}`}>
+                    <span>{articlesEnAlerte > 0 ? "Traiter les réassorts" : "Accéder aux alertes"}</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -534,7 +642,8 @@ export function DynamicDashboardClient({
               {chantiersList.map((chantier) => (
                 <div
                   key={chantier.id}
-                  className="min-w-[280px] sm:min-w-[320px] max-w-[320px] shrink-0 snap-start p-5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-md transition-all flex flex-col justify-between gap-4"
+                  onClick={() => openDrawer("chantier", chantier)}
+                  className="group min-w-[280px] sm:min-w-[320px] max-w-[320px] shrink-0 snap-start p-5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs hover:shadow-xl hover:-translate-y-1.5 hover:border-emerald-500/40 dark:hover:border-emerald-400/40 transition-all duration-300 flex flex-col justify-between gap-3.5 cursor-pointer"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -550,12 +659,20 @@ export function DynamicDashboardClient({
                       </span>
                     </div>
 
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                       {chantier.nom}
                     </h3>
                     <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
                       {chantier.adresse || "Aucune adresse spécifiée"}
                     </p>
+                  </div>
+
+                  {/* Info dynamique survol */}
+                  <div className="max-h-0 opacity-0 group-hover:max-h-16 group-hover:opacity-100 overflow-hidden transition-all duration-300 ease-out">
+                    <div className="text-[11px] bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40 px-3 py-1.5 rounded-xl text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+                      <span>{chantier.materielCount} réf. mobilisées</span>
+                      <span className="font-bold">Inspecter →</span>
+                    </div>
                   </div>
 
                   <div className="pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between">
@@ -564,7 +681,10 @@ export function DynamicDashboardClient({
                     </span>
                     <button
                       type="button"
-                      onClick={() => openDrawer("chantier", chantier)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDrawer("chantier", chantier);
+                      }}
                       className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <span>Inspecter</span>
