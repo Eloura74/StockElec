@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { getSession } from './lib/auth'
+import { decrypt } from './lib/auth'
 
 // Specify which routes are protected (Gérant only)
 const protectedRoutes = [
@@ -25,7 +25,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const session = await getSession()
+  const sessionCookie = request.cookies.get('session')?.value
+  let session = null
+  if (sessionCookie) {
+    try {
+      session = await decrypt(sessionCookie)
+    } catch {
+      session = null
+    }
+  }
 
   // 1. Unauthenticated users -> Redirect to login (sauf pages publiques)
   const publicPaths = ['/login', '/mot-de-passe-oublie', '/reset-password']
