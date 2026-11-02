@@ -160,9 +160,9 @@ export function InventaireForm({ articles }: { articles: any[] }) {
   }
 
   return (
-    <div className="rounded-xl border bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
-      <div className="border-b bg-gray-50 dark:bg-zinc-950/50 px-6 py-4 flex justify-between items-center">
-        <span className="font-semibold text-gray-800 dark:text-zinc-100">Scan & Go</span>
+    <div className="rounded-xl border bg-white dark:bg-[#111622] shadow-sm overflow-hidden">
+      <div className="border-b bg-slate-50 dark:bg-white/[0.02] px-6 py-4 flex justify-between items-center">
+        <span className="font-semibold text-slate-800 dark:text-slate-100">Scan & Go</span>
         <button 
           type="button" 
           onClick={() => setIsScanning(true)}
@@ -190,12 +190,12 @@ export function InventaireForm({ articles }: { articles: any[] }) {
         {mode === 'idle' && (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                 Ou sélectionner manuellement :
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400 dark:text-zinc-500" />
+                  <Search className="h-5 w-5 text-slate-400 dark:text-slate-500" />
                 </div>
                 <input
                   type="text"
@@ -206,12 +206,12 @@ export function InventaireForm({ articles }: { articles: any[] }) {
                   }}
                   onFocus={() => setShowDropdown(true)}
                   onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-                  className="block w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:border-purple-500 focus:ring-purple-500 text-sm transition-colors"
+                  className="block w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-[#111622] focus:border-purple-500 focus:ring-purple-500 text-sm transition-colors"
                   placeholder="Rechercher par référence, désignation..."
                 />
                 
                 {showDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#111622] border border-slate-200 dark:border-white/10 rounded-lg shadow-xl max-h-60 overflow-y-auto">
                     {articles
                       .filter(a => 
                         !searchQuery || 
@@ -236,14 +236,14 @@ export function InventaireForm({ articles }: { articles: any[] }) {
                             setSearchQuery('')
                             setShowDropdown(false)
                           }}
-                          className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800 border-b border-gray-100 dark:border-zinc-800 last:border-0 transition-colors"
+                          className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.06] border-b border-slate-100 dark:border-white/[0.08] last:border-0 transition-colors"
                         >
-                          <div className="font-medium text-gray-900 dark:text-zinc-100">{a.designation}</div>
-                          <div className="text-xs text-gray-500 dark:text-zinc-400">Réf: {a.reference || 'Aucune'}</div>
+                          <div className="font-medium text-slate-900 dark:text-slate-100">{a.designation}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">Réf: {a.reference || 'Aucune'}</div>
                         </button>
                       ))}
                     {articles.filter(a => !searchQuery || a.designation.toLowerCase().includes(searchQuery.toLowerCase()) || (a.reference && a.reference.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
-                      <div className="px-4 py-4 text-sm text-gray-500 dark:text-zinc-400 text-center">
+                      <div className="px-4 py-4 text-sm text-slate-500 dark:text-slate-400 text-center">
                         Aucun article trouvé.
                       </div>
                     )}
@@ -252,7 +252,7 @@ export function InventaireForm({ articles }: { articles: any[] }) {
               </div>
             </div>
             
-            <div className="text-center text-gray-400 dark:text-zinc-500 p-8 border-2 border-dashed rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
+            <div className="text-center text-slate-400 dark:text-slate-500 p-8 border-2 border-dashed rounded-xl bg-slate-50/50 dark:bg-white/[0.02]">
               <Camera className="w-12 h-12 mx-auto mb-3 opacity-20" />
               <p>Scannez un produit avec le bouton "Scanner Code"</p>
               <p className="text-sm mt-1">S'il est inconnu, l'application vous proposera de le créer immédiatement.</p>
@@ -266,23 +266,23 @@ export function InventaireForm({ articles }: { articles: any[] }) {
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-2">
                 <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">Article Connu</span>
-                <button type="button" onClick={() => setMode('idle')} className="text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:text-zinc-300">
+                <button type="button" onClick={() => setMode('idle')} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-300">
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
             {/* Fiche Info */}
-            <div className="bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
-              <div className="px-4 py-3 border-b flex justify-between items-center bg-white dark:bg-zinc-900">
+            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b flex justify-between items-center bg-white dark:bg-[#111622]">
                 <div>
-                  <h3 className="font-bold text-gray-900 dark:text-zinc-50">{selectedArticle.designation}</h3>
-                  <p className="text-xs text-gray-500 dark:text-zinc-400">{selectedArticle.reference} • {selectedArticle.fournisseur || 'Fournisseur inconnu'}</p>
+                  <h3 className="font-bold text-slate-900 dark:text-slate-50">{selectedArticle.designation}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{selectedArticle.reference} • {selectedArticle.fournisseur || 'Fournisseur inconnu'}</p>
                 </div>
                 <button 
                   type="button" 
                   onClick={() => setIsEditingInfo(!isEditingInfo)}
-                  className="p-2 text-gray-400 dark:text-zinc-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                  className="p-2 text-slate-400 dark:text-slate-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                   title="Modifier les informations"
                 >
                   <Edit3 className="w-5 h-5" />
@@ -292,17 +292,17 @@ export function InventaireForm({ articles }: { articles: any[] }) {
               {isEditingInfo && (
                 <div className="p-4 space-y-3 bg-purple-50/30 border-b">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-zinc-300">Désignation</label>
-                    <input type="text" value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-3 py-2" />
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-300">Désignation</label>
+                    <input type="text" value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} className="mt-1 block w-full rounded-md border-slate-300 dark:border-white/10 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-3 py-2" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 dark:text-zinc-300">Fournisseur</label>
-                      <input type="text" value={editFournisseur} onChange={(e) => setEditFournisseur(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-3 py-2" />
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-300">Fournisseur</label>
+                      <input type="text" value={editFournisseur} onChange={(e) => setEditFournisseur(e.target.value)} className="mt-1 block w-full rounded-md border-slate-300 dark:border-white/10 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-3 py-2" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 dark:text-zinc-300">Réf. Fournisseur</label>
-                      <input type="text" value={editReference} onChange={(e) => setEditReference(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-3 py-2" />
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-300">Réf. Fournisseur</label>
+                      <input type="text" value={editReference} onChange={(e) => setEditReference(e.target.value)} className="mt-1 block w-full rounded-md border-slate-300 dark:border-white/10 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-3 py-2" />
                     </div>
                   </div>
                   <button 
@@ -318,19 +318,19 @@ export function InventaireForm({ articles }: { articles: any[] }) {
 
               <div className="p-4 grid grid-cols-2 gap-4 text-center">
                 <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Stock Théorique</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-zinc-50">{stockTheorique} <span className="text-sm font-normal text-gray-500 dark:text-zinc-400">{selectedArticle.unite}</span></p>
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Stock Théorique</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-50">{stockTheorique} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">{selectedArticle.unite}</span></p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Code Barre</p>
-                  <p className="text-sm font-medium text-gray-700 dark:text-zinc-200 mt-1">{selectedArticle.codeBarre || 'Aucun'}</p>
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Code Barre</p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200 mt-1">{selectedArticle.codeBarre || 'Aucun'}</p>
                 </div>
               </div>
             </div>
 
             <form onSubmit={handleSubmitCorrection} className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-900 dark:text-zinc-50 font-bold mb-1">Quantité Physique Réelle</label>
+                <label className="block text-sm text-slate-900 dark:text-slate-50 font-bold mb-1">Quantité Physique Réelle</label>
                 <input 
                   required 
                   type="number" 
@@ -343,13 +343,13 @@ export function InventaireForm({ articles }: { articles: any[] }) {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-zinc-300 mb-1">Observation (Optionnel)</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Observation (Optionnel)</label>
                 <input 
                   type="text" 
                   value={observation}
                   onChange={(e) => setObservation(e.target.value)}
                   placeholder="Ex: Trouvé dans un autre carton, boîte abîmée..."
-                  className="block w-full rounded-md border-gray-300 dark:border-zinc-700 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-3 py-2" 
+                  className="block w-full rounded-md border-slate-300 dark:border-white/10 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm px-3 py-2" 
                 />
               </div>
 
@@ -384,44 +384,44 @@ export function InventaireForm({ articles }: { articles: any[] }) {
               <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" /> Nouveau Produit Détecté
               </span>
-              <button type="button" onClick={() => setMode('idle')} className="text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:text-zinc-300">
+              <button type="button" onClick={() => setMode('idle')} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-300">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400">Code Barre (Verrouillé)</label>
-                <div className="mt-1 px-3 py-2 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-200 rounded-md text-sm font-mono border border-gray-200 dark:border-zinc-800">
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">Code Barre (Verrouillé)</label>
+                <div className="mt-1 px-3 py-2 bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-200 rounded-md text-sm font-mono border border-slate-200 dark:border-white/[0.08]">
                   {scannedCode}
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-gray-900 dark:text-zinc-50 mb-1">Nom du Produit (Désignation) *</label>
+                <label className="block text-sm font-bold text-slate-900 dark:text-slate-50 mb-1">Nom du Produit (Désignation) *</label>
                 <input 
                   required
                   type="text" 
                   value={newDesignation}
                   onChange={(e) => setNewDesignation(e.target.value)}
                   placeholder="Ex: Câble RO2V 3G1.5 Couronne 100m"
-                  className="block w-full rounded-md border-gray-300 dark:border-zinc-700 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2" 
+                  className="block w-full rounded-md border-slate-300 dark:border-white/10 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2" 
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-900 dark:text-zinc-50 mb-1">Fournisseur</label>
+                <label className="block text-sm font-bold text-slate-900 dark:text-slate-50 mb-1">Fournisseur</label>
                 <input 
                   type="text" 
                   value={newFournisseur}
                   onChange={(e) => setNewFournisseur(e.target.value)}
                   placeholder="Ex: Rexel, Sonepar..."
-                  className="block w-full rounded-md border-gray-300 dark:border-zinc-700 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2" 
+                  className="block w-full rounded-md border-slate-300 dark:border-white/10 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-3 py-2" 
                 />
               </div>
 
               <div className="pt-2 border-t border-amber-200/60">
-                <label className="block text-sm font-bold text-gray-900 dark:text-zinc-50 mb-1">Quantité Actuelle Comptée *</label>
+                <label className="block text-sm font-bold text-slate-900 dark:text-slate-50 mb-1">Quantité Actuelle Comptée *</label>
                 <input 
                   required 
                   type="number" 
@@ -434,13 +434,13 @@ export function InventaireForm({ articles }: { articles: any[] }) {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-zinc-300 mb-1">Observation (Optionnel)</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Observation (Optionnel)</label>
                 <input 
                   type="text" 
                   value={observation}
                   onChange={(e) => setObservation(e.target.value)}
                   placeholder="Ex: Palette au fond du hangar"
-                  className="block w-full rounded-md border-gray-300 dark:border-zinc-700 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm px-3 py-2" 
+                  className="block w-full rounded-md border-slate-300 dark:border-white/10 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm px-3 py-2" 
                 />
               </div>
             </div>

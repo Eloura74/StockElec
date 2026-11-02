@@ -20,7 +20,7 @@ export function GuideClient() {
       color: "bg-blue-600",
       content: (
         <div className="space-y-4 text-sm">
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-slate-600 dark:text-slate-300">
             Rendez-vous sur l'onglet <strong>Factures F.</strong> et glissez-déposez simplement votre facture PDF fournie par votre distributeur (Rexel, Sonepar, YESSS Electrique, Balitran, etc.).
           </p>
           <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 space-y-2">
@@ -45,7 +45,7 @@ export function GuideClient() {
       color: "bg-amber-600",
       content: (
         <div className="space-y-4 text-sm">
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-slate-600 dark:text-slate-300">
             Dès que vous cliquez sur <strong>« Enregistrer & Contrôler les Prix »</strong>, l'application compare chaque prix avec votre <strong>meilleur prix historique</strong> (tous distributeurs confondus).
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
@@ -53,7 +53,7 @@ export function GuideClient() {
               <div className="font-bold text-red-700 dark:text-red-300 flex items-center gap-1.5 mb-1">
                 <AlertTriangle className="h-4 w-4" /> Alerte Hausse Détectée
               </div>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-slate-600 dark:text-slate-300">
                 Le prix facturé est supérieur à votre prix historique. Le système calcule l'écart unitaire et le surcoût global à réclamer.
               </p>
             </div>
@@ -61,7 +61,7 @@ export function GuideClient() {
               <div className="font-bold text-green-700 dark:text-green-300 flex items-center gap-1.5 mb-1">
                 <CheckCircle2 className="h-4 w-4" /> Prix Conforme ou en Baisse
               </div>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-slate-600 dark:text-slate-300">
                 Le prix est identique ou avantageux. La référence est mise à jour pour vos prochains comparatifs.
               </p>
             </div>
@@ -77,12 +77,12 @@ export function GuideClient() {
       color: "bg-red-600",
       content: (
         <div className="space-y-4 text-sm">
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-slate-600 dark:text-slate-300">
             Sur chaque ligne en hausse (ou globalement pour toute la facture), cliquez sur <strong>« Réclamer »</strong> ou <strong>« Avoir Global »</strong>.
           </p>
-          <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 space-y-2">
-            <div className="font-semibold text-xs uppercase tracking-wider text-gray-500">Exemple d'e-mail généré automatiquement :</div>
-            <div className="font-mono text-xs p-3 rounded bg-white dark:bg-zinc-950 border dark:border-zinc-800 text-gray-700 dark:text-gray-300">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#111622] border dark:border-white/[0.08] space-y-2">
+            <div className="font-semibold text-xs uppercase tracking-wider text-slate-500">Exemple d'e-mail généré automatiquement :</div>
+            <div className="font-mono text-xs p-3 rounded bg-white dark:bg-white/[0.03] border dark:border-white/[0.08] text-slate-700 dark:text-slate-300">
               <strong>Objet :</strong> Demande d'avoir - Facture 061-007-000233<br/><br/>
               Bonjour,<br/>
               Nous constatons une anomalie de prix sur la facture 061-007-000233.<br/>
@@ -92,7 +92,7 @@ export function GuideClient() {
               Cordialement, La Comptabilité
             </div>
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-slate-500">
             Vous avez 3 options d'envoi immédiates : <strong>Ouvrir dans Gmail</strong>, <strong>Copier le message</strong> ou <strong>Ouvrir votre logiciel de messagerie</strong>.
           </p>
         </div>
@@ -106,11 +106,11 @@ export function GuideClient() {
       color: "bg-emerald-600",
       content: (
         <div className="space-y-4 text-sm">
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-slate-600 dark:text-slate-300">
             Suivez le cycle de vie de chaque réclamation et exportez toutes vos pièces pour votre cabinet comptable :
           </p>
           <div className="space-y-3">
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-zinc-900 border dark:border-zinc-800">
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-[#111622] border dark:border-white/[0.08]">
               <span className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-xs">
                 Statuts
               </span>
@@ -120,7 +120,7 @@ export function GuideClient() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-zinc-900 border dark:border-zinc-800">
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-[#111622] border dark:border-white/[0.08]">
               <span className="p-2 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold text-xs">
                 Export Excel
               </span>
@@ -160,7 +160,7 @@ export function GuideClient() {
       </div>
 
       {/* TUTO INTERACTIF PAR ÉTAPES */}
-      <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+      <div className="bg-white dark:bg-[#111622] border dark:border-white/[0.08] rounded-2xl p-6 shadow-sm">
         <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
           <Play className="h-5 w-5 text-blue-600" /> Déroulé étape par étape
         </h2>
@@ -177,24 +177,24 @@ export function GuideClient() {
                 className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
                   isSelected 
                     ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 shadow-sm ring-2 ring-blue-600/20' 
-                    : 'border-gray-200 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700'
+                    : 'border-slate-200 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/15'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <div className={`p-1.5 rounded-lg text-white ${step.color}`}>
                     <Icon className="h-4 w-4" />
                   </div>
-                  <span className="text-xs font-bold text-gray-500">Étape {idx + 1}</span>
+                  <span className="text-xs font-bold text-slate-500">Étape {idx + 1}</span>
                 </div>
-                <div className="font-bold text-sm text-gray-900 dark:text-zinc-100 truncate">{step.title.replace(/^\d+\.\s*/, '')}</div>
-                <div className="text-[11px] text-gray-500 mt-0.5 truncate">{step.subtitle}</div>
+                <div className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{step.title.replace(/^\d+\.\s*/, '')}</div>
+                <div className="text-[11px] text-slate-500 mt-0.5 truncate">{step.subtitle}</div>
               </button>
             )
           })}
         </div>
 
         {/* ACTIVE STEP DETAILS */}
-        <div className="border dark:border-zinc-800 rounded-2xl p-6 bg-gray-50/50 dark:bg-zinc-950/40">
+        <div className="border dark:border-white/[0.08] rounded-2xl p-6 bg-slate-50/50 dark:bg-white/[0.02]">
           <div className="flex items-center gap-3 mb-4">
             <div className={`p-2.5 rounded-xl text-white ${steps[activeStep].color}`}>
               {(() => {
@@ -203,18 +203,18 @@ export function GuideClient() {
               })()}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-zinc-100">{steps[activeStep].title}</h3>
-              <p className="text-xs text-gray-500">{steps[activeStep].subtitle}</p>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{steps[activeStep].title}</h3>
+              <p className="text-xs text-slate-500">{steps[activeStep].subtitle}</p>
             </div>
           </div>
 
           {steps[activeStep].content}
 
-          <div className="mt-8 pt-4 border-t dark:border-zinc-800 flex justify-between">
+          <div className="mt-8 pt-4 border-t dark:border-white/[0.08] flex justify-between">
             <button
               disabled={activeStep === 0}
               onClick={() => setActiveStep(prev => prev - 1)}
-              className="px-4 py-2 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-800 disabled:opacity-40"
+              className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/[0.06] disabled:opacity-40"
             >
               &larr; Étape précédente
             </button>
@@ -239,36 +239,36 @@ export function GuideClient() {
       </div>
 
       {/* SECTION FAQ & QUESTIONS FRÉQUENTES */}
-      <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-[#111622] border dark:border-white/[0.08] rounded-2xl p-6 shadow-sm space-y-4">
         <h2 className="text-lg font-bold flex items-center gap-2">
           <HelpCircle className="h-5 w-5 text-indigo-600" /> Foire aux Questions (Comptable & Artisan)
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div className="p-4 rounded-xl border dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/50 space-y-1.5">
-            <h4 className="font-bold text-sm text-gray-900 dark:text-zinc-100">Que faire si mon fournisseur utilise une référence différente ?</h4>
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="p-4 rounded-xl border dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.02] space-y-1.5">
+            <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">Que faire si mon fournisseur utilise une référence différente ?</h4>
+            <p className="text-slate-600 dark:text-slate-400">
               L'application intègre un système d'<strong>Alias automatique</strong> : vous pouvez associer la référence du fournisseur (ex: <code>REX-123</code>) à votre référence interne. Vos prochains comparatifs seront reconnus automatiquement.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl border dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/50 space-y-1.5">
-            <h4 className="font-bold text-sm text-gray-900 dark:text-zinc-100">Comment la comptable utilise-t-elle l'export Excel ?</h4>
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="p-4 rounded-xl border dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.02] space-y-1.5">
+            <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">Comment la comptable utilise-t-elle l'export Excel ?</h4>
+            <p className="text-slate-600 dark:text-slate-400">
               L'export Excel contient les montants HT, TVA, TTC, les dates d'échéances et la ventilation analytique par chantier. Il s'intègre directement dans les logiciels comme Pennylane, Sage, EBP ou Cegid.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl border dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/50 space-y-1.5">
-            <h4 className="font-bold text-sm text-gray-900 dark:text-zinc-100">Mes factures et données sont-elles sécurisées ?</h4>
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="p-4 rounded-xl border dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.02] space-y-1.5">
+            <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">Mes factures et données sont-elles sécurisées ?</h4>
+            <p className="text-slate-600 dark:text-slate-400">
               Oui, vos factures et historiques sont enregistrés dans votre base de données privée chiffrée. Seul le profil Gérant a accès aux données financières et aux prix.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl border dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950/50 space-y-1.5">
-            <h4 className="font-bold text-sm text-gray-900 dark:text-zinc-100">Puis-je modifier manuellement une ligne ou un chantier ?</h4>
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="p-4 rounded-xl border dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.02] space-y-1.5">
+            <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">Puis-je modifier manuellement une ligne ou un chantier ?</h4>
+            <p className="text-slate-600 dark:text-slate-400">
               Absolument. Chaque champ (Prix, Quantité, Chantier, Référence) est entièrement modifiable avant l'enregistrement ou ajustable dans le tableau.
             </p>
           </div>
