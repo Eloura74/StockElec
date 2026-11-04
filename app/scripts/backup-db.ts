@@ -13,12 +13,11 @@ import { PrismaClient } from '@prisma/client'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
+import { getDatabaseUrl } from './_db-url'
 
 dotenv.config()
 
-const pgUrl = process.env.DATABASE_URL?.startsWith('postgres')
-  ? process.env.DATABASE_URL
-  : "postgres://0a28256d385b1fa31a1e60e1f99170e9a1decbdaa963ccf2ce66b45e927a02ab:sk_ukoaL4DpYXPVvSAkmjmxH@db.prisma.io:5432/postgres?sslmode=require"
+const pgUrl = getDatabaseUrl()
 
 const prisma = new PrismaClient({
   datasources: { db: { url: pgUrl } }
