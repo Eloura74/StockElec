@@ -5,6 +5,12 @@ import { revalidatePath } from 'next/cache'
 import { parseDateFlexible } from '@/lib/date-parser'
 import { getSession } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
+import {
+  cleReference,
+  construireIndexCatalogue,
+  indexerArticleDansCatalogue,
+  trouverArticleCatalogue,
+} from '@/lib/article-matching'
 
 export interface SaveFactureOptions {
   entreprise?: string
@@ -14,6 +20,8 @@ export interface SaveFactureOptions {
   dateEcheance?: string | Date | null
   modePaiement?: string | null
   dateFacture?: string | Date | null
+  /** Synchroniser automatiquement le Catalogue et le Stock Dépôt (défaut: true) */
+  syncStock?: boolean
 }
 
 export async function saveFactureAndCheckPrices(
@@ -61,63 +69,63 @@ export async function saveFactureAndCheckPrices(
       }
     })
 
-    // 2. Pré-chargement des alias et de l'historique pour éviter les requêtes N+1
-    const referenceList = lignes.map(l => l.reference)
-    const aliases = await prisma.referenceAlias.findMany({
-      where: {
-        fournisseur: fournisseur,
-        aliasFournisseur: { in: referenceList }
-      }
-    })
-    const aliasMap = new Map(aliases.map(a => [a.aliasFournisseur, a.referenceCanonique]))
+    // 2. Pré-chargement du catalogue complet, des alias et de l'historique (zéro doublon)
+    const [tousArticles, tousAliases, historicalPrices] = await Promise.all([
+      prisma.article.findMany({
+        select: {
+          id: true,
+          reference: true,
+          designation: true,
+          codeBarre: true,
+          fournisseur: true,
+          referenceFournisseur: true,
+          prixUnitaire: true,
+        },
+      }),
+      prisma.referenceAlias.findMany(),
+      prisma.ligneFactureFournisseur.findMany({
+        where: {
+          factureId: { not: facture.id },
+          prixUnitaire: { gt: 0 },
+        },
+        include: {
+          facture: true,
+        },
+      }),
+    ])
 
-    const canonicalRefs = Array.from(new Set(lignes.map(l => aliasMap.get(l.reference) || l.reference)))
-    
-    const historicalPrices = await prisma.ligneFactureFournisseur.findMany({
-      where: {
-        reference: { in: canonicalRefs },
-        prixUnitaire: { gt: 0 }
-      },
-      include: {
-        facture: true
-      }
-    })
+    const indexCatalogue = construireIndexCatalogue(tousArticles, tousAliases)
 
-    const historyMap = new Map<string, any[]>()
+    // Indexation de l'historique par référence exacte ET par clé normalisée
+    const historyByKey = new Map<string, any[]>()
     for (const hp of historicalPrices) {
-      if (!historyMap.has(hp.reference)) {
-        historyMap.set(hp.reference, [])
+      const k = cleReference(hp.reference)
+      if (!k) continue
+      if (!historyByKey.has(k)) {
+        historyByKey.set(k, [])
       }
-      historyMap.get(hp.reference)!.push(hp)
+      historyByKey.get(k)!.push(hp)
     }
 
+    const syncStockActif = options.syncStock !== false
     const resultLignes = []
 
     for (const ligne of lignes) {
-      const referenceToUse = aliasMap.get(ligne.reference) || ligne.reference
-      const history = historyMap.get(referenceToUse) || []
+      const rawRef = String(ligne.originalReference || ligne.reference || '').trim()
+      const refSaisie = String(ligne.reference || rawRef || '').trim()
 
-      let previousPriceLigne = null
-      if (history.length > 0) {
-        // On trie l'historique par date décroissante pour obtenir le prix le plus récent
-        const sortedHistory = [...history].sort((a, b) => b.facture.dateFacture.getTime() - a.facture.dateFacture.getTime())
-        previousPriceLigne = sortedHistory[0]
-      }
+      // Recherche universelle dans le Catalogue (Alias, Réf exacte, Réf normalisée, EAN, Réf fournisseur)
+      const rapprochement = trouverArticleCatalogue(indexCatalogue, {
+        reference: refSaisie,
+        referenceFournisseur: rawRef || refSaisie,
+        codeBarre: ligne.codeBarre ? String(ligne.codeBarre) : null,
+        fournisseur,
+      })
+      let articleCatalogue = rapprochement.article
 
-      const prixPrecedent = previousPriceLigne ? previousPriceLigne.prixUnitaire : null
-      const dateFacturePrecedente = previousPriceLigne ? previousPriceLigne.facture.dateFacture : null
-      const numeroFacturePrecedente = previousPriceLigne ? previousPriceLigne.facture.numeroFacture : null
-      const fournisseurPrecedent = previousPriceLigne ? previousPriceLigne.facture.fournisseur : null
-      
-      const alerteHausse = prixPrecedent !== null && Number(ligne.prixUnitaire) > Number(prixPrecedent)
-
-      let alerteBaisse = false
-      if (history.length > 0) {
-        const avg = history.reduce((acc, curr) => acc + curr.prixUnitaire, 0) / history.length
-        if (Number(ligne.prixUnitaire) < avg * 0.95 && Number(ligne.prixUnitaire) > 0) {
-          alerteBaisse = true
-        }
-      }
+      const referenceToUse = articleCatalogue
+        ? articleCatalogue.reference
+        : rapprochement.referenceCanonique || refSaisie || `REF-${Date.now()}`
 
       const qte = parseInt(String(ligne.quantite), 10) || 1
       let pu = parseFloat(String(ligne.prixUnitaire)) || 0
@@ -132,6 +140,136 @@ export async function saveFactureAndCheckPrices(
         }
       }
 
+      // Historique de factures pour cette référence (canonique ou brute fournisseur)
+      const cleCanon = cleReference(referenceToUse)
+      const cleBrute = cleReference(rawRef)
+      const historySet = new Map<string, any>()
+      for (const item of historyByKey.get(cleCanon) || []) {
+        historySet.set(item.id, item)
+      }
+      if (cleBrute && cleBrute !== cleCanon) {
+        for (const item of historyByKey.get(cleBrute) || []) {
+          historySet.set(item.id, item)
+        }
+      }
+      const history = Array.from(historySet.values())
+
+      let previousPriceLigne = null
+      if (history.length > 0) {
+        // On trie l'historique par date décroissante pour obtenir le prix le plus récent
+        const sortedHistory = [...history].sort(
+          (a, b) => b.facture.dateFacture.getTime() - a.facture.dateFacture.getTime()
+        )
+        previousPriceLigne = sortedHistory[0]
+      }
+
+      // Fallback sur le prix unitaire du Catalogue si aucune facture précédente n'existe !
+      const prixCatalogue =
+        articleCatalogue && Number(articleCatalogue.prixUnitaire) > 0
+          ? Number(articleCatalogue.prixUnitaire)
+          : null
+
+      const prixPrecedent = previousPriceLigne
+        ? previousPriceLigne.prixUnitaire
+        : prixCatalogue
+
+      const dateFacturePrecedente = previousPriceLigne
+        ? previousPriceLigne.facture.dateFacture
+        : null
+      const numeroFacturePrecedente = previousPriceLigne
+        ? previousPriceLigne.facture.numeroFacture
+        : prixCatalogue !== null
+          ? 'CATALOGUE'
+          : null
+      const fournisseurPrecedent = previousPriceLigne
+        ? previousPriceLigne.facture.fournisseur
+        : prixCatalogue !== null
+          ? articleCatalogue?.fournisseur
+            ? `Catalogue ${articleCatalogue.fournisseur}`
+            : 'Catalogue'
+          : null
+
+      const alerteHausse =
+        pu > 0 &&
+        prixPrecedent !== null &&
+        Number(prixPrecedent) > 0 &&
+        pu > Number(prixPrecedent) + 0.0001
+
+      let alerteBaisse = false
+      if (pu > 0 && prixPrecedent !== null && Number(prixPrecedent) > 0) {
+        if (pu < Number(prixPrecedent) - 0.0001) {
+          alerteBaisse = true
+        } else if (history.length > 0) {
+          const avg =
+            history.reduce((acc, curr) => acc + curr.prixUnitaire, 0) /
+            history.length
+          if (pu < avg * 0.95) {
+            alerteBaisse = true
+          }
+        }
+      }
+
+      // Synchronisation Catalogue & Alias (anti-doublon)
+      if (articleCatalogue) {
+        // Si la référence brute fournisseur diffère de la référence canonique, mémoriser l'équivalence
+        if (rawRef && cleReference(rawRef) !== cleReference(articleCatalogue.reference)) {
+          await prisma.referenceAlias
+            .upsert({
+              where: {
+                fournisseur_aliasFournisseur: {
+                  fournisseur,
+                  aliasFournisseur: rawRef,
+                },
+              },
+              update: { referenceCanonique: articleCatalogue.reference },
+              create: {
+                fournisseur,
+                aliasFournisseur: rawRef,
+                referenceCanonique: articleCatalogue.reference,
+              },
+            })
+            .catch(() => {})
+        }
+
+        // Enrichir l'article existant s'il lui manque sa référence fournisseur ou son prix unitaire
+        const champsEnrichis: Record<string, any> = {}
+        if (!articleCatalogue.referenceFournisseur && rawRef) {
+          champsEnrichis.referenceFournisseur = rawRef
+          articleCatalogue.referenceFournisseur = rawRef
+        }
+        if (!articleCatalogue.fournisseur && fournisseur) {
+          champsEnrichis.fournisseur = fournisseur
+          articleCatalogue.fournisseur = fournisseur
+        }
+        if ((Number(articleCatalogue.prixUnitaire) === 0 || !articleCatalogue.prixUnitaire) && pu > 0) {
+          champsEnrichis.prixUnitaire = pu
+          articleCatalogue.prixUnitaire = pu
+        }
+        if (Object.keys(champsEnrichis).length > 0) {
+          await prisma.article.update({
+            where: { id: articleCatalogue.id },
+            data: champsEnrichis,
+          })
+          indexerArticleDansCatalogue(indexCatalogue, articleCatalogue)
+        }
+      } else if (syncStockActif && referenceToUse) {
+        // Créer automatiquement l'article dans le Catalogue s'il n'existe pas encore
+        const cree = await prisma.article.create({
+          data: {
+            reference: referenceToUse,
+            designation: (ligne.designation || referenceToUse).slice(0, 200),
+            fournisseur,
+            referenceFournisseur: rawRef || referenceToUse,
+            prixUnitaire: pu > 0 ? pu : 0,
+            categorie: 'À classer',
+            unite: 'u',
+            stockInitial: 0,
+          },
+        })
+        articleCatalogue = cree
+        indexerArticleDansCatalogue(indexCatalogue, cree)
+      }
+
       const diffUnitaire = alerteHausse && prixPrecedent ? pu - Number(prixPrecedent) : 0
       const montantEstimeAvoir = diffUnitaire * qte
 
@@ -139,7 +277,7 @@ export async function saveFactureAndCheckPrices(
         data: {
           factureId: facture.id,
           reference: referenceToUse,
-          designation: ligne.designation,
+          designation: ligne.designation || articleCatalogue?.designation || referenceToUse,
           quantite: qte,
           prixUnitaire: pu,
           prixUnitairePrecedent: prixPrecedent,
@@ -153,11 +291,29 @@ export async function saveFactureAndCheckPrices(
           montantAvoir: alerteHausse ? montantEstimeAvoir : null,
         }
       })
+
+      // Synchronisation du stock Dépôt si la ligne est affectée au STOCK
+      const affectation = String(ligne.chantier || 'STOCK').trim().toUpperCase()
+      if (syncStockActif && affectation === 'STOCK' && qte > 0 && articleCatalogue) {
+        await prisma.mouvement.create({
+          data: {
+            type: 'Achat',
+            quantite: qte,
+            articleId: articleCatalogue.id,
+            utilisateur: (session as any).username || 'Admin',
+            observation: `Facture ${fournisseur} n°${numeroFacture} (#FACTURE:${facture.id})`,
+          },
+        })
+      }
       
       resultLignes.push(savedLigne)
     }
 
     revalidatePath('/fournisseurs')
+    revalidatePath('/catalogue')
+    revalidatePath('/mouvements')
+    revalidatePath('/reassort')
+    revalidatePath('/depart-matin')
     
     return { success: true, facture, lignes: resultLignes }
   } catch (error: any) {
@@ -266,6 +422,15 @@ export async function deleteFacture(factureId: string) {
     const facture = await prisma.factureFournisseur.findUnique({ where: { id: factureId } })
     if (!facture) return { success: false, error: "Facture introuvable." }
 
+    // Supprimer les mouvements de stock Dépôt générés automatiquement par cette facture
+    await prisma.mouvement.deleteMany({
+      where: {
+        observation: {
+          contains: `(#FACTURE:${factureId})`,
+        },
+      },
+    })
+
     await prisma.factureFournisseur.delete({
       where: { id: factureId }
     })
@@ -273,6 +438,10 @@ export async function deleteFacture(factureId: string) {
     await logAudit('SUPPRESSION', 'FACTURE', `La facture ${facture.fournisseur} n°${facture.numeroFacture || '?'} a été supprimée.`)
     
     revalidatePath('/fournisseurs')
+    revalidatePath('/catalogue')
+    revalidatePath('/mouvements')
+    revalidatePath('/reassort')
+    revalidatePath('/depart-matin')
     return { success: true }
   } catch (error: any) {
     console.error("Erreur suppression facture:", error)

@@ -220,6 +220,25 @@ async function main() {
       assert.equal(r.stats.erreur, 2)
       assert.equal(r.stats.creation, 1)
     })
+    await test("anti-doublon : référence normalisée (tirets/espaces) retrouve l'article existant", async () => {
+      const t = analyser([["Référence", "Désignation", "Prix"], ["EPN-515", "Télérupteur Hager", 37.5]])
+      const r = await executerImport(prisma, t.lignes, { mode: "complet", majStockExistants: false }, false, "test")
+      assert.equal(r.stats.creation, 0, "ne doit pas créer de doublon EPN-515")
+      assert.equal(r.stats.mise_a_jour, 1)
+      assert.equal((await prisma.article.findUnique({ where: { reference: "EPN515" } }))!.prixUnitaire, 37.5)
+    })
+    await test("anti-doublon : équivalence ReferenceAlias (Facture ↔ Catalogue) évite tout doublon", async () => {
+      await prisma.referenceAlias.upsert({
+        where: { fournisseur_aliasFournisseur: { fournisseur: "Yesse elec", aliasFournisseur: "YESSS-777" } },
+        update: { referenceCanonique: "EPN515" },
+        create: { fournisseur: "Yesse elec", aliasFournisseur: "YESSS-777", referenceCanonique: "EPN515" },
+      })
+      const t = analyser([["Référence", "Désignation", "Prix"], ["YESSS-777", "Télérupteur Hager via YESSS", 36.0]])
+      const r = await executerImport(prisma, t.lignes, { mode: "complet", majStockExistants: false, fournisseurParDefaut: "Yesse elec" }, false, "test")
+      assert.equal(r.stats.creation, 0, "ne doit pas créer d'article YESSS-777 en doublon")
+      assert.equal(r.stats.mise_a_jour, 1)
+      assert.equal((await prisma.article.findUnique({ where: { reference: "EPN515" } }))!.prixUnitaire, 36.0)
+    })
   } finally {
     await prisma.$disconnect()
   }

@@ -10,6 +10,7 @@ import {
 import { saveFactureAndCheckPrices, getPriceHistory, updateStatutAvoir, deleteFacture } from '@/app/actions/factures'
 import { createAlias, deleteAlias } from '@/app/actions/alias'
 import { saveConfigMail, testConfigMail, syncMailboxNow } from '@/app/actions/config-mail'
+import { parseDateFlexible } from '@/lib/date-parser'
 import { useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import * as XLSX from 'xlsx'
@@ -39,6 +40,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
   const [lignes, setLignes] = useState<any[]>([])
   const [selectedEntreprise, setSelectedEntreprise] = useState<string>('CedricElec')
   const [bulkChantier, setBulkChantier] = useState('')
+  const [syncStock, setSyncStock] = useState<boolean>(true)
   
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -137,9 +139,10 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
         toast.error("Erreur de connexion lors de l'extraction de la facture.")
       }
     } else {
-      // 2. Upload multiple : Traitement par lot (auto-save)
+      // 2. Upload multiple : Extraction puis tri chronologique (de la plus ancienne à la plus récente)
       let succesCount = 0
       let echecCount = 0
+      const facturesExtraites: any[] = []
       
       for (let i = 0; i < files.length; i++) {
         try {
@@ -163,16 +166,39 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
             else if (fUpper.includes('BALITRAN')) fName = 'Balitran'
             
             const numFact = data.numeroFacture || `SANS-NUM-${Math.floor(Math.random() * 10000)}`
+            const dateParsed = parseDateFlexible(data.dateFacture)
             
-            await saveFactureAndCheckPrices(fName, numFact, data.items, {
-              entreprise: selectedEntreprise,
-              totalHT: data.totalHT || null,
-              totalTVA: data.totalTVA || null,
-              totalTTC: data.totalTTC || null,
-              dateEcheance: data.dateEcheance || null,
-              modePaiement: data.modePaiement || null,
-              dateFacture: data.dateFacture || null
+            facturesExtraites.push({
+              fName,
+              numFact,
+              items: data.items,
+              options: {
+                entreprise: selectedEntreprise,
+                totalHT: data.totalHT || null,
+                totalTVA: data.totalTVA || null,
+                totalTTC: data.totalTTC || null,
+                dateEcheance: data.dateEcheance || null,
+                modePaiement: data.modePaiement || null,
+                dateFacture: data.dateFacture || null,
+                syncStock,
+              },
+              timestamp: dateParsed ? dateParsed.getTime() : Number.MAX_SAFE_INTEGER,
             })
+          } else {
+            echecCount++
+          }
+        } catch (e) {
+          echecCount++
+        }
+      }
+
+      // Tri chronologique ascendant : Septembre -> Octobre -> Novembre
+      facturesExtraites.sort((a, b) => a.timestamp - b.timestamp)
+
+      for (const f of facturesExtraites) {
+        try {
+          const saved = await saveFactureAndCheckPrices(f.fName, f.numFact, f.items, f.options)
+          if (saved.success) {
             succesCount++
           } else {
             echecCount++
@@ -183,7 +209,7 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
       }
       
       if (succesCount > 0) {
-        toast.success(`${succesCount} factures enregistrées avec succès.`)
+        toast.success(`${succesCount} factures enregistrées par ordre chronologique avec succès.`)
       }
       if (echecCount > 0) {
         toast.error(`${echecCount} factures ont échoué.`)
@@ -234,7 +260,8 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
       totalTTC: totalTTC !== '' ? Number(totalTTC) : null,
       dateEcheance: dateEcheance || null,
       modePaiement: modePaiement || null,
-      dateFacture: dateFacture || null
+      dateFacture: dateFacture || null,
+      syncStock,
     })
     
     setIsSaving(false)
@@ -907,10 +934,21 @@ export function FournisseursClient({ initialFactures, initialConfigMail, initial
           </table>
         </div>
         
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <button onClick={addLigne} className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-sm">
-            <Plus className="h-4 w-4" /> Ajouter une ligne manuelle
-          </button>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <button onClick={addLigne} className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-sm">
+              <Plus className="h-4 w-4" /> Ajouter une ligne manuelle
+            </button>
+            <label className="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 cursor-pointer select-none bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 px-3 py-1.5 rounded-lg">
+              <input
+                type="checkbox"
+                checked={syncStock}
+                onChange={e => setSyncStock(e.target.checked)}
+                className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span>Synchroniser automatiquement le <strong>Catalogue</strong> et le <strong>Stock Dépôt</strong> (lignes STOCK)</span>
+            </label>
+          </div>
           
           <button 
             onClick={handleSave} 
