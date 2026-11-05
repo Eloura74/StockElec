@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "backup": "tsx scripts/backup-db.ts",
+    "backup": "npx tsx scripts/backup-db.ts",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down",
     "db:push": "prisma db push",
