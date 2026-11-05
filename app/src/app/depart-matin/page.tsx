@@ -28,6 +28,29 @@ export default async function DepartMatinPage() {
   })
   const stockMap = calculerStocksDepuisAgregats(aggregations)
 
+  // Matériel actuellement déployé sur chaque chantier actif :
+  // Depart (+) - Retour (-) - Consomme (-) - Perte (-)
+  const actifsIds = new Set(chantiers.map((c) => c.id))
+  const deployeParChantier: Record<string, Record<string, number>> = {}
+  for (const agg of aggregations) {
+    if (!agg.chantierId || !actifsIds.has(agg.chantierId)) continue
+    const sum = agg._sum.quantite || 0
+    if (!deployeParChantier[agg.chantierId]) deployeParChantier[agg.chantierId] = {}
+    const courant = deployeParChantier[agg.chantierId][agg.articleId] || 0
+    if (agg.type === 'Depart') {
+      deployeParChantier[agg.chantierId][agg.articleId] = courant + sum
+    } else if (agg.type === 'Retour' || agg.type === 'Consomme' || agg.type === 'Perte') {
+      deployeParChantier[agg.chantierId][agg.articleId] = courant - sum
+    }
+  }
+  for (const chId of Object.keys(deployeParChantier)) {
+    for (const artId of Object.keys(deployeParChantier[chId])) {
+      if (deployeParChantier[chId][artId] <= 0) {
+        delete deployeParChantier[chId][artId]
+      }
+    }
+  }
+
   const articlesWithStock = allArticles.map((a) => ({
     id: a.id,
     designation: a.designation,
@@ -80,7 +103,13 @@ export default async function DepartMatinPage() {
       </header>
 
       <main className="flex-1 p-4 sm:p-6 lg:max-w-4xl lg:mx-auto w-full selection:bg-indigo-500/30">
-        <DepartMatinClient chantiers={chantiers} articles={articlesWithStock} outillages={outillages} username={session.username} />
+        <DepartMatinClient
+          chantiers={chantiers}
+          articles={articlesWithStock}
+          outillages={outillages}
+          deployeParChantier={deployeParChantier}
+          username={session.username}
+        />
       </main>
     </div>
   )
