@@ -3,6 +3,16 @@
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { calculerStocksDepuisAgregats } from "@/lib/stockUtils"
+import { getSession } from "@/lib/auth"
+
+// Les server actions sont appelables directement : le middleware ne suffit pas à les protéger.
+async function exigerSession(gerantSeulement = false) {
+  const session = await getSession()
+  if (!session || (gerantSeulement && session.role !== "GERANT")) {
+    throw new Error("Non autorisé")
+  }
+  return session
+}
 
 export async function getArticles() {
   return prisma.article.findMany({
@@ -38,6 +48,7 @@ export async function getArticlesWithStocks() {
 }
 
 export async function createArticle(formData: FormData) {
+  await exigerSession()
   const reference = formData.get("reference") as string
   const designation = formData.get("designation") as string
   const categorie = formData.get("categorie") as string
@@ -74,6 +85,7 @@ export async function createArticle(formData: FormData) {
 }
 
 export async function deleteArticle(id: string) {
+  await exigerSession(true)
   await prisma.article.delete({
     where: { id }
   })
@@ -83,6 +95,7 @@ export async function deleteArticle(id: string) {
 }
 
 export async function updateArticle(formData: FormData) {
+  await exigerSession()
   const id = formData.get("id") as string
   const reference = formData.get("reference") as string
   const designation = formData.get("designation") as string
@@ -120,6 +133,7 @@ export async function updateArticle(formData: FormData) {
 }
 
 export async function creerArticleEtStock(formData: FormData) {
+  await exigerSession()
   const reference = formData.get("reference") as string
   const designation = formData.get("designation") as string
   const fournisseur = (formData.get("fournisseur") as string)?.trim() || null
@@ -158,6 +172,7 @@ export async function creerArticleEtStock(formData: FormData) {
 }
 
 export async function updateInfosRapides(formData: FormData) {
+  await exigerSession()
   const id = formData.get("id") as string
   const designation = (formData.get("designation") as string)?.trim()
   const fournisseur = (formData.get("fournisseur") as string)?.trim() || null

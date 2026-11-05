@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: stockelec-dev-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stockelec
+      POSTGRES_PASSWORD: stockelec_dev
+      POSTGRES_DB: stockelec_dev
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - stockelec_dev_data:/var/lib/postgresql/data
+
+volumes:
+  stockelec_dev_data:
+

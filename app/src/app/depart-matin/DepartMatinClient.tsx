@@ -1,14 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Minus, Search, ScanBarcode, Box, Truck, CheckCircle2, RotateCcw, Trash2 } from "lucide-react"
+import { Plus, Minus, Search, ScanBarcode, Box, Truck, CheckCircle2, RotateCcw, Trash2, Wrench, PackagePlus } from "lucide-react"
 import { validerDepartMatin } from "@/app/actions/depart"
 import { validerRetourChantier } from "@/app/actions/retour"
 import { BarcodeScanner } from "@/components/BarcodeScanner"
 import { EmpruntOutillageForm } from "@/components/EmpruntOutillageForm"
+import { ArticlesChefPanel, type ArticleChef } from "@/components/ArticlesChefPanel"
 import { toast } from "sonner"
 
-type Article = { id: string, designation: string, reference: string, codeBarre: string | null, stockActuel: number, stockMinimum: number }
+type Article = ArticleChef
 type Chantier = { id: string, nom: string }
 
 export function DepartMatinClient({ chantiers, articles, outillages, username }: { chantiers: Chantier[], articles: Article[], outillages: any[], username: string }) {
@@ -19,7 +20,7 @@ export function DepartMatinClient({ chantiers, articles, outillages, username }:
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
-  const [mode, setMode] = useState<"DEPART" | "VERIF" | "RETOUR" | "OUTILLAGE">("DEPART")
+  const [mode, setMode] = useState<"DEPART" | "VERIF" | "RETOUR" | "OUTILLAGE" | "ARTICLES">("DEPART")
   const [lastAdded, setLastAdded] = useState<string | null>(null)
 
   const [chantierSearchQuery, setChantierSearchQuery] = useState("")
@@ -114,32 +115,26 @@ export function DepartMatinClient({ chantiers, articles, outillages, username }:
   return (
     <div className="space-y-6">
       
-      {/* Sélecteur de Mode */}
-      <div className="flex bg-slate-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl ring-1 ring-slate-200 dark:ring-white/5 shadow-inner">
-        <button 
-          onClick={() => setMode("DEPART")}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "DEPART" ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10" : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"}`}
-        >
-          Départ
-        </button>
-        <button 
-          onClick={() => setMode("RETOUR")}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "RETOUR" ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10" : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"}`}
-        >
-          Retour
-        </button>
-        <button 
-          onClick={() => setMode("OUTILLAGE")}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "OUTILLAGE" ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10" : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"}`}
-        >
-          Outillage
-        </button>
-        <button 
-          onClick={() => setMode("VERIF")}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${mode === "VERIF" ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10" : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"}`}
-        >
-          Stock
-        </button>
+      {/* Sélecteur de Mode (5 onglets, icône + libellé pour rester lisible sur téléphone) */}
+      <div className="grid grid-cols-5 gap-1 bg-slate-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl ring-1 ring-slate-200 dark:ring-white/5 shadow-inner">
+        {([
+          { id: "DEPART", label: "Départ", Icon: Truck },
+          { id: "RETOUR", label: "Retour", Icon: RotateCcw },
+          { id: "OUTILLAGE", label: "Outils", Icon: Wrench },
+          { id: "VERIF", label: "Stock", Icon: Box },
+          { id: "ARTICLES", label: "Articles", Icon: PackagePlus },
+        ] as const).map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setMode(id)}
+            aria-pressed={mode === id}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 min-h-14 sm:min-h-12 py-2 text-[11px] sm:text-sm font-semibold rounded-xl transition-all duration-200 ${mode === id ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10" : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"}`}
+          >
+            <Icon className="w-5 h-5" />
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Message de Feedback Flash */}
@@ -208,6 +203,8 @@ export function DepartMatinClient({ chantiers, articles, outillages, username }:
           )}
         </div>
       )}
+
+      {mode === "ARTICLES" && <ArticlesChefPanel articles={articles} />}
 
       {mode === "OUTILLAGE" && (
         <div className="animate-in slide-in-from-bottom-2 fade-in">
