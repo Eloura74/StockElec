@@ -36,7 +36,7 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
     
     if (mvt.type === 'Depart') {
       current.quantite += mvt.quantite;
-    } else if (mvt.type === 'Retour' || mvt.type === 'Consomme') {
+    } else if (mvt.type === 'Retour' || mvt.type === 'Consomme' || mvt.type === 'Perte') {
       current.quantite -= mvt.quantite;
     }
   });
