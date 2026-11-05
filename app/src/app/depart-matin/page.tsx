@@ -6,6 +6,7 @@ import { LogOut } from "lucide-react"
 import { logout } from "@/app/actions/auth"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { getOutillages } from "@/app/actions/outillage"
+import { calculerStocksDepuisAgregats } from "@/lib/stockUtils"
 
 export default async function DepartMatinPage() {
   const session = await getSession()
@@ -17,28 +18,30 @@ export default async function DepartMatinPage() {
   })
 
   const allArticles = await prisma.article.findMany({
-    include: {
-      mouvements: true
-    },
     orderBy: { designation: 'asc' }
   })
 
-  // Calcul du stock actuel
-  const articlesWithStock = allArticles.map((a: any) => {
-    let stock = a.stockInitial
-    for (const m of a.mouvements) {
-      if (['Achat', 'Retour', 'Correction_Plus'].includes(m.type)) stock += m.quantite
-      if (['Depart', 'Consomme', 'Perdu', 'Correction_Moins'].includes(m.type)) stock -= m.quantite
-    }
-    return { 
-      id: a.id, 
-      designation: a.designation, 
-      reference: a.reference, 
-      codeBarre: a.codeBarre,
-      stockMinimum: a.stockMinimum,
-      stockActuel: stock 
-    }
+  // Stock du dépôt : même source de vérité que le catalogue (stock initial + mouvements agrégés)
+  const aggregations = await prisma.mouvement.groupBy({
+    by: ['articleId', 'type', 'chantierId'],
+    _sum: { quantite: true }
   })
+  const stockMap = calculerStocksDepuisAgregats(aggregations)
+
+  const articlesWithStock = allArticles.map((a) => ({
+    id: a.id,
+    designation: a.designation,
+    reference: a.reference,
+    codeBarre: a.codeBarre,
+    stockMinimum: a.stockMinimum,
+    stockActuel: a.stockInitial + (stockMap.get(a.id)?.stockDepot ?? 0),
+    // Champs éditables par le chef d'équipe (le prix n'est volontairement pas transmis)
+    fournisseur: a.fournisseur,
+    referenceFournisseur: a.referenceFournisseur,
+    categorie: a.categorie,
+    unite: a.unite,
+    quantiteParBoite: a.quantiteParBoite
+  }))
 
   const outillages = await getOutillages()
 

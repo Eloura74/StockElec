@@ -27,3 +27,4 @@ export function getDatabaseUrl(options: { destructive?: boolean } = {}): string 
 
   return url
 }
+

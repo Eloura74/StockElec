@@ -45,3 +45,5 @@ next-env.d.ts
 
 # exemple d'environnement versionné (sans secret)
 !.env.example
+
+/data/audit.json

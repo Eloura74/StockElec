@@ -70,3 +70,8 @@ Vercel → Deployments → ancien déploiement stable → **Promote to Productio
 ## Scripts de maintenance (`app/scripts/`)
 
 Ils lisent `DATABASE_URL` (obligatoire). Les scripts destructifs (`reset-articles`, `clean-factures-and-prices`, `import-articles-clean`) **refusent** de tourner sur une base distante sauf `CONFIRM_REMOTE_DB=oui`.
+
+
+### Variante sans Docker : serveur Postgres local Prisma
+
+Si Docker Desktop n'est pas disponible : `npx prisma dev --name stockelec-dev` démarre un Postgres local et affiche une `DATABASE_URL`. Ce serveur n'accepte qu'une seule session : ajouter **`&pgbouncer=true&connection_limit=1`** à l'URL, sinon les requêtes échouent avec l'erreur `prepared statement "s0" already exists`. Cette contrainte ne concerne pas le Postgres Docker.

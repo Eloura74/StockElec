@@ -14,3 +14,4 @@ services:
 
 volumes:
   stockelec_dev_data:
+
