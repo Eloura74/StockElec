@@ -4,6 +4,10 @@ import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { calculerStocksDepuisAgregats } from "@/lib/stockUtils"
 import { getSession } from "@/lib/auth"
+import {
+  construireIndexCatalogue,
+  trouverArticleCatalogue,
+} from "@/lib/article-matching"
 
 // Les server actions sont appelables directement : le middleware ne suffit pas à les protéger.
 async function exigerSession(gerantSeulement = false) {
@@ -49,7 +53,7 @@ export async function getArticlesWithStocks() {
 
 export async function createArticle(formData: FormData) {
   await exigerSession()
-  const reference = formData.get("reference") as string
+  const reference = (formData.get("reference") as string)?.trim()
   const designation = formData.get("designation") as string
   const categorie = formData.get("categorie") as string
   const unite = formData.get("unite") as string
@@ -58,26 +62,56 @@ export async function createArticle(formData: FormData) {
   const prixUnitaire = parseFloat(formData.get("prixUnitaire") as string || "0")
   const quantiteParBoite = parseInt(formData.get("quantiteParBoite") as string || "1")
   const retourAttendu = formData.get("retourAttendu") === "on"
-  const referenceFournisseur = formData.get("referenceFournisseur") as string || null
+  const referenceFournisseur = (formData.get("referenceFournisseur") as string)?.trim() || null
   const fournisseur = (formData.get("fournisseur") as string)?.trim() || null
   const codeBarre = (formData.get("codeBarre") as string)?.trim() || null
 
-  await prisma.article.create({
-    data: {
-      reference,
-      designation,
-      categorie,
-      unite,
-      stockInitial,
-      stockMinimum,
-      quantiteParBoite,
-      prixUnitaire,
-      referenceFournisseur,
-      fournisseur,
-      codeBarre,
-      retourAttendu,
-    } as any
-  })
+  const [tousArticles, tousAliases] = await Promise.all([
+    prisma.article.findMany(),
+    prisma.referenceAlias.findMany(),
+  ])
+  const index = construireIndexCatalogue(tousArticles, tousAliases)
+  const existant = trouverArticleCatalogue(index, {
+    reference,
+    codeBarre,
+    fournisseur,
+    referenceFournisseur,
+  }).article
+
+  if (existant) {
+    await prisma.article.update({
+      where: { id: existant.id },
+      data: {
+        designation: designation || existant.designation,
+        categorie: categorie || existant.categorie,
+        unite: unite || existant.unite,
+        stockMinimum: stockMinimum || existant.stockMinimum,
+        quantiteParBoite: quantiteParBoite || existant.quantiteParBoite,
+        ...(prixUnitaire > 0 ? { prixUnitaire } : {}),
+        ...(referenceFournisseur ? { referenceFournisseur } : {}),
+        ...(fournisseur ? { fournisseur } : {}),
+        ...(codeBarre ? { codeBarre } : {}),
+        retourAttendu,
+      } as any,
+    })
+  } else {
+    await prisma.article.create({
+      data: {
+        reference,
+        designation,
+        categorie,
+        unite,
+        stockInitial,
+        stockMinimum,
+        quantiteParBoite,
+        prixUnitaire,
+        referenceFournisseur,
+        fournisseur,
+        codeBarre,
+        retourAttendu,
+      } as any
+    })
+  }
 
   revalidatePath("/catalogue")
   revalidatePath("/mouvements")
@@ -134,24 +168,44 @@ export async function updateArticle(formData: FormData) {
 
 export async function creerArticleEtStock(formData: FormData) {
   await exigerSession()
-  const reference = formData.get("reference") as string
+  const reference = (formData.get("reference") as string)?.trim() || ""
   const designation = formData.get("designation") as string
   const fournisseur = (formData.get("fournisseur") as string)?.trim() || null
   const codeBarre = (formData.get("codeBarre") as string)?.trim() || null
   const quantiteReelle = parseInt(formData.get("quantiteReelle") as string || "0")
   const observation = formData.get("observation") as string || "Création via Scan & Go"
 
-  const article = await prisma.article.create({
-    data: {
-      reference: reference || `REF-${Date.now()}`,
-      designation,
-      fournisseur,
-      codeBarre,
-      stockInitial: 0,
-      categorie: "À classer",
-      unite: "u"
-    } as any
-  })
+  const [tousArticles, tousAliases] = await Promise.all([
+    prisma.article.findMany(),
+    prisma.referenceAlias.findMany(),
+  ])
+  const index = construireIndexCatalogue(tousArticles, tousAliases)
+  const existant = trouverArticleCatalogue(index, {
+    reference,
+    codeBarre,
+    fournisseur,
+    referenceFournisseur: reference,
+  }).article
+
+  const article = existant
+    ? await prisma.article.update({
+        where: { id: existant.id },
+        data: {
+          ...(codeBarre && !existant.codeBarre ? { codeBarre } : {}),
+          ...(fournisseur && !existant.fournisseur ? { fournisseur } : {}),
+        },
+      })
+    : await prisma.article.create({
+        data: {
+          reference: reference || `REF-${Date.now()}`,
+          designation,
+          fournisseur,
+          codeBarre,
+          stockInitial: 0,
+          categorie: "À classer",
+          unite: "u"
+        } as any
+      })
 
   if (quantiteReelle > 0) {
     await prisma.mouvement.create({

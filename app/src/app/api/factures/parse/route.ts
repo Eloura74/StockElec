@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { parseInvoiceWithGemini } from '@/lib/gemini-factures';
+import prisma from '@/lib/prisma';
+import {
+  construireIndexCatalogue,
+  trouverArticleCatalogue,
+} from '@/lib/article-matching';
 
 export async function POST(req: Request) {
   try {
@@ -22,13 +27,36 @@ export async function POST(req: Request) {
 
     const extractedFournisseur = parsed.fournisseur ? parsed.fournisseur.trim() : null;
     const extractedNumeroFacture = parsed.numeroFacture ? parsed.numeroFacture.trim() : null;
+
+    const [tousArticles, tousAliases] = await Promise.all([
+      prisma.article.findMany({
+        select: {
+          id: true,
+          reference: true,
+          designation: true,
+          codeBarre: true,
+          fournisseur: true,
+          referenceFournisseur: true,
+        },
+      }),
+      prisma.referenceAlias.findMany(),
+    ]);
+    const indexCatalogue = construireIndexCatalogue(tousArticles, tousAliases);
     
-    const extractedItems = (parsed.lignes || []).map((item) => ({
-      ...item,
-      originalReference: item.reference,
-      chantier: item.chantier || 'STOCK',
-      id: Math.random().toString(36).substring(7)
-    }));
+    const extractedItems = (parsed.lignes || []).map((item) => {
+      const match = trouverArticleCatalogue(indexCatalogue, {
+        reference: item.reference,
+        referenceFournisseur: item.reference,
+        fournisseur: extractedFournisseur,
+      }).article;
+      return {
+        ...item,
+        reference: match ? match.reference : item.reference,
+        originalReference: item.reference,
+        chantier: item.chantier || 'STOCK',
+        id: Math.random().toString(36).substring(7)
+      };
+    });
 
     console.log(`Extraction IA réussie : ${extractedItems.length} articles pour la facture ${extractedNumeroFacture} (${extractedFournisseur}) - Total HT: ${parsed.totalHT}€`);
 

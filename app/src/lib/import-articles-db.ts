@@ -7,6 +7,7 @@
 import type { PrismaClient, Prisma } from "@prisma/client"
 import { calculerStocksDepuisAgregats } from "./stockUtils"
 import type { LigneImport } from "./import-articles"
+import { construireIndexCatalogue, trouverArticleCatalogue, cleReference } from "./article-matching"
 
 export type ModeImport = "complet" | "creer_seulement" | "maj_seulement"
 
@@ -149,25 +150,21 @@ export async function executerImport(
     }
   }
 
-  // Catalogue existant : chargé une fois (quelques milliers d'articles max → acceptable)
-  const existants: ArticleExistant[] = await prisma.article.findMany({
-    select: {
-      id: true, reference: true, designation: true, categorie: true, unite: true, quantiteParBoite: true,
-      stockMinimum: true, prixUnitaire: true, codeBarre: true, referenceFournisseur: true, fournisseur: true,
-      marque: true, emplacement: true, stockInitial: true,
-    },
-  })
-  const parRef = new Map<string, ArticleExistant>()
-  const parCode = new Map<string, ArticleExistant>()
-  const parRefFourn = new Map<string, ArticleExistant | null>() // null = ambigu
-  for (const a of existants) {
-    parRef.set(a.reference.trim().toUpperCase(), a)
-    if (a.codeBarre) parCode.set(a.codeBarre, a)
-    if (a.referenceFournisseur) {
-      const k = a.referenceFournisseur.trim().toUpperCase()
-      parRefFourn.set(k, parRefFourn.has(k) ? null : a)
-    }
-  }
+  // Catalogue existant + alias fournisseurs : chargés une fois pour un rapprochement universel anti-doublon
+  const [existants, aliases]: [ArticleExistant[], { fournisseur: string; aliasFournisseur: string; referenceCanonique: string }[]] = await Promise.all([
+    prisma.article.findMany({
+      select: {
+        id: true, reference: true, designation: true, categorie: true, unite: true, quantiteParBoite: true,
+        stockMinimum: true, prixUnitaire: true, codeBarre: true, referenceFournisseur: true, fournisseur: true,
+        marque: true, emplacement: true, stockInitial: true,
+      },
+    }),
+    prisma.referenceAlias.findMany({
+      select: { fournisseur: true, aliasFournisseur: true, referenceCanonique: true },
+    }),
+  ])
+  const indexCatalogue = construireIndexCatalogue(existants, aliases)
+  const parCode = indexCatalogue.parCodeBarre
 
   // Codes-barres / références déjà attribués pendant CE lot (contraintes d'unicité)
   const codesPris = new Set<string>()
@@ -191,7 +188,7 @@ export async function executerImport(
     }
     resultats.push(res)
 
-    const refKey = l.reference.toUpperCase()
+    const refKey = cleReference(l.reference) || l.reference.toUpperCase()
     if (refsPrises.has(refKey)) {
       res.statut = "erreur"
       res.messages.push("Référence en double dans le lot")
@@ -199,19 +196,23 @@ export async function executerImport(
       continue
     }
 
-    let article = parRef.get(refKey)
-    let correspondance = "référence"
-    if (!article && l.codeBarre && parCode.has(l.codeBarre)) {
-      article = parCode.get(l.codeBarre)
-      correspondance = "code-barres"
+    const rapprochement = trouverArticleCatalogue(indexCatalogue, {
+      reference: l.reference,
+      referenceFournisseur: l.referenceFournisseur,
+      codeBarre: l.codeBarre,
+      fournisseur: l.fournisseur ?? fournisseurDefaut,
+    })
+    const article = rapprochement.article
+    const LABELS_METHODE: Record<typeof rapprochement.methode, string> = {
+      reference: "référence",
+      reference_normalisee: "référence normalisée",
+      alias: "équivalence fournisseur",
+      code_barre: "code-barres",
+      couple_fournisseur_ref: "couple fournisseur + réf.",
+      reference_fournisseur: "réf. fournisseur",
+      aucune: "référence",
     }
-    if (!article && l.referenceFournisseur) {
-      const a = parRefFourn.get(l.referenceFournisseur.toUpperCase())
-      if (a) {
-        article = a
-        correspondance = "réf. fournisseur"
-      }
-    }
+    const correspondance = LABELS_METHODE[rapprochement.methode]
 
     // Code-barres appartenant à un AUTRE article → on ne l'affecte pas (contrainte unique)
     let codeBarre = l.codeBarre
@@ -255,7 +256,7 @@ export async function executerImport(
     }
 
     // Article existant
-    refsPrises.add(article.reference.toUpperCase())
+    refsPrises.add(cleReference(article.reference) || article.reference.toUpperCase())
     if (correspondance !== "référence") res.messages.push(`Rapproché de « ${article.reference} » par ${correspondance}`)
     res.reference = article.reference
 

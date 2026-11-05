@@ -5,6 +5,11 @@ import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { calculerStocksDepuisAgregats } from "@/lib/stockUtils";
 import { logAudit } from "@/lib/audit";
+import {
+  cleReference,
+  construireIndexCatalogue,
+  trouverArticleCatalogue,
+} from "@/lib/article-matching";
 
 /**
  * Actions « Articles » destinées aux chefs d'équipe (et au gérant) :
@@ -122,26 +127,41 @@ export async function creerArticleChef(
 
   const reference = texte(input.reference) ?? `REF-${Date.now()}`;
   const codeBarre = texte(input.codeBarre);
+  const fournisseur = texte(input.fournisseur);
+  const referenceFournisseur = texte(input.referenceFournisseur);
 
   try {
-    const doublonRef = await prisma.article.findUnique({
-      where: { reference },
-    });
-    if (doublonRef)
-      return {
-        success: false,
-        error: `La référence « ${reference} » existe déjà.`,
-      };
-    if (codeBarre) {
-      const doublonCode = await prisma.article.findUnique({
-        where: { codeBarre },
-      });
-      if (doublonCode) {
+    const [tousArticles, tousAliases] = await Promise.all([
+      prisma.article.findMany({
+        select: {
+          id: true,
+          reference: true,
+          designation: true,
+          codeBarre: true,
+          fournisseur: true,
+          referenceFournisseur: true,
+        },
+      }),
+      prisma.referenceAlias.findMany(),
+    ]);
+    const index = construireIndexCatalogue(tousArticles, tousAliases);
+    const existantMatch = trouverArticleCatalogue(index, {
+      reference: texte(input.reference),
+      codeBarre,
+      fournisseur,
+      referenceFournisseur,
+    }).article;
+    if (existantMatch) {
+      if (codeBarre && existantMatch.codeBarre === codeBarre) {
         return {
           success: false,
-          error: `Ce code-barres est déjà utilisé par « ${doublonCode.designation} ».`,
+          error: `Ce code-barres est déjà utilisé par « ${existantMatch.designation} » (Réf: ${existantMatch.reference}).`,
         };
       }
+      return {
+        success: false,
+        error: `Cet article existe déjà dans le catalogue sous « ${existantMatch.designation} » (Réf: ${existantMatch.reference}).`,
+      };
     }
 
     const article = await prisma.$transaction(async (tx) => {
@@ -150,8 +170,8 @@ export async function creerArticleChef(
           reference,
           designation,
           codeBarre,
-          fournisseur: texte(input.fournisseur),
-          referenceFournisseur: texte(input.referenceFournisseur),
+          fournisseur,
+          referenceFournisseur,
           categorie: texte(input.categorie) ?? "À classer",
           unite: texte(input.unite) ?? "u",
           stockMinimum,
@@ -220,13 +240,21 @@ export async function modifierArticleChef(
     if (!existant) return { success: false, error: "Article introuvable." };
 
     if (reference !== existant.reference) {
-      const doublonRef = await prisma.article.findUnique({
-        where: { reference },
+      const cleNouvelleRef = cleReference(reference);
+      const tousArticles = await prisma.article.findMany({
+        select: { id: true, reference: true, designation: true },
       });
+      const doublonRef = tousArticles.find(
+        (a) =>
+          a.id !== existant.id &&
+          (a.reference === reference ||
+            (cleNouvelleRef.length > 0 &&
+              cleReference(a.reference) === cleNouvelleRef)),
+      );
       if (doublonRef)
         return {
           success: false,
-          error: `La référence « ${reference} » existe déjà.`,
+          error: `La référence « ${reference} » correspond déjà à « ${doublonRef.designation} » (${doublonRef.reference}).`,
         };
     }
     if (codeBarre && codeBarre !== existant.codeBarre) {
