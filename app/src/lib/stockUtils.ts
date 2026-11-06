@@ -34,7 +34,11 @@ export function calculerStockArticle(article: Article, mouvements: Mouvement[]):
     switch (mvt.type) {
       case "Achat":
       case "Correction":
+      case "Correction_Plus":
         stockDepot += mvt.quantite
+        break
+      case "Correction_Moins":
+        stockDepot -= mvt.quantite
         break
       case "Depart":
         stockDepot -= mvt.quantite
