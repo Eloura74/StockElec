@@ -2,9 +2,10 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { getSession } from "@/lib/auth"
 
 export async function getOutillages() {
-  return prisma.outillage.findMany({
+  const rows = await prisma.outillage.findMany({
     include: {
       chantier: true,
       mouvements: {
@@ -13,6 +14,22 @@ export async function getOutillages() {
       }
     },
     orderBy: { nom: 'asc' }
+  })
+
+  const maintenant = Date.now()
+  return rows.map((outil) => {
+    let joursSortie: number | null = null
+    if (outil.statut === "En Chantier") {
+      const dernierEmprunt = outil.mouvements.find((m) => m.type === "Emprunt")
+      const dateRef = dernierEmprunt?.date || outil.updatedAt
+      if (dateRef) {
+        joursSortie = Math.max(0, Math.floor((maintenant - new Date(dateRef).getTime()) / (1000 * 60 * 60 * 24)))
+      }
+    }
+    return {
+      ...outil,
+      joursSortie,
+    }
   })
 }
 
@@ -111,5 +128,31 @@ export async function emprunterOutillage(formData: FormData) {
   }
 
   revalidatePath("/outillage")
+  revalidatePath("/")
+}
+
+export async function retournerOutillageRapide(outillageId: string) {
+  if (!outillageId) return
+  const session = await getSession()
+  const utilisateur = session?.username || "Gérant"
+
+  await prisma.$transaction([
+    prisma.mouvementOutillage.create({
+      data: {
+        outillageId,
+        type: "Retour",
+        chantierId: null,
+        utilisateur,
+        observation: "Retour rapide au dépôt en 1 clic",
+      },
+    }),
+    prisma.outillage.update({
+      where: { id: outillageId },
+      data: { statut: "Disponible", chantierId: null, utilisateur: null },
+    }),
+  ])
+
+  revalidatePath("/outillage")
+  revalidatePath(`/outillage/${outillageId}`)
   revalidatePath("/")
 }

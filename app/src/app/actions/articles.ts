@@ -70,6 +70,8 @@ export async function createArticle(formData: FormData) {
   const retourAttendu = formData.get("retourAttendu") === "on"
   const referenceFournisseur = (formData.get("referenceFournisseur") as string)?.trim() || null
   const fournisseur = (formData.get("fournisseur") as string)?.trim() || null
+  const marque = (formData.get("marque") as string)?.trim() || null
+  const emplacement = (formData.get("emplacement") as string)?.trim() || null
   const codeBarre = (formData.get("codeBarre") as string)?.trim() || null
 
   const [tousArticles, tousAliases] = await Promise.all([
@@ -96,6 +98,8 @@ export async function createArticle(formData: FormData) {
         ...(prixUnitaire > 0 ? { prixUnitaire } : {}),
         ...(referenceFournisseur ? { referenceFournisseur } : {}),
         ...(fournisseur ? { fournisseur } : {}),
+        ...(marque ? { marque } : {}),
+        ...(emplacement ? { emplacement } : {}),
         ...(codeBarre ? { codeBarre } : {}),
         retourAttendu,
       } as any,
@@ -113,6 +117,8 @@ export async function createArticle(formData: FormData) {
         prixUnitaire,
         referenceFournisseur,
         fournisseur,
+        marque,
+        emplacement,
         codeBarre,
         retourAttendu,
       } as any
@@ -146,7 +152,10 @@ export async function updateArticle(formData: FormData) {
   const prixUnitaire = Math.max(0, parseNombre(formData.get("prixUnitaire")) ?? 0)
   const referenceFournisseur = (formData.get("referenceFournisseur") as string)?.trim() || null
   const fournisseur = (formData.get("fournisseur") as string)?.trim() || null
+  const marque = (formData.get("marque") as string)?.trim() || null
+  const emplacement = (formData.get("emplacement") as string)?.trim() || null
   const codeBarre = (formData.get("codeBarre") as string)?.trim() || null
+  const retourAttendu = formData.get("retourAttendu") === "on"
 
   if (id) {
     await prisma.article.update({
@@ -161,7 +170,10 @@ export async function updateArticle(formData: FormData) {
         prixUnitaire,
         referenceFournisseur,
         fournisseur,
+        marque,
+        emplacement,
         codeBarre,
+        retourAttendu,
       } as any
     })
     revalidatePath("/catalogue")

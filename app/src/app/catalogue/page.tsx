@@ -53,7 +53,10 @@ export default async function CataloguePage({
     articles = articles.filter((article: any) => 
       article.designation.toLowerCase().includes(query) || 
       article.reference.toLowerCase().includes(query) ||
-      (article.referenceFournisseur && article.referenceFournisseur.toLowerCase().includes(query))
+      (article.referenceFournisseur && article.referenceFournisseur.toLowerCase().includes(query)) ||
+      (article.marque && article.marque.toLowerCase().includes(query)) ||
+      (article.emplacement && article.emplacement.toLowerCase().includes(query)) ||
+      (article.codeBarre && article.codeBarre.toLowerCase().includes(query))
     )
   }
 
@@ -215,15 +218,31 @@ export default async function CataloguePage({
                   <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
                     Catégorie
                   </label>
-                  <select 
-                    name="categorie" 
-                    className="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-white focus:border-blue-500 font-medium cursor-pointer"
-                  >
-                    <option value="Consommable">Consommable</option>
-                    <option value="Outillage">Outillage</option>
-                    <option value="EPI">EPI</option>
-                    <option value="Matériaux">Matériaux</option>
-                  </select>
+                  <input
+                    name="categorie"
+                    type="text"
+                    list="catalogue-categories-list"
+                    defaultValue="Consommable"
+                    placeholder="ex: Consommable, Appareillage..."
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-white focus:border-blue-500 font-medium"
+                  />
+                  <datalist id="catalogue-categories-list">
+                    {Array.from(
+                      new Set([
+                        "Consommable",
+                        "Appareillage",
+                        "Câblage",
+                        "Tableau",
+                        "Éclairage",
+                        "Outillage",
+                        "EPI",
+                        "Matériaux",
+                        ...categories,
+                      ])
+                    ).map((cat) => (
+                      <option key={cat} value={cat} />
+                    ))}
+                  </datalist>
                 </div>
                 <div>
                   <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
@@ -234,6 +253,31 @@ export default async function CataloguePage({
                     type="number" 
                     defaultValue="0" 
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-white font-medium" 
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    Marque / Fabricant
+                  </label>
+                  <input
+                    name="marque"
+                    type="text"
+                    placeholder="ex: Hager, Legrand"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    Emplacement Dépôt
+                  </label>
+                  <input
+                    name="emplacement"
+                    type="text"
+                    placeholder="ex: Rayon A1, Bac B2"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
                   />
                 </div>
               </div>
@@ -390,10 +434,20 @@ export default async function CataloguePage({
                           {/* 1. Article & Catégorie */}
                           <td className="px-4 py-3.5">
                             <div className="space-y-1">
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-1.5">
                                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${catColor}`}>
                                   {cat}
                                 </span>
+                                {article.marque && (
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40">
+                                    {article.marque}
+                                  </span>
+                                )}
+                                {article.emplacement && (
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40">
+                                    📍 {article.emplacement}
+                                  </span>
+                                )}
                                 {article.prixUnitaire > 0 && (
                                   <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tabular-nums">
                                     {article.prixUnitaire.toFixed(2)} € HT
@@ -596,9 +650,21 @@ export default async function CataloguePage({
                     <div key={article.id} className="p-4 space-y-3">
                       <div className="flex justify-between items-start gap-2">
                         <div>
-                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                            {article.categorie || "Matériel"}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                              {article.categorie || "Matériel"}
+                            </span>
+                            {article.marque && (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                                {article.marque}
+                              </span>
+                            )}
+                            {article.emplacement && (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                                📍 {article.emplacement}
+                              </span>
+                            )}
+                          </div>
                           <Link 
                             href={`/catalogue/${article.id}`} 
                             className="font-bold text-slate-900 dark:text-white hover:text-blue-600 block mt-1 text-sm"
