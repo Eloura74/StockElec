@@ -2,24 +2,26 @@ import { createChantier, deleteChantier } from "@/app/actions/chantiers"
 import { HardHat, Plus, MapPin, Wrench, Pencil, Layers, CheckCircle2, DollarSign, Building } from "lucide-react"
 import { calculerResteSurChantier } from "@/lib/stockUtils"
 import prisma from "@/lib/prisma"
+import { chargerAdressesChantiers } from "@/lib/chantier-adresse"
 import { DeleteButton } from "@/components/DeleteButton"
 import Link from "next/link"
 
+export const dynamic = "force-dynamic"
+
 export default async function ChantiersPage() {
-  const chantiers = await prisma.chantier.findMany({
-    include: { 
-      mouvements: {
-        include: { article: true }
-      } 
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+  const [chantiers, adressesMap] = await Promise.all([
+    prisma.chantier.findMany({
+      include: { 
+        mouvements: {
+          include: { article: true }
+        } 
+      },
+      orderBy: { createdAt: 'desc' }
+    }),
+    chargerAdressesChantiers(),
+  ])
 
   // Métriques de synthèse calculées côté serveur
-  let totalMaterielDeploye = 0
-  let valeurTotaleEngagee = 0
-  let chantiersActifsCount = 0
-
   const chantiersCalcules = chantiers.map((chantier: any) => {
     const resteChantier = calculerResteSurChantier(chantier.mouvements)
     let materielDeploye = 0
@@ -34,16 +36,17 @@ export default async function ChantiersPage() {
       }
     })
 
-    if (chantier.statut === "Actif") chantiersActifsCount++
-    totalMaterielDeploye += materielDeploye
-    valeurTotaleEngagee += valeurChantier
-
     return {
       ...chantier,
+      adresse: adressesMap.get(chantier.id) || null,
       materielDeploye,
       valeurChantier
     }
   })
+
+  const chantiersActifsCount = chantiersCalcules.filter((c: any) => c.statut === "Actif").length
+  const totalMaterielDeploye = chantiersCalcules.reduce((acc: number, c: any) => acc + c.materielDeploye, 0)
+  const valeurTotaleEngagee = chantiersCalcules.reduce((acc: number, c: any) => acc + c.valeurChantier, 0)
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-in fade-in duration-200">
@@ -170,6 +173,23 @@ export default async function ChantiersPage() {
                   />
                 </div>
               </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Adresse / Localisation (optionnel)
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                  </div>
+                  <input 
+                    name="adresse" 
+                    type="text" 
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#161d2d] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-medium transition-all" 
+                    placeholder="ex: 14 Bd du Cap, 06160 Antibes" 
+                  />
+                </div>
+              </div>
               
               <button 
                 type="submit" 
@@ -233,10 +253,27 @@ export default async function ChantiersPage() {
 
                         {/* 2. Adresse */}
                         <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">
-                          <div className="flex items-center gap-1.5">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span className="truncate max-w-[180px]">{chantier.adresse || 'Aucune adresse spécifiée'}</span>
-                          </div>
+                          {chantier.adresse ? (
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(chantier.adresse)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                              title="Ouvrir dans Google Maps"
+                            >
+                              <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                              <span className="truncate max-w-[220px] underline decoration-dotted underline-offset-2">{chantier.adresse}</span>
+                            </a>
+                          ) : (
+                            <Link
+                              href={`/chantiers/${chantier.id}`}
+                              className="inline-flex items-center gap-1.5 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                              title="Cliquer pour renseigner l'adresse du chantier"
+                            >
+                              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span className="truncate max-w-[180px] italic">+ Ajouter une adresse</span>
+                            </Link>
+                          )}
                         </td>
 
                         {/* 3. Statut avec live-dot */}

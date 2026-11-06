@@ -4,22 +4,36 @@ import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { calculerResteSurChantier } from "@/lib/stockUtils"
 import { logAudit } from "@/lib/audit"
+import { chargerAdressesChantiers, sauvegarderAdresseChantier } from "@/lib/chantier-adresse"
 
 export async function getChantiers() {
-  return prisma.chantier.findMany({
-    orderBy: { createdAt: 'desc' }
-  })
+  const [chantiers, adressesMap] = await Promise.all([
+    prisma.chantier.findMany({
+      orderBy: { createdAt: 'desc' }
+    }),
+    chargerAdressesChantiers(),
+  ])
+  return chantiers.map(c => ({
+    ...c,
+    adresse: adressesMap.get(c.id) || null,
+  }))
 }
 
 export async function createChantier(formData: FormData) {
-  const nom = formData.get("nom") as string
+  const nom = (formData.get("nom") as string)?.trim()
+  const adresse = (formData.get("adresse") as string)?.trim() || null
+  if (!nom) return
 
-  await prisma.chantier.create({
+  const chantier = await prisma.chantier.create({
     data: {
       nom,
       statut: "Actif"
     }
   })
+
+  if (adresse) {
+    await sauvegarderAdresseChantier(chantier.id, adresse)
+  }
 
   revalidatePath("/chantiers")
 }
@@ -39,10 +53,11 @@ export async function deleteChantier(id: string) {
 
 export async function updateChantier(formData: FormData) {
   const id = formData.get("id") as string
-  const nom = formData.get("nom") as string
+  const nom = (formData.get("nom") as string)?.trim()
   const statut = formData.get("statut") as string
+  const adresse = (formData.get("adresse") as string)?.trim() || null
 
-  if (id) {
+  if (id && nom) {
     await prisma.chantier.update({
       where: { id },
       data: {
@@ -50,6 +65,7 @@ export async function updateChantier(formData: FormData) {
         statut
       }
     })
+    await sauvegarderAdresseChantier(id, adresse)
     revalidatePath("/chantiers")
     revalidatePath(`/chantiers/${id}`)
   }
