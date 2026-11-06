@@ -91,14 +91,22 @@ export function OfflineSyncBanner() {
       })
       .catch(() => {})
 
-    // Enregistrement du Service Worker Hors-Ligne
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {})
-      const onSwMessage = (event: MessageEvent) => {
-        if (event.data && event.data.type === "STOCKELEC_TRIGGER_SYNC") {
-          triggerSync(true)
-        }
+    // Enregistrement et mise à jour immédiate du Service Worker Hors-Ligne
+    const onSwMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === "STOCKELEC_TRIGGER_SYNC") {
+        triggerSync(true)
       }
+    }
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js", { updateViaCache: "none" })
+        .then((reg) => {
+          reg.update().catch(() => {})
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: "SKIP_WAITING" })
+          }
+        })
+        .catch(() => {})
       navigator.serviceWorker.addEventListener("message", onSwMessage)
     }
 
@@ -142,6 +150,9 @@ export function OfflineSyncBanner() {
 
     return () => {
       cancelled = true
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.removeEventListener("message", onSwMessage)
+      }
       window.removeEventListener("online", handleOnline)
       window.removeEventListener("offline", handleOffline)
       window.removeEventListener(OFFLINE_CHANGE_EVENT, handleOfflineChange)

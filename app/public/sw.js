@@ -1,15 +1,16 @@
 /**
  * Service Worker Hors-Ligne — StockElec (CédricElec / LittoralElec)
  *
- * Stratégie :
- *  - Assets statiques (/_next/static/*, icônes, images) : Cache-First
- *  - Pages & Navigations (/depart-matin, /catalogue, etc.) : Network-First avec timeout court (3,5s)
- *    et repli immédiat sur le cache local si le téléphone est en sous-sol / zone blanche.
- *  - Synchronisation en arrière-plan : réveille les clients ouverts dès le retour du réseau.
+ * Règles strictes :
+ *  1. Ne JAMAIS couper une requête réseau avec un timeout court quand l'utilisateur est connecté
+ *     (les requêtes serveur avec 13 000+ articles ou un cold-start Vercel peuvent prendre > 4s).
+ *  2. Ne JAMAIS intercepter les requêtes internes Next.js RSC (`RSC: 1`, `_rsc=`) pour éviter
+ *     de renvoyer du HTML à la place d'un flux RSC lors d'un changement d'onglet.
+ *  3. Utiliser le cache de secours UNIQUEMENT en cas de vraie coupure réseau (`fetch` rejeté).
  */
 
-const CACHE_STATIC = "stockelec-static-v1";
-const CACHE_PAGES = "stockelec-pages-v1";
+const CACHE_STATIC = "stockelec-static-v2";
+const CACHE_PAGES = "stockelec-pages-v2";
 
 const PRECACHE_URLS = [
   "/manifest.json",
@@ -42,21 +43,6 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-function fetchWithTimeout(request, timeoutMs = 3500) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error("NETWORK_TIMEOUT")), timeoutMs);
-    fetch(request)
-      .then((res) => {
-        clearTimeout(timer);
-        resolve(res);
-      })
-      .catch((err) => {
-        clearTimeout(timer);
-        reject(err);
-      });
-  });
-}
-
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
@@ -64,8 +50,15 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Ignorer les routes API dynamiques
-  if (url.pathname.startsWith("/api/")) return;
+  // Ignorer toutes les routes API et les requêtes RSC / prefetch internes de Next.js
+  if (
+    url.pathname.startsWith("/api/") ||
+    url.searchParams.has("_rsc") ||
+    request.headers.get("RSC") === "1" ||
+    request.headers.get("Next-Router-Prefetch") === "1"
+  ) {
+    return;
+  }
 
   // 1. Fichiers statiques Next.js, images et icônes -> Cache-First
   if (
@@ -91,39 +84,44 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 2. Navigations HTML et requêtes RSC -> Network-First (timeout 3.5s) + Fallback Cache
-  const isNavigation =
-    request.mode === "navigate" ||
-    (request.headers.get("accept") || "").includes("text/html") ||
-    request.headers.get("RSC") === "1";
-
-  if (isNavigation) {
+  // 2. Navigations de page complètes (mode === "navigate") -> Réseau d'abord sans timeout agressif,
+  //    repli sur le cache UNIQUEMENT si le réseau est réellement coupé.
+  if (request.mode === "navigate") {
     event.respondWith(
-      fetchWithTimeout(request, 3500)
+      fetch(request)
         .then((res) => {
           if (res && res.status === 200) {
             const copy = res.clone();
-            caches.open(CACHE_PAGES).then((c) => c.put(request, copy));
+            caches.open(CACHE_PAGES).then((c) => {
+              c.put(url.pathname, copy);
+            });
           }
           return res;
         })
         .catch(async () => {
-          const cachedExact = await caches.match(request);
-          if (cachedExact) return cachedExact;
+          // Si le navigateur indique qu'on est en ligne, retenter une fois en direct
+          if (self.navigator && self.navigator.onLine) {
+            try {
+              return await fetch(request);
+            } catch {
+              // Vraiment hors-ligne : passer au cache ci-dessous
+            }
+          }
 
-          // Recherche par chemin sans query string
           const cachedByPath = await caches.match(url.pathname);
           if (cachedByPath) return cachedByPath;
 
-          // Dernier recours pour une navigation HTML : renvoyer /depart-matin ou / en cache
-          if (request.mode === "navigate") {
-            const fallbackDepart = await caches.match("/depart-matin");
-            if (fallbackDepart) return fallbackDepart;
-            const fallbackRoot = await caches.match("/");
-            if (fallbackRoot) return fallbackRoot;
-          }
+          const cachedExact = await caches.match(request);
+          if (cachedExact) return cachedExact;
+
+          const fallbackDepart = await caches.match("/depart-matin");
+          if (fallbackDepart) return fallbackDepart;
+
+          const fallbackRoot = await caches.match("/");
+          if (fallbackRoot) return fallbackRoot;
+
           return new Response(
-            "<!doctype html><html lang='fr'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>StockElec — Hors-Ligne</title><style>body{font-family:system-ui,sans-serif;background:#0b0f17;color:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100dvh;margin:0;padding:24px;text-align:center}.card{max-width:420px;background:#111622;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px}button{margin-top:16px;background:#2563eb;color:#fff;border:0;padding:12px 20px;border-radius:12px;font-weight:700;cursor:pointer}</style></head><body><div class='card'><h2>📡 Mode Hors-Ligne</h2><p>Ouvrez l'écran Départ Matin ou reconnectez-vous quelques secondes pour mettre en cache le catalogue.</p><button onclick='location.href=\"/depart-matin\"'>Ouvrir Départ Matin</button></div></body></html>",
+            "<!doctype html><html lang='fr'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>StockElec — Hors-Ligne</title><style>body{font-family:system-ui,sans-serif;background:#0b0f17;color:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100dvh;margin:0;padding:24px;text-align:center}.card{max-width:420px;background:#111622;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px}button{margin-top:16px;background:#2563eb;color:#fff;border:0;padding:12px 20px;border-radius:12px;font-weight:700;cursor:pointer}</style></head><body><div class='card'><h2>📡 Connexion interrompue</h2><p>Vérifiez votre connexion réseau ou ouvrez l'écran Départ Matin.</p><button onclick='location.reload()'>Réessayer</button></div></body></html>",
             { headers: { "Content-Type": "text/html; charset=utf-8" } }
           );
         })
@@ -148,4 +146,3 @@ self.addEventListener("message", (event) => {
     self.skipWaiting();
   }
 });
-
