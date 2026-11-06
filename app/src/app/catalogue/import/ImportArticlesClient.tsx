@@ -82,12 +82,25 @@ export function ImportArticlesClient() {
   // Filtre pour la prévisualisation
   const [filtreStatut, setFiltreStatut] = useState<string>("tous")
 
-  // Lecture du fichier Excel
+  // Lecture du fichier Excel ou CSV
   const handleFileChange = async (file: File) => {
     try {
       setFichier(file)
       const data = await file.arrayBuffer()
-      const wb = XLSX.read(data, { cellDates: true, raw: true })
+      const isCsv = /\.(csv|txt|tsv)$/i.test(file.name) || file.type === "text/csv" || file.type === "text/plain"
+      let wb: XLSX.WorkBook
+      if (isCsv) {
+        let text: string
+        try {
+          text = new TextDecoder("utf-8", { fatal: true }).decode(data)
+        } catch {
+          text = new TextDecoder("windows-1252").decode(data)
+        }
+        text = text.replace(/^\uFEFF/, "").replace(/\u0080/g, "€").replace(/\u00e2[\u0082\u201a]\u00ac/g, "€")
+        wb = XLSX.read(text, { type: "string", cellDates: true, raw: true })
+      } else {
+        wb = XLSX.read(data, { cellDates: true, raw: true })
+      }
       setWorkbook(wb)
       setSheetNames(wb.SheetNames)
 

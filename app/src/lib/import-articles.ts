@@ -60,7 +60,9 @@ const SYNONYMES: Record<ChampImport, string[]> = {
   marque: ["fabriquant marque", "fabricant marque", "marque", "fabricant", "fabriquant", "constructeur"],
   fournisseur: ["fournisseur", "distributeur", "grossiste"],
   prixUnitaire: [
-    "prix unitaire ht", "prix unitaire", "prix achat", "prix net", "prix ht", "tarif net", "tarif", "pu ht", "p u ht", "p u", "pu", "prix",
+    "prix unitaire ht", "prix unitaire", "prix client", "prix fournisseur", "prix catalogue", "prix public",
+    "prix achat", "prix net", "prix ht", "tarif net", "tarif", "pu ht", "p u ht", "p u", "pu", "montant ht",
+    "cout unitaire", "cout", "prix",
   ],
   stock: [
     "stock final", "stock actuel", "stock reel", "quantite en stock", "qte en stock", "quantite", "qte", "stock",
@@ -128,12 +130,35 @@ function texte(v: unknown): string | null {
   return s === "" ? null : s
 }
 
-/** Convertit "12,50 €", "1 234.5", 12.5 → nombre. Retourne null si non numérique. */
+/**
+ * Convertit "12,50 €", "158.66euro", "158,66 euros HT", "1 234.50 €/u", "158€66", 12.5 → nombre.
+ * Ignore les symboles monétaires (€, $, £, euro, eur, HT, TTC, /u…) et les artefacts d'encodage CSV.
+ * Retourne null si la valeur n'est pas numérique.
+ */
 export function parseNombre(v: unknown): number | null {
   if (v === null || v === undefined || v === "") return null
   if (typeof v === "number") return Number.isFinite(v) ? v : null
-  let s = String(v).replace(/[€$\s\u00a0]/g, "").replace(/(ht|ttc|eur)$/i, "")
+  let s = String(v)
+    // Normalise les artefacts d'encodage CSV du symbole € (UTF-8 lu en Latin-1 ou CP1252)
+    .replace(/\u00e2[\u0082\u201a]\u00ac/g, "€")
+    .replace(/[\u0080\ufffd]/g, "€")
+    .trim()
   if (s === "" || s === "-") return null
+
+  // Format français "158€66" ou "158 euro 66" → "158.66"
+  s = s.replace(/(\d)\s*(?:€|euros?|eur)\s*(\d{1,2})(?!\d)/gi, "$1.$2")
+
+  // Suppression des symboles monétaires et mentions (euro, euros, eur, ht, ttc, /u, /m, etc.)
+  s = s
+    .replace(/[€$£¥()]/g, " ")
+    .replace(
+      /(?<=^|[\s/.,+:-]|\d)(?:euros?|eur|chf|usd|gbp|htva|ht|ttc|net|tva|l'unites?|l'unités?|unites?|unités?|pce|pcs|pieces?|pièces?|ml|lot|boites?|boîtes?|bte|u|m|l|kg)(?=$|[\s/.,+:-])/gi,
+      " ",
+    )
+    .replace(/[\s\u00a0\u202f'/]+/g, "")
+    .replace(/^[:.,+]+|[:.,+-]+$/g, "")
+
+  if (s === "" || s === "-" || s === "+" || !/\d/.test(s)) return null
   // "1.234,56" → "1234.56" ; "1,234.56" → "1234.56" ; "12,5" → "12.5"
   if (s.includes(",") && s.includes(".")) {
     s = s.lastIndexOf(",") > s.lastIndexOf(".") ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "")
