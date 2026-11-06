@@ -6,7 +6,7 @@ import { LogOut } from "lucide-react"
 import { logout } from "@/app/actions/auth"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { getOutillages } from "@/app/actions/outillage"
-import { calculerStocksDepuisAgregats } from "@/lib/stockUtils"
+import { calculerStocksDepuisAgregats, normaliserUnite } from "@/lib/stockUtils"
 
 export default async function DepartMatinPage() {
   const session = await getSession()
@@ -62,7 +62,7 @@ export default async function DepartMatinPage() {
     fournisseur: a.fournisseur,
     referenceFournisseur: a.referenceFournisseur,
     categorie: a.categorie,
-    unite: a.unite,
+    unite: normaliserUnite(a.unite),
     quantiteParBoite: a.quantiteParBoite
   }))
 

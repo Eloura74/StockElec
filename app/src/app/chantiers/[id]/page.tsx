@@ -6,6 +6,7 @@ import { redirect } from "next/navigation"
 import { DeleteButton } from "@/components/DeleteButton"
 import { CloturerButton } from "@/components/CloturerButton"
 import { ExportBonLivraisonButton } from "@/components/ExportBonLivraisonButton"
+import { normaliserUnite } from "@/lib/stockUtils"
 
 export default async function ChantierDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -167,7 +168,7 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
                           <p className="text-xs text-gray-500 dark:text-zinc-400">{m.article.reference}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-orange-600">{m.quantite} {m.article.unite}</p>
+                          <p className="font-bold text-orange-600">{m.quantite} {normaliserUnite(m.article.unite)}</p>
                           <p className="text-xs text-gray-500 dark:text-zinc-400">Soit {(m.quantite * m.article.prixUnitaire).toFixed(2)} €</p>
                         </div>
                       </div>

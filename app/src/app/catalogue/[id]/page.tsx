@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma"
 import { updateArticle, deleteArticle } from "@/app/actions/articles"
 import { entrerStockRapide } from "@/app/actions/mouvements"
-import { calculerStockArticle } from "@/lib/stockUtils"
+import { calculerStockArticle, normaliserUnite } from "@/lib/stockUtils"
 import { ArrowLeft, Edit, Save, Trash2, PackagePlus, ArrowRightLeft, PackageMinus, RefreshCw } from "lucide-react"
 import { ScannerInput } from "@/components/ScannerInput"
 import Link from "next/link"
@@ -86,7 +86,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Unité</label>
-                <input name="unite" type="text" defaultValue={article.unite || ""} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <input name="unite" type="text" defaultValue={normaliserUnite(article.unite)} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Seuil Alerte</label>
@@ -115,11 +115,11 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className={`rounded-xl border p-4 shadow-sm ${stockInfo.enAlerte ? 'bg-red-50 border-red-200' : 'bg-white dark:bg-zinc-900'}`}>
               <p className="text-sm font-medium text-gray-500 dark:text-zinc-400">Stock Dépôt Actuel</p>
-              <p className={`text-2xl font-bold ${stockInfo.enAlerte ? 'text-red-600' : 'text-gray-900 dark:text-zinc-50'}`}>{stockInfo.stockDepot} {article.unite}</p>
+              <p className={`text-2xl font-bold ${stockInfo.enAlerte ? 'text-red-600' : 'text-gray-900 dark:text-zinc-50'}`}>{stockInfo.stockDepot} {normaliserUnite(article.unite)}</p>
             </div>
             <div className="rounded-xl border bg-white dark:bg-zinc-900 p-4 shadow-sm">
               <p className="text-sm font-medium text-gray-500 dark:text-zinc-400">Stock sur Chantiers</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-zinc-50">{stockInfo.stockChantiersTotal} {article.unite || 'u'}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-zinc-50">{stockInfo.stockChantiersTotal} {normaliserUnite(article.unite)}</p>
             </div>
             <div className="mt-4 rounded bg-gray-50 dark:bg-zinc-950 p-4">
               <p className="text-sm text-gray-600 dark:text-zinc-300">Valeur totale en stock : <span className="font-semibold text-gray-900 dark:text-zinc-50">{((stockInfo.stockDepot + stockInfo.stockChantiersTotal) * (article.prixUnitaire || 0)).toFixed(2)} €</span></p>

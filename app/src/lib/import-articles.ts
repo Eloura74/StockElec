@@ -359,6 +359,15 @@ export function construireLignes(
     let quantiteParBoite = entier("quantiteParBoite", "Conditionnement")
     if (quantiteParBoite !== null && quantiteParBoite < 1) quantiteParBoite = null
 
+    let unite = texte(get(row, "unite"))
+    if (unite && /^\d+([.,]\d+)?$/.test(unite)) {
+      const cond = Math.round(Number(unite.replace(",", ".")))
+      if (cond > 1 && quantiteParBoite === null) {
+        quantiteParBoite = cond
+      }
+      unite = "u"
+    }
+
     res.push({
       ligneExcel,
       reference: reference.slice(0, 120),
@@ -373,7 +382,7 @@ export function construireLignes(
       stock,
       stockMinimum: stockMinimum !== null ? Math.max(0, stockMinimum) : null,
       categorie: texte(get(row, "categorie")),
-      unite: texte(get(row, "unite")),
+      unite: unite ? unite.slice(0, 20) : null,
       emplacement: texte(get(row, "emplacement")),
       quantiteParBoite,
       avertissements,
