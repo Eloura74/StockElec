@@ -1,5 +1,5 @@
 import { getMouvements, annulerMouvement } from "@/app/actions/mouvements"
-import { getArticles } from "@/app/actions/articles"
+import { getArticlesActifsAvecStocks } from "@/app/actions/articles"
 import { getChantiers } from "@/app/actions/chantiers"
 import { ArrowRightLeft, ArrowUpRight, ArrowDownLeft, ShoppingCart, User, MapPin, Activity } from "lucide-react"
 import { DeleteButton } from "@/components/DeleteButton"
@@ -20,9 +20,11 @@ export default async function MouvementsPage({ searchParams }: { searchParams: P
     endDate.setHours(23, 59, 59, 999)
   }
 
-  const mouvements = await getMouvements({ startDate, endDate })
-  const articles = await getArticles()
-  const chantiers = await getChantiers()
+  const [mouvements, articles, chantiers] = await Promise.all([
+    getMouvements({ startDate, endDate }),
+    getArticlesActifsAvecStocks(),
+    getChantiers(),
+  ])
 
   const getTypeBadge = (type: string) => {
     switch (type) {

@@ -1,9 +1,30 @@
 import prisma from "@/lib/prisma"
-import { getArticlesWithStocks } from "@/app/actions/articles"
+import { getArticlesActifsAvecStocks } from "@/app/actions/articles"
 import { DynamicDashboardClient } from "@/components/DynamicDashboardClient"
 
 export default async function Home() {
-  const articles = await getArticlesWithStocks()
+  const septJoursAvant = new Date()
+  septJoursAvant.setDate(septJoursAvant.getDate() - 7)
+
+  const [articles, articlesCount, chantiersActifsCount, chantiersComplets, mouvements7Jours] =
+    await Promise.all([
+      getArticlesActifsAvecStocks(),
+      prisma.article.count(),
+      prisma.chantier.count({ where: { statut: "Actif" } }),
+      prisma.chantier.findMany({
+        include: {
+          mouvements: { include: { article: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.mouvement.findMany({
+        where: {
+          date: { gte: septJoursAvant },
+          type: { in: ["Depart", "Consomme"] },
+        },
+        include: { article: true },
+      }),
+    ])
   
   // 1. Calculer les statistiques réelles de stock
   let articlesEnAlerte = 0
@@ -41,9 +62,6 @@ export default async function Home() {
       })
     }
   }
-
-  const articlesCount = articles.length;
-  const chantiersActifsCount = await prisma.chantier.count({ where: { statut: 'Actif' } });
   
   // 2. Top 3 immobilisations
   const topImmobilisations = [...articles]
@@ -56,12 +74,6 @@ export default async function Home() {
     .slice(0, 3);
 
   // 3. Données complètes des chantiers et matériel affecté
-  const chantiersComplets = await prisma.chantier.findMany({
-    include: {
-      mouvements: { include: { article: true } }
-    },
-    orderBy: { createdAt: 'desc' }
-  });
 
   const dataChantiers: any[] = [];
   const chantiersList = chantiersComplets.map(chantier => {
@@ -147,16 +159,6 @@ export default async function Home() {
   });
 
   const sortiesData = last7Days.map(dayStr => ({ name: dayStr, sorties: 0 }));
-
-  const septJoursAvant = new Date();
-  septJoursAvant.setDate(septJoursAvant.getDate() - 7);
-  const mouvements7Jours = await prisma.mouvement.findMany({
-    where: {
-      date: { gte: septJoursAvant },
-      type: { in: ['Depart', 'Consomme'] }
-    },
-    include: { article: true }
-  });
 
   mouvements7Jours.forEach(mvt => {
     const dayStr = new Date(mvt.date).toLocaleDateString('fr-FR', { weekday: 'short' });

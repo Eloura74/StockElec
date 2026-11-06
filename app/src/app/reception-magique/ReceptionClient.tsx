@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { FileUp, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
 import * as XLSX from "xlsx"
-import { validerReceptionMagique, ReceptionItem } from "@/app/actions/reception-magique"
+import { validerReceptionMagique, verifierReferencesConnues, ReceptionItem } from "@/app/actions/reception-magique"
 import Link from "next/link"
 import { toast } from "sonner"
 
@@ -26,7 +26,7 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
 
     setIsParsing(true)
     const reader = new FileReader()
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const bstr = evt.target?.result
         const wb = XLSX.read(bstr, { type: 'binary' })
@@ -34,14 +34,9 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
         const ws = wb.Sheets[wsname]
         const data = XLSX.utils.sheet_to_json(ws) as any[]
 
-        const parsed: ParsedRow[] = []
+        const rawItems: ReceptionItem[] = []
 
         data.forEach(row => {
-          // Heuristique pour trouver les colonnes :
-          // Référence: "reference", "ref", "code", "article"
-          // Désignation: "designation", "nom", "description", "libelle"
-          // Quantité: "quantite", "qte", "qty", "livre"
-          
           let ref = ""
           let des = ""
           let qte = 0
@@ -55,15 +50,22 @@ export function ReceptionClient({ knownReferences }: { knownReferences: string[]
           }
 
           if (ref && qte > 0) {
-            parsed.push({
+            rawItems.push({
               reference: ref,
               designation: des || "Article sans nom",
               quantite: qte,
-              estConnu: knownSet.has(ref),
-              selected: knownSet.has(ref) // par défaut on sélectionne que ceux connus
             })
           }
         })
+
+        const serverMatched = await verifierReferencesConnues(rawItems.map(i => i.reference)).catch(() => [])
+        for (const r of serverMatched) knownSet.add(r)
+
+        const parsed: ParsedRow[] = rawItems.map(item => ({
+          ...item,
+          estConnu: knownSet.has(item.reference),
+          selected: knownSet.has(item.reference),
+        }))
 
         setRows(parsed)
       } catch (err) {

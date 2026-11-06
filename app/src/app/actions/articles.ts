@@ -29,6 +29,140 @@ export async function getArticles() {
   }))
 }
 
+/**
+ * Récupère uniquement les articles "actifs" (ayant un stock initial non nul,
+ * un seuil d'alerte configuré, ou au moins un mouvement enregistré).
+ * Sur un catalogue de 78 000+ tarifs fournisseurs importés, cela évite de charger
+ * 78 000 lignes à stock 0 sur chaque changement d'onglet tout en conservant 100 %
+ * des stocks réels, valorisations et alertes.
+ */
+export async function getArticlesActifsAvecStocks() {
+  const aggregations = await prisma.mouvement.groupBy({
+    by: ['articleId', 'type', 'chantierId'],
+    _sum: { quantite: true }
+  })
+
+  const stockMap = calculerStocksDepuisAgregats(aggregations)
+  const articleIdsAvecMouvements = Array.from(stockMap.keys())
+
+  const articles = await prisma.article.findMany({
+    where: {
+      OR: [
+        { stockInitial: { not: 0 } },
+        { stockMinimum: { gt: 0 } },
+        ...(articleIdsAvecMouvements.length > 0
+          ? [{ id: { in: articleIdsAvecMouvements } }]
+          : []),
+      ],
+    },
+    orderBy: { reference: 'asc' },
+  })
+
+  return articles.map(art => {
+    const s = stockMap.get(art.id) || { stockDepot: 0, stockChantiersTotal: 0 }
+    const stockDepotFinal = art.stockInitial + s.stockDepot
+    return {
+      ...art,
+      unite: normaliserUnite(art.unite),
+      stockInfo: {
+        stockInitial: art.stockInitial,
+        stockDepot: stockDepotFinal,
+        stockChantiersTotal: s.stockChantiersTotal,
+        enAlerte: art.stockMinimum > 0 ? stockDepotFinal <= art.stockMinimum : stockDepotFinal < 0
+      }
+    }
+  })
+}
+
+/**
+ * Recherche rapide côté serveur dans tout le catalogue (78 000+ articles)
+ * avec calcul exact du stock pour les résultats retournés.
+ */
+export async function rechercherArticlesCatalogue(query: string, limit = 40) {
+  const q = query.trim()
+  if (!q) return []
+
+  const articles = await prisma.article.findMany({
+    where: {
+      OR: [
+        { reference: { contains: q, mode: 'insensitive' } },
+        { designation: { contains: q, mode: 'insensitive' } },
+        { referenceFournisseur: { contains: q, mode: 'insensitive' } },
+        { marque: { contains: q, mode: 'insensitive' } },
+        { emplacement: { contains: q, mode: 'insensitive' } },
+        { codeBarre: { contains: q, mode: 'insensitive' } },
+      ],
+    },
+    take: limit,
+    orderBy: [{ stockInitial: 'desc' }, { reference: 'asc' }],
+  })
+
+  if (articles.length === 0) return []
+
+  const ids = articles.map(a => a.id)
+  const aggregations = await prisma.mouvement.groupBy({
+    by: ['articleId', 'type', 'chantierId'],
+    where: { articleId: { in: ids } },
+    _sum: { quantite: true },
+  })
+  const stockMap = calculerStocksDepuisAgregats(aggregations)
+
+  return articles.map(art => {
+    const s = stockMap.get(art.id) || { stockDepot: 0, stockChantiersTotal: 0 }
+    const stockDepotFinal = art.stockInitial + s.stockDepot
+    return {
+      ...art,
+      unite: normaliserUnite(art.unite),
+      stockInfo: {
+        stockInitial: art.stockInitial,
+        stockDepot: stockDepotFinal,
+        stockChantiersTotal: s.stockChantiersTotal,
+        enAlerte: art.stockMinimum > 0 ? stockDepotFinal <= art.stockMinimum : stockDepotFinal < 0,
+      },
+    }
+  })
+}
+
+/**
+ * Recherche instantanée d'un article par son code-barres ou sa référence exacte.
+ */
+export async function trouverArticleParCodeBarre(code: string) {
+  const trimmed = code.trim()
+  if (!trimmed) return null
+
+  const art = await prisma.article.findFirst({
+    where: {
+      OR: [
+        { codeBarre: trimmed },
+        { reference: { equals: trimmed, mode: 'insensitive' } },
+        { referenceFournisseur: { equals: trimmed, mode: 'insensitive' } },
+      ],
+    },
+  })
+
+  if (!art) return null
+
+  const aggregations = await prisma.mouvement.groupBy({
+    by: ['articleId', 'type', 'chantierId'],
+    where: { articleId: art.id },
+    _sum: { quantite: true },
+  })
+  const stockMap = calculerStocksDepuisAgregats(aggregations)
+  const s = stockMap.get(art.id) || { stockDepot: 0, stockChantiersTotal: 0 }
+  const stockDepotFinal = art.stockInitial + s.stockDepot
+
+  return {
+    ...art,
+    unite: normaliserUnite(art.unite),
+    stockInfo: {
+      stockInitial: art.stockInitial,
+      stockDepot: stockDepotFinal,
+      stockChantiersTotal: s.stockChantiersTotal,
+      enAlerte: art.stockMinimum > 0 ? stockDepotFinal <= art.stockMinimum : stockDepotFinal < 0,
+    },
+  }
+}
+
 export async function getArticlesWithStocks() {
   const articles = await prisma.article.findMany({
     orderBy: { reference: 'asc' }

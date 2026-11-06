@@ -12,21 +12,34 @@ export default async function DepartMatinPage() {
   const session = await getSession()
   if (!session) redirect('/login')
 
-  const chantiers = await prisma.chantier.findMany({
-    where: { statut: 'Actif' },
-    orderBy: { nom: 'asc' }
-  })
+  const [chantiers, aggregations, outillages] = await Promise.all([
+    prisma.chantier.findMany({
+      where: { statut: 'Actif' },
+      orderBy: { nom: 'asc' }
+    }),
+    prisma.mouvement.groupBy({
+      by: ['articleId', 'type', 'chantierId'],
+      _sum: { quantite: true }
+    }),
+    getOutillages(),
+  ])
+
+  const stockMap = calculerStocksDepuisAgregats(aggregations)
+  const articleIdsAvecMouvements = Array.from(stockMap.keys())
 
   const allArticles = await prisma.article.findMany({
-    orderBy: { designation: 'asc' }
+    where: {
+      OR: [
+        { stockInitial: { not: 0 } },
+        { stockMinimum: { gt: 0 } },
+        { codeBarre: { not: null } },
+        ...(articleIdsAvecMouvements.length > 0
+          ? [{ id: { in: articleIdsAvecMouvements } }]
+          : []),
+      ],
+    },
+    orderBy: { designation: 'asc' },
   })
-
-  // Stock du dépôt : même source de vérité que le catalogue (stock initial + mouvements agrégés)
-  const aggregations = await prisma.mouvement.groupBy({
-    by: ['articleId', 'type', 'chantierId'],
-    _sum: { quantite: true }
-  })
-  const stockMap = calculerStocksDepuisAgregats(aggregations)
 
   // Matériel actuellement déployé sur chaque chantier actif :
   // Depart (+) - Retour (-) - Consomme (-) - Perte (-)
@@ -65,8 +78,6 @@ export default async function DepartMatinPage() {
     unite: normaliserUnite(a.unite),
     quantiteParBoite: a.quantiteParBoite
   }))
-
-  const outillages = await getOutillages()
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f17] flex flex-col">

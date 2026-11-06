@@ -7,14 +7,15 @@ import { getOutillages } from "@/app/actions/outillage"
 import { getSession } from "@/lib/auth"
 
 export default async function OutillagePage() {
-  const outillages = await getOutillages()
+  const [outillages, chantiers, session] = await Promise.all([
+    getOutillages(),
+    prisma.chantier.findMany({
+      where: { statut: 'Actif' },
+      orderBy: { nom: 'asc' }
+    }),
+    getSession(),
+  ])
   
-  const chantiers = await prisma.chantier.findMany({
-    where: { statut: 'Actif' },
-    orderBy: { nom: 'asc' }
-  })
-  
-  const session = await getSession()
   const isGerant = session?.role === 'GERANT'
 
   // Stats rapides

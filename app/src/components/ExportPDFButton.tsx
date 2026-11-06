@@ -27,7 +27,7 @@ export function ExportPDFButton({ articles }: { articles: any[] }) {
       // Préparation des données
       let valeurTotaleGlobale = 0
       const tableData = articles.map(article => {
-        const stock = calculerStockArticle(article, article.mouvements || [])
+        const stock = article.stockInfo || calculerStockArticle(article, article.mouvements || [])
         const valeurStockDepot = (stock.stockDepot * (article.prixUnitaire || 0))
         valeurTotaleGlobale += valeurStockDepot
 

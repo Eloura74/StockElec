@@ -1,9 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { ArrowRightLeft, Camera, Search, User, Check, X, Building, Package } from 'lucide-react'
+import { ArrowRightLeft, Camera, Search, User, Building, Package } from 'lucide-react'
 import { createMouvement } from '@/app/actions/mouvements'
+import {
+  rechercherArticlesCatalogue,
+  trouverArticleParCodeBarre,
+} from '@/app/actions/articles'
 
 // Dynamic import with SSR false to prevent 'window is not defined' during build
 const BarcodeScanner = dynamic(() => import('./BarcodeScanner').then(mod => mod.BarcodeScanner), { ssr: false })
@@ -15,20 +19,84 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
 
   const [searchQuery, setSearchQuery] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
+  const [remoteArticles, setRemoteArticles] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
   const [selectedChantierId, setSelectedChantierId] = useState('')
   const [chantierSearchQuery, setChantierSearchQuery] = useState('')
   const [showChantierDropdown, setShowChantierDropdown] = useState(false)
 
-  const selectedArticle = articles.find(a => a.id === selectedArticleId)
+  const allKnownArticles = useMemo(() => {
+    const map = new Map<string, any>()
+    for (const a of articles) map.set(a.id, a)
+    for (const a of remoteArticles) map.set(a.id, a)
+    return Array.from(map.values())
+  }, [articles, remoteArticles])
+
+  useEffect(() => {
+    const q = searchQuery.trim()
+    if (q.length < 2) return
+    let cancelled = false
+    const timer = setTimeout(() => {
+      setIsSearching(true)
+      rechercherArticlesCatalogue(q, 40)
+        .then((res) => {
+          if (!cancelled && res.length > 0) {
+            setRemoteArticles((prev) => {
+              const map = new Map<string, any>()
+              for (const a of prev) map.set(a.id, a)
+              for (const a of res) map.set(a.id, a)
+              return Array.from(map.values())
+            })
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (!cancelled) setIsSearching(false)
+        })
+    }, 180)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [searchQuery])
+
+  const filteredDropdownArticles = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return allKnownArticles.slice(0, 40)
+    return allKnownArticles
+      .filter(
+        (a) =>
+          a.designation?.toLowerCase().includes(q) ||
+          a.reference?.toLowerCase().includes(q) ||
+          a.referenceFournisseur?.toLowerCase().includes(q) ||
+          a.codeBarre?.toLowerCase().includes(q)
+      )
+      .slice(0, 40)
+  }, [allKnownArticles, searchQuery])
+
+  const selectedArticle = allKnownArticles.find(a => a.id === selectedArticleId)
   const selectedChantier = chantiers.find(c => c.id === selectedChantierId)
 
-  const handleScan = (code: string) => {
+  const handleScan = async (code: string) => {
     setIsScanning(false)
     setScanError(null)
 
     const trimmedCode = code.trim()
-    const article = articles.find(a => a.codeBarre === trimmedCode)
+    let article = allKnownArticles.find(
+      a => a.codeBarre === trimmedCode || a.reference === trimmedCode
+    )
+    if (!article) {
+      try {
+        const found = await trouverArticleParCodeBarre(trimmedCode)
+        if (found) {
+          article = found
+          setRemoteArticles(prev => [...prev, found])
+        }
+      } catch {
+        // Hors-ligne ou erreur réseau
+      }
+    }
     if (article) {
       setSelectedArticleId(article.id)
     } else {
@@ -92,19 +160,12 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
             Article concerné *
           </label>
           <div className="relative">
-            <select 
-              required 
-              name="articleId" 
+            <input
+              type="hidden"
+              name="articleId"
               value={selectedArticleId}
-              onChange={(e) => setSelectedArticleId(e.target.value)}
-              className="absolute opacity-0 w-full h-full -z-10 pointer-events-none"
-              tabIndex={-1}
-            >
-              <option value="">-- Sélectionner --</option>
-              {articles.map(a => (
-                <option key={a.id} value={a.id}>{a.id}</option>
-              ))}
-            </select>
+              required
+            />
 
             {!selectedArticleId ? (
               <>
@@ -126,31 +187,27 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
                 
                 {showDropdown && (
                   <div className="absolute z-20 w-full mt-1.5 bg-white dark:bg-[#111622] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl max-h-56 overflow-y-auto divide-y divide-slate-100 dark:divide-white/[0.04]">
-                    {articles
-                      .filter(a => 
-                        !searchQuery || 
-                        a.designation.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        (a.reference && a.reference.toLowerCase().includes(searchQuery.toLowerCase()))
-                      )
-                      .slice(0, 40)
-                      .map(a => (
-                        <button
-                          key={a.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedArticleId(a.id)
-                            setSearchQuery('')
-                            setShowDropdown(false)
-                          }}
-                          className="w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
-                        >
-                          <div className="font-semibold text-slate-900 dark:text-white line-clamp-1">{a.designation}</div>
-                          <div className="text-[10px] text-slate-400 font-mono">Réf : {a.reference || 'Aucune'}</div>
-                        </button>
-                      ))}
-                    {articles.filter(a => !searchQuery || a.designation.toLowerCase().includes(searchQuery.toLowerCase()) || (a.reference && a.reference.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
+                    {filteredDropdownArticles.map(a => (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedArticleId(a.id)
+                          setSearchQuery('')
+                          setShowDropdown(false)
+                        }}
+                        className="w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
+                      >
+                        <div className="font-semibold text-slate-900 dark:text-white line-clamp-1">{a.designation}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">
+                          Réf : {a.reference || 'Aucune'}
+                          {a.fournisseur ? ` • ${a.fournisseur}` : ''}
+                        </div>
+                      </button>
+                    ))}
+                    {filteredDropdownArticles.length === 0 && (
                       <div className="px-4 py-3 text-xs text-slate-400 text-center">
-                        Aucun article correspondant.
+                        {isSearching ? 'Recherche dans le catalogue complet...' : 'Aucun article correspondant.'}
                       </div>
                     )}
                   </div>
@@ -185,18 +242,11 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
             Chantier cible (ou Dépôt)
           </label>
           <div className="relative">
-            <select 
-              name="chantierId" 
+            <input
+              type="hidden"
+              name="chantierId"
               value={selectedChantierId}
-              onChange={(e) => setSelectedChantierId(e.target.value)}
-              className="absolute opacity-0 w-full h-full -z-10 pointer-events-none"
-              tabIndex={-1}
-            >
-              <option value="">-- Aucun / Stock Magasin --</option>
-              {chantiers.map(c => (
-                <option key={c.id} value={c.id}>{c.id}</option>
-              ))}
-            </select>
+            />
 
             {!selectedChantierId ? (
               <>

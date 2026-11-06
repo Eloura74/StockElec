@@ -10,6 +10,29 @@ export type ReceptionItem = {
   quantite: number
 }
 
+export async function verifierReferencesConnues(references: string[]): Promise<string[]> {
+  const cleanRefs = Array.from(new Set(references.map(r => r.trim()).filter(Boolean)))
+  if (cleanRefs.length === 0) return []
+  const matches = await prisma.article.findMany({
+    where: {
+      OR: [
+        { reference: { in: cleanRefs } },
+        { referenceFournisseur: { in: cleanRefs } },
+      ],
+    },
+    select: {
+      reference: true,
+      referenceFournisseur: true,
+    },
+  })
+  const result = new Set<string>()
+  for (const m of matches) {
+    if (m.reference) result.add(m.reference)
+    if (m.referenceFournisseur) result.add(m.referenceFournisseur)
+  }
+  return Array.from(result)
+}
+
 export async function validerReceptionMagique(items: ReceptionItem[]) {
   try {
     const session = await getSession()

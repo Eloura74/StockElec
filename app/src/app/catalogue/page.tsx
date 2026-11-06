@@ -1,4 +1,6 @@
-import { getArticlesWithStocks, createArticle, deleteArticle } from "@/app/actions/articles"
+import prisma from "@/lib/prisma"
+import { getArticlesActifsAvecStocks, createArticle, deleteArticle } from "@/app/actions/articles"
+import { normaliserUnite } from "@/lib/stockUtils"
 import { entrerStockRapide } from "@/app/actions/mouvements"
 import { Plus, AlertTriangle, FileSpreadsheet, Package, Truck, Wrench, Shield, Boxes, ArrowRight, Pencil, Sparkles, Building2, Layers } from "lucide-react"
 import { DeleteButton } from "@/components/DeleteButton"
@@ -15,16 +17,35 @@ export default async function CataloguePage({
   searchParams: Promise<{ q?: string, f?: string, c?: string, p?: string, alert?: string, stock?: string }> 
 }) {
   const { q, f, c, p, alert, stock } = await searchParams
-  const allArticles = await getArticlesWithStocks()
 
-  // Calcul des métriques globales pour le catalogue
-  const totalCatalogue = allArticles.length
+  const [articlesActifs, totalCatalogue, distinctFournisseurs, distinctCategories] =
+    await Promise.all([
+      getArticlesActifsAvecStocks(),
+      prisma.article.count(),
+      prisma.article.findMany({
+        where: { fournisseur: { not: null } },
+        distinct: ["fournisseur"],
+        select: { fournisseur: true },
+      }),
+      prisma.article.findMany({
+        where: { categorie: { not: null } },
+        distinct: ["categorie"],
+        select: { categorie: true },
+      }),
+    ])
+
+  // Calcul des métriques globales pour le catalogue à partir des articles actifs
   let totalEnStock = 0
   let totalPiecesStock = 0
   let totalAlertes = 0
   let valeurTotaleDepot = 0
 
-  allArticles.forEach((a: any) => {
+  const articlesActifsMap = new Map<string, any>()
+  const articlesEnStockPhysique: any[] = []
+  const articlesEnAlerte: any[] = []
+
+  articlesActifs.forEach((a: any) => {
+    articlesActifsMap.set(a.id, a)
     const s = a.stockInfo
     const prix = a.prixUnitaire || 0
     valeurTotaleDepot += Math.max(0, s.stockDepot) * prix
@@ -32,59 +53,127 @@ export default async function CataloguePage({
     if (s.stockDepot > 0 || s.stockChantiersTotal > 0) {
       totalEnStock++
       totalPiecesStock += Math.max(0, s.stockDepot) + Math.max(0, s.stockChantiersTotal)
+      articlesEnStockPhysique.push(a)
     }
     if (s.enAlerte) {
       totalAlertes++
+      articlesEnAlerte.push(a)
     }
   })
-  
-  let articles = allArticles
 
-  if (stock === 'in_stock') {
-    articles = articles.filter((a: any) => a.stockInfo.stockDepot > 0 || a.stockInfo.stockChantiersTotal > 0)
-  }
-  
-  if (alert === 'true') {
-    articles = articles.filter((a: any) => a.stockInfo.enAlerte)
-  }
+  articlesEnStockPhysique.sort((a, b) => a.reference.localeCompare(b.reference))
 
-  if (q) {
-    const query = q.toLowerCase()
-    articles = articles.filter((article: any) => 
-      article.designation.toLowerCase().includes(query) || 
-      article.reference.toLowerCase().includes(query) ||
-      (article.referenceFournisseur && article.referenceFournisseur.toLowerCase().includes(query)) ||
-      (article.marque && article.marque.toLowerCase().includes(query)) ||
-      (article.emplacement && article.emplacement.toLowerCase().includes(query)) ||
-      (article.codeBarre && article.codeBarre.toLowerCase().includes(query))
-    )
-  }
+  const fournisseurs = distinctFournisseurs
+    .map((x) => x.fournisseur)
+    .filter((x): x is string => Boolean(x))
+    .sort()
+  const categories = distinctCategories
+    .map((x) => x.categorie)
+    .filter((x): x is string => Boolean(x))
+    .sort()
 
-  if (f) {
-    articles = articles.filter((a: any) => a.fournisseur === f)
-  }
-
-  if (c) {
-    articles = articles.filter((a: any) => a.categorie === c)
+  const matchLocalFilters = (article: any) => {
+    if (f && article.fournisseur !== f) return false
+    if (c && article.categorie !== c) return false
+    if (q) {
+      const query = q.toLowerCase()
+      const ok =
+        article.designation?.toLowerCase().includes(query) ||
+        article.reference?.toLowerCase().includes(query) ||
+        (article.referenceFournisseur && article.referenceFournisseur.toLowerCase().includes(query)) ||
+        (article.marque && article.marque.toLowerCase().includes(query)) ||
+        (article.emplacement && article.emplacement.toLowerCase().includes(query)) ||
+        (article.codeBarre && article.codeBarre.toLowerCase().includes(query))
+      if (!ok) return false
+    }
+    return true
   }
 
-  const fournisseurs = Array.from(new Set(allArticles.map((a: any) => a.fournisseur).filter(Boolean))) as string[]
-  const categories = Array.from(new Set(allArticles.map((a: any) => a.categorie).filter(Boolean))) as string[]
-  fournisseurs.sort()
-  categories.sort()
-
-  // Tri prioritaire : les articles avec du stock physique en premier, puis ordre alphabétique
-  articles.sort((a: any, b: any) => {
-    const stockA = (a.stockInfo.stockDepot > 0 || a.stockInfo.stockChantiersTotal > 0) ? 1 : 0
-    const stockB = (b.stockInfo.stockDepot > 0 || b.stockInfo.stockChantiersTotal > 0) ? 1 : 0
-    if (stockA !== stockB) return stockB - stockA
-    return a.reference.localeCompare(b.reference)
-  })
-
-  const currentPage = parseInt(p || "1", 10)
+  const currentPage = Math.max(1, parseInt(p || "1", 10) || 1)
   const pageSize = 50
-  const totalPages = Math.ceil(articles.length / pageSize)
-  const paginatedArticles = articles.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  let totalPages = 1
+  let paginatedArticles: any[] = []
+
+  if (stock === "in_stock") {
+    const filtered = articlesEnStockPhysique.filter(matchLocalFilters)
+    totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+    paginatedArticles = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  } else if (alert === "true") {
+    const filtered = articlesEnAlerte.filter(matchLocalFilters).sort((a: any, b: any) => {
+      const stockA = a.stockInfo.stockDepot > 0 || a.stockInfo.stockChantiersTotal > 0 ? 1 : 0
+      const stockB = b.stockInfo.stockDepot > 0 || b.stockInfo.stockChantiersTotal > 0 ? 1 : 0
+      if (stockA !== stockB) return stockB - stockA
+      return a.reference.localeCompare(b.reference)
+    })
+    totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+    paginatedArticles = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  } else {
+    // Vue "Tous les articles" : les articles en stock physique passent en premier,
+    // puis pagination SQL directe sur le reste du catalogue (78 000+ réf.)
+    const stockedFiltered = articlesEnStockPhysique.filter(matchLocalFilters)
+    const stockedIds = articlesEnStockPhysique.map((a) => a.id)
+
+    const unstockedWhere: any = {
+      ...(stockedIds.length > 0 ? { id: { notIn: stockedIds } } : {}),
+      ...(f ? { fournisseur: f } : {}),
+      ...(c ? { categorie: c } : {}),
+      ...(q
+        ? {
+            OR: [
+              { designation: { contains: q, mode: "insensitive" } },
+              { reference: { contains: q, mode: "insensitive" } },
+              { referenceFournisseur: { contains: q, mode: "insensitive" } },
+              { marque: { contains: q, mode: "insensitive" } },
+              { emplacement: { contains: q, mode: "insensitive" } },
+              { codeBarre: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    }
+
+    const startIdx = (currentPage - 1) * pageSize
+    const endIdx = startIdx + pageSize
+    const stockedSlice = stockedFiltered.slice(startIdx, endIdx)
+    const neededFromDb = pageSize - stockedSlice.length
+    const dbSkip = Math.max(0, startIdx - stockedFiltered.length)
+
+    const [unstockedCount, dbRows] = await Promise.all([
+      prisma.article.count({ where: unstockedWhere }),
+      neededFromDb > 0
+        ? prisma.article.findMany({
+            where: unstockedWhere,
+            orderBy: { reference: "asc" },
+            skip: dbSkip,
+            take: neededFromDb,
+          })
+        : Promise.resolve([]),
+    ])
+
+    const totalFiltered = stockedFiltered.length + unstockedCount
+    totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize))
+
+    const mappedDbRows = dbRows.map((art) => {
+      const actif = articlesActifsMap.get(art.id)
+      if (actif) return actif
+      return {
+        ...art,
+        unite: normaliserUnite(art.unite),
+        stockInfo: {
+          stockInitial: art.stockInitial,
+          stockDepot: art.stockInitial,
+          stockChantiersTotal: 0,
+          enAlerte: art.stockMinimum > 0 ? art.stockInitial <= art.stockMinimum : art.stockInitial < 0,
+        },
+      }
+    })
+
+    paginatedArticles = [...stockedSlice, ...mappedDbRows]
+  }
+
+  const articlesPourExportPdf =
+    stock === "in_stock" || alert === "true"
+      ? paginatedArticles
+      : articlesEnStockPhysique.filter(matchLocalFilters)
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-in fade-in duration-200">
@@ -135,7 +224,7 @@ export default async function CataloguePage({
 
           {/* Actions d'export & import */}
           <div className="flex items-center gap-2">
-            <ExportPDFButton articles={articles} />
+            <ExportPDFButton articles={articlesPourExportPdf} />
             <Link
               href="/catalogue/import"
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161d2d] shadow-2xs transition-all"

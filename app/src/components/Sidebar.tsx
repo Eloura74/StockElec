@@ -40,7 +40,11 @@ interface NavSection {
 export function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [pendingNav, setPendingNav] = useState<{ from: string; to: string } | null>(null);
   const { setIsSettingsOpen, currentThemeConfig, mounted } = useCyberTheme();
+
+  const isNavigating = pendingNav !== null && pendingNav.from === pathname && pendingNav.to !== pathname;
+  const activePath = isNavigating ? pendingNav.to : pathname;
 
   // Support touche Échap pour fermer le menu mobile
   useEffect(() => {
@@ -162,13 +166,16 @@ export function Sidebar() {
               <div className="space-y-0.5">
                 {section.links.map((link) => {
                   const isActive =
-                    pathname === link.href ||
-                    (pathname.startsWith(link.href) && link.href !== "/");
+                    activePath === link.href ||
+                    (activePath.startsWith(link.href) && link.href !== "/");
+                  const isLoadingTarget = isNavigating && pendingNav?.to === link.href;
                   const Icon = link.icon;
                   return (
                     <Link
                       key={link.href}
                       href={link.href}
+                      prefetch={false}
+                      onClick={() => setPendingNav({ from: pathname, to: link.href })}
                       className={`group flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-medium transition-all duration-150 cursor-pointer ${
                         isActive
                           ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-2xs font-semibold"
@@ -180,13 +187,13 @@ export function Sidebar() {
                           isActive 
                             ? "text-white dark:text-slate-950" 
                             : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"
-                        }`} />
+                        } ${isLoadingTarget ? "animate-pulse" : ""}`} />
                         <span className="truncate">{link.label}</span>
                       </div>
 
                       {isActive && (
                         <span 
-                          className="h-1.5 w-1.5 rounded-full shrink-0"
+                          className={`h-1.5 w-1.5 rounded-full shrink-0 ${isLoadingTarget ? "animate-ping" : ""}`}
                           style={{ backgroundColor: currentThemeConfig.colorHex }}
                         />
                       )}
@@ -350,14 +357,18 @@ export function Sidebar() {
                 <div className="space-y-0.5">
                   {section.links.map((link) => {
                     const isActive =
-                      pathname === link.href ||
-                      (pathname.startsWith(link.href) && link.href !== "/");
+                      activePath === link.href ||
+                      (activePath.startsWith(link.href) && link.href !== "/");
                     const Icon = link.icon;
                     return (
                       <Link
                         key={link.href}
                         href={link.href}
-                        onClick={() => setIsOpen(false)}
+                        prefetch={false}
+                        onClick={() => {
+                          setPendingNav({ from: pathname, to: link.href });
+                          setIsOpen(false);
+                        }}
                         className={`group flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-medium transition-all ${
                           isActive
                             ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-2xs font-semibold"

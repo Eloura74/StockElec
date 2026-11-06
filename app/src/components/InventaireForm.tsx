@@ -1,10 +1,15 @@
 "use client"
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { Camera, CheckCircle2, AlertTriangle, Scale, PlusCircle, Edit3, X, Save, Search } from 'lucide-react'
 import { corrigerStock } from '@/app/actions/mouvements'
-import { creerArticleEtStock, updateInfosRapides } from '@/app/actions/articles'
+import {
+  creerArticleEtStock,
+  updateInfosRapides,
+  rechercherArticlesCatalogue,
+  trouverArticleParCodeBarre,
+} from '@/app/actions/articles'
 
 // Dynamic import with SSR false to prevent 'window is not defined' during build
 const BarcodeScanner = dynamic(() => import('./BarcodeScanner').then(mod => mod.BarcodeScanner), { ssr: false })
@@ -22,9 +27,11 @@ export function InventaireForm({ articles }: { articles: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // Search state
+  // Search state + résultats dynamiques du catalogue complet (78 000+ réf.)
   const [searchQuery, setSearchQuery] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
+  const [remoteArticles, setRemoteArticles] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
   // Quick edit mode (for known articles)
   const [isEditingInfo, setIsEditingInfo] = useState(false)
@@ -36,9 +43,58 @@ export function InventaireForm({ articles }: { articles: any[] }) {
   const [newDesignation, setNewDesignation] = useState('')
   const [newFournisseur, setNewFournisseur] = useState('')
 
+  const allKnownArticles = useMemo(() => {
+    const map = new Map<string, any>()
+    for (const a of articles) map.set(a.id, a)
+    for (const a of remoteArticles) map.set(a.id, a)
+    return Array.from(map.values())
+  }, [articles, remoteArticles])
+
+  useEffect(() => {
+    const q = searchQuery.trim()
+    if (q.length < 2) return
+    let cancelled = false
+    const timer = setTimeout(() => {
+      setIsSearching(true)
+      rechercherArticlesCatalogue(q, 40)
+        .then((res) => {
+          if (!cancelled && res.length > 0) {
+            setRemoteArticles((prev) => {
+              const map = new Map<string, any>()
+              for (const a of prev) map.set(a.id, a)
+              for (const a of res) map.set(a.id, a)
+              return Array.from(map.values())
+            })
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (!cancelled) setIsSearching(false)
+        })
+    }, 180)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [searchQuery])
+
+  const filteredDropdownArticles = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return allKnownArticles.slice(0, 50)
+    return allKnownArticles
+      .filter(
+        (a) =>
+          a.designation?.toLowerCase().includes(q) ||
+          a.reference?.toLowerCase().includes(q) ||
+          a.referenceFournisseur?.toLowerCase().includes(q) ||
+          a.codeBarre?.toLowerCase().includes(q)
+      )
+      .slice(0, 50)
+  }, [allKnownArticles, searchQuery])
+
   const selectedArticle = useMemo(() => {
-    return articles.find(a => a.id === selectedArticleId)
-  }, [selectedArticleId, articles])
+    return allKnownArticles.find(a => a.id === selectedArticleId)
+  }, [selectedArticleId, allKnownArticles])
 
   const stockTheorique = useMemo(() => {
     if (!selectedArticle || !selectedArticle.stockInfo) return 0
@@ -50,7 +106,7 @@ export function InventaireForm({ articles }: { articles: any[] }) {
     return parseInt(quantiteReelle) - stockTheorique
   }, [quantiteReelle, stockTheorique])
 
-  const handleScan = (code: string) => {
+  const handleScan = async (code: string) => {
     setIsScanning(false)
     setScanError(null)
     setSuccessMessage(null)
@@ -59,7 +115,20 @@ export function InventaireForm({ articles }: { articles: any[] }) {
     setIsEditingInfo(false)
 
     const trimmedCode = code.trim()
-    const article = articles.find(a => a.codeBarre === trimmedCode)
+    let article = allKnownArticles.find(
+      a => a.codeBarre === trimmedCode || a.reference === trimmedCode
+    )
+    if (!article) {
+      try {
+        const found = await trouverArticleParCodeBarre(trimmedCode)
+        if (found) {
+          article = found
+          setRemoteArticles(prev => [...prev, found])
+        }
+      } catch {
+        // Hors-ligne ou introuvable
+      }
+    }
     
     if (article) {
       setSelectedArticleId(article.id)
@@ -212,39 +281,35 @@ export function InventaireForm({ articles }: { articles: any[] }) {
                 
                 {showDropdown && (
                   <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#111622] border border-slate-200 dark:border-white/10 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                    {articles
-                      .filter(a => 
-                        !searchQuery || 
-                        a.designation.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        (a.reference && a.reference.toLowerCase().includes(searchQuery.toLowerCase()))
-                      )
-                      .slice(0, 50)
-                      .map(a => (
-                        <button
-                          key={a.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedArticleId(a.id)
-                            setMode('known')
-                            setEditDesignation(a.designation)
-                            setEditFournisseur(a.fournisseur || '')
-                            setEditReference(a.reference || '')
-                            setQuantiteReelle('')
-                            setObservation('')
-                            setSuccessMessage(null)
-                            setIsEditingInfo(false)
-                            setSearchQuery('')
-                            setShowDropdown(false)
-                          }}
-                          className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.06] border-b border-slate-100 dark:border-white/[0.08] last:border-0 transition-colors"
-                        >
-                          <div className="font-medium text-slate-900 dark:text-slate-100">{a.designation}</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Réf: {a.reference || 'Aucune'}</div>
-                        </button>
-                      ))}
-                    {articles.filter(a => !searchQuery || a.designation.toLowerCase().includes(searchQuery.toLowerCase()) || (a.reference && a.reference.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0 && (
+                    {filteredDropdownArticles.map(a => (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedArticleId(a.id)
+                          setMode('known')
+                          setEditDesignation(a.designation)
+                          setEditFournisseur(a.fournisseur || '')
+                          setEditReference(a.reference || '')
+                          setQuantiteReelle('')
+                          setObservation('')
+                          setSuccessMessage(null)
+                          setIsEditingInfo(false)
+                          setSearchQuery('')
+                          setShowDropdown(false)
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.06] border-b border-slate-100 dark:border-white/[0.08] last:border-0 transition-colors"
+                      >
+                        <div className="font-medium text-slate-900 dark:text-slate-100">{a.designation}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Réf: {a.reference || 'Aucune'}
+                          {a.fournisseur ? ` • ${a.fournisseur}` : ''}
+                        </div>
+                      </button>
+                    ))}
+                    {filteredDropdownArticles.length === 0 && (
                       <div className="px-4 py-4 text-sm text-slate-500 dark:text-slate-400 text-center">
-                        Aucun article trouvé.
+                        {isSearching ? 'Recherche dans le catalogue complet...' : 'Aucun article trouvé.'}
                       </div>
                     )}
                   </div>

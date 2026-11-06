@@ -1,9 +1,8 @@
-import { getArticlesWithStocks } from "@/app/actions/articles"
+import { getArticlesActifsAvecStocks } from "@/app/actions/articles"
 import { InventaireForm } from "@/components/InventaireForm"
-import { PackageSearch } from "lucide-react"
 
 export default async function InventairePage() {
-  const articles = await getArticlesWithStocks()
+  const articles = await getArticlesActifsAvecStocks()
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-in fade-in duration-200">
