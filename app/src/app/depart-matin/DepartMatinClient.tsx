@@ -402,30 +402,40 @@ export function DepartMatinClient({
         />
       )}
 
-      {/* Sélecteur de Mode (5 onglets, icône + libellé pour rester lisible sur téléphone) */}
-      <div className="grid grid-cols-5 gap-1 bg-slate-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl ring-1 ring-slate-200 dark:ring-white/5 shadow-inner">
+      {/* Sélecteur de Mode Prestige (5 onglets tactiles avec badge compteur panier) */}
+      <div className="grid grid-cols-5 gap-1.5 bg-white dark:bg-[#111622] p-1.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-2xs sticky top-2 z-20">
         {([
           { id: "DEPART", label: "Départ", Icon: Truck },
           { id: "RETOUR", label: "Retour", Icon: RotateCcw },
           { id: "OUTILLAGE", label: "Outils", Icon: Wrench },
           { id: "VERIF", label: "Stock", Icon: Box },
           { id: "ARTICLES", label: "Articles", Icon: PackagePlus },
-        ] as const).map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setMode(id)}
-            aria-pressed={mode === id}
-            className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 min-h-14 sm:min-h-12 py-2 text-[11px] sm:text-sm font-semibold rounded-xl transition-all duration-200 ${
-              mode === id
-                ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm dark:shadow-md ring-1 ring-slate-200 dark:ring-white/10"
-                : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"
-            }`}
-          >
-            <Icon className="w-5 h-5" />
-            {label}
-          </button>
-        ))}
+        ] as const).map(({ id, label, Icon }) => {
+          const isCurrent = mode === id
+          const showBadge =
+            (id === "DEPART" || id === "RETOUR") && isCurrent && totalUnitsPanier > 0
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setMode(id)}
+              aria-pressed={isCurrent}
+              className={`relative flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 min-h-14 sm:min-h-12 py-2 text-[11px] sm:text-xs font-bold rounded-xl transition-all duration-150 cursor-pointer ${
+                isCurrent
+                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-xs"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.04]"
+              }`}
+            >
+              <Icon className="w-4.5 h-4.5" />
+              <span>{label}</span>
+              {showBadge && (
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500 text-white shadow-xs tabular-nums">
+                  {totalUnitsPanier}
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       {/* Message de Feedback Flash */}

@@ -15,6 +15,5 @@ export default function GlobalLoading() {
 
       <div className="h-80 rounded-2xl border border-slate-200/60 dark:border-white/[0.06] bg-white/80 dark:bg-[#111622]/80" />
     </div>
-  )
+  );
 }
-

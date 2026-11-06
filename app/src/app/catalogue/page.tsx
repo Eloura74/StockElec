@@ -10,6 +10,7 @@ import { SearchInput } from "@/components/SearchInput"
 import { ExportPDFButton } from "@/components/ExportPDFButton"
 import { CatalogueFilters } from "./CatalogueFilters"
 import { CopyReferenceButton } from "@/components/CopyReferenceButton"
+import { SupplierBadge } from "@/components/SupplierBadge"
 
 export default async function CataloguePage({ 
   searchParams 
@@ -559,10 +560,8 @@ export default async function CataloguePage({
 
                           {/* 2. Fournisseur & Réf Fournisseur */}
                           <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">
-                            <div className="space-y-0.5">
-                              <p className="font-semibold text-slate-800 dark:text-slate-200">
-                                {article.fournisseur || "Fournisseur non spécifié"}
-                              </p>
+                            <div className="space-y-1">
+                              <SupplierBadge name={article.fournisseur} marque={article.marque} />
                               {article.referenceFournisseur && (
                                 <p className="font-mono text-[11px] text-slate-400 dark:text-slate-500">
                                   Réf: {article.referenceFournisseur}

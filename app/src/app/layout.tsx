@@ -8,6 +8,7 @@ import { CyberThemeProvider } from "@/components/CyberThemeProvider";
 import { ThemeSettingsModal } from "@/components/ThemeSettingsModal";
 import { CommandPalette } from "@/components/CommandPalette";
 import { OfflineSyncBanner } from "@/components/OfflineSyncBanner";
+import { TopContextBar } from "@/components/TopContextBar";
 import { Toaster } from "sonner";
 
 const inter = Inter({ 
@@ -70,6 +71,7 @@ export default async function RootLayout({
                 style={{ backgroundImage: `url('/images/cedricelec_bg.jpg')` }}
               />
               <div className="relative z-10">
+                {showSidebar && <TopContextBar />}
                 <div className={showSidebar ? "" : "px-3 pt-3 sm:px-6"}>
                   <OfflineSyncBanner />
                 </div>
