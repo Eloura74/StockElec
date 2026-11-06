@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { emprunterOutillage } from "@/app/actions/outillage"
+import { enqueueOfflineOperation } from "@/lib/offline-sync"
+import { toast } from "sonner"
 import { ArrowRightLeft, Camera, Search } from "lucide-react"
 import dynamic from 'next/dynamic'
 
@@ -68,11 +70,48 @@ export function EmpruntOutillageForm({ outillages, chantiers }: { outillages: an
         <div className="flex-1 h-px bg-gray-200"></div>
       </div>
 
-      <form action={async (formData) => {
-        await emprunterOutillage(formData)
-        setSelectedOutillageId("")
-        setActionType("Emprunt")
-      }} className="space-y-5">
+      <form
+        action={async (formData) => {
+          const outillageId = (formData.get("outillageId") as string) || selectedOutillageId
+          const type = (formData.get("type") as string) || actionType
+          const chantierId = (formData.get("chantierId") as string) || selectedChantierId || null
+          const utilisateur = (formData.get("utilisateur") as string) || ""
+          const observation = (formData.get("observation") as string) || ""
+          const outillageNom = selectedOutil?.nom || "Outil"
+
+          const enregistrerHorsLigne = async () => {
+            await enqueueOfflineOperation({
+              type: "OUTILLAGE_MOUVEMENT",
+              label: `Outillage « ${outillageNom} » (${type}) par ${utilisateur}`,
+              payload: {
+                outillageId,
+                outillageNom,
+                type,
+                chantierId: type === "Emprunt" ? chantierId : null,
+                utilisateur,
+                observation,
+              },
+            })
+            toast.success("📡 Mouvement d'outillage enregistré hors-ligne !")
+          }
+
+          if (typeof navigator !== "undefined" && !navigator.onLine) {
+            await enregistrerHorsLigne()
+          } else {
+            try {
+              await emprunterOutillage(formData)
+              toast.success("Mouvement d'outillage validé !")
+            } catch {
+              await enregistrerHorsLigne()
+            }
+          }
+
+          setSelectedOutillageId("")
+          setSelectedChantierId("")
+          setActionType("Emprunt")
+        }}
+        className="space-y-5"
+      >
         
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">Sélectionner l'outil</label>

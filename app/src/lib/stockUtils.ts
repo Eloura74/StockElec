@@ -8,6 +8,18 @@ export type StockInfo = {
 }
 
 /**
+ * Normalise l'unité d'affichage d'un article :
+ * Si l'unité est vide ou purement numérique (ex: "1" ou "100" issu d'une colonne `unite_de_vente` fournisseur),
+ * retourne "u" pour éviter d'afficher "11 1" ou "170 1" à côté de la quantité en stock.
+ */
+export function normaliserUnite(unite?: string | null): string {
+  if (!unite) return "u"
+  const s = String(unite).trim()
+  if (!s || /^\d+([.,]\d+)?$/.test(s)) return "u"
+  return s
+}
+
+/**
  * Calcule les stocks réels d'un article en se basant sur ses mouvements.
  * 
  * Logique:

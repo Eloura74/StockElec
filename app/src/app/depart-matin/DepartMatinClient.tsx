@@ -7,6 +7,16 @@ import { validerRetourChantier, type TypeMouvementChantier } from "@/app/actions
 import { BarcodeScanner } from "@/components/BarcodeScanner"
 import { EmpruntOutillageForm } from "@/components/EmpruntOutillageForm"
 import { ArticlesChefPanel, type ArticleChef } from "@/components/ArticlesChefPanel"
+import {
+  appliquerOperationsOptimistes,
+  enqueueOfflineOperation,
+  getOfflineSnapshot,
+  listOutboxOperations,
+  saveOfflineSnapshot,
+  OFFLINE_CHANGE_EVENT,
+  type OfflineOperation,
+  type OfflineSnapshot,
+} from "@/lib/offline-sync"
 import { toast } from "sonner"
 
 type Article = ArticleChef
@@ -59,19 +69,73 @@ export function DepartMatinClient({
 
   const [chantierSearchQuery, setChantierSearchQuery] = useState("")
   const [showChantierDropdown, setShowChantierDropdown] = useState(false)
+  const [pendingOps, setPendingOps] = useState<OfflineOperation[]>([])
+  const [cachedSnapshot, setCachedSnapshot] = useState<OfflineSnapshot | null>(null)
 
-  const articlesRef = useRef(articles)
+  // Sauvegarde du dernier catalogue connu en mémoire locale (IndexedDB) + repli si démarrage hors-ligne
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.onLine && articles.length > 0) {
+      saveOfflineSnapshot({
+        articles,
+        chantiers,
+        outillages: outillages as any[],
+        deployeParChantier,
+      }).catch(() => {})
+    } else if (articles.length === 0) {
+      getOfflineSnapshot()
+        .then((snap) => {
+          if (snap) setCachedSnapshot(snap)
+        })
+        .catch(() => {})
+    }
+  }, [articles, chantiers, outillages, deployeParChantier])
+
+  useEffect(() => {
+    const chargerOutbox = () => {
+      listOutboxOperations()
+        .then((ops) => setPendingOps(ops))
+        .catch(() => {})
+    }
+    chargerOutbox()
+    window.addEventListener(OFFLINE_CHANGE_EVENT, chargerOutbox)
+    return () => window.removeEventListener(OFFLINE_CHANGE_EVENT, chargerOutbox)
+  }, [])
+
+  const etatOptimiste = useMemo(() => {
+    const baseArticles = articles.length > 0 ? articles : cachedSnapshot?.articles ?? []
+    const baseOutillages =
+      (outillages as any[]).length > 0 ? (outillages as any[]) : cachedSnapshot?.outillages ?? []
+    const baseDeploye =
+      Object.keys(deployeParChantier).length > 0
+        ? deployeParChantier
+        : cachedSnapshot?.deployeParChantier ?? {}
+
+    return appliquerOperationsOptimistes(
+      {
+        articles: baseArticles,
+        outillages: baseOutillages,
+        deployeParChantier: baseDeploye,
+      },
+      pendingOps
+    )
+  }, [articles, outillages, deployeParChantier, cachedSnapshot, pendingOps])
+
+  const articlesEffectifs = etatOptimiste.articles
+  const outillagesEffectifs = etatOptimiste.outillages
+  const deployeEffectif = etatOptimiste.deployeParChantier
+
+  const articlesRef = useRef(articlesEffectifs)
   const modeRef = useRef(mode)
   useEffect(() => {
-    articlesRef.current = articles
-  }, [articles])
+    articlesRef.current = articlesEffectifs
+  }, [articlesEffectifs])
   useEffect(() => {
     modeRef.current = mode
   }, [mode])
 
   const filteredArticles = useMemo(
     () =>
-      articles
+      articlesEffectifs
         .filter(
           (a) =>
             a.designation.toLowerCase().includes(search.toLowerCase()) ||
@@ -79,15 +143,15 @@ export function DepartMatinClient({
             (a.codeBarre && a.codeBarre.includes(search.trim()))
         )
         .slice(0, 5),
-    [articles, search]
+    [articlesEffectifs, search]
   )
 
-  // Liste des articles actuellement déployés sur le chantier sélectionné (1.3)
+  // Liste des articles actuellement déployés sur le chantier sélectionné (1.3 + état optimiste hors-ligne)
   const materielSurChantier = useMemo(() => {
     if (!chantierId) return []
-    const mapChantier = deployeParChantier[chantierId]
+    const mapChantier = deployeEffectif[chantierId]
     if (!mapChantier) return []
-    const parId = new Map(articles.map((a) => [a.id, a]))
+    const parId = new Map(articlesEffectifs.map((a) => [a.id, a]))
     const res: { article: Article; quantiteDeployce: number }[] = []
     for (const [artId, qte] of Object.entries(mapChantier)) {
       if (qte <= 0) continue
@@ -96,7 +160,7 @@ export function DepartMatinClient({
     }
     res.sort((a, b) => a.article.designation.localeCompare(b.article.designation, "fr"))
     return res
-  }, [chantierId, deployeParChantier, articles])
+  }, [chantierId, deployeEffectif, articlesEffectifs])
 
   const upsertLignePanier = useCallback(
     (
@@ -195,7 +259,64 @@ export function DepartMatinClient({
     if (!chantierId) return toast.error("Veuillez sélectionner un chantier.")
     if (panier.length === 0) return toast.error("Votre liste est vide.")
 
+    const chantierNom = chantiers.find((c) => c.id === chantierId)?.nom || "Chantier"
+    const nbUnites = panier.reduce((acc, item) => acc + item.quantite, 0)
+
+    const enregistrerHorsLigne = async () => {
+      if (mode === "DEPART") {
+        await enqueueOfflineOperation({
+          type: "DEPART_MATIN",
+          label: `Départ « ${chantierNom} » (${panier.length} réf., ${nbUnites} u.)`,
+          payload: {
+            chantierId,
+            chantierNom,
+            username,
+            lignes: panier.map((item) => ({
+              articleId: item.article.id,
+              designation: item.article.designation,
+              quantite: item.quantite,
+            })),
+            observation,
+          },
+        })
+      } else {
+        await enqueueOfflineOperation({
+          type: "RETOUR_CHANTIER",
+          label: `Pointage retour « ${chantierNom} » (${panier.length} réf., ${nbUnites} u.)`,
+          payload: {
+            chantierId,
+            chantierNom,
+            username,
+            lignes: panier.map((item) => ({
+              articleId: item.article.id,
+              designation: item.article.designation,
+              quantite: item.quantite,
+              type: item.typeRetour,
+            })),
+            observation,
+          },
+        })
+      }
+
+      setSuccess(true)
+      setPanier([])
+      setChantierId("")
+      setObservation("")
+      setLastScannedId(null)
+      toast.success(
+        "📡 Enregistré en mode Hors-Ligne ! Sera envoyé automatiquement dès le retour du réseau."
+      )
+      setTimeout(() => setSuccess(false), 5000)
+    }
+
     setIsSubmitting(true)
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      await enregistrerHorsLigne()
+      setIsSubmitting(false)
+      return
+    }
+
     try {
       let res
       if (mode === "DEPART") {
@@ -230,7 +351,8 @@ export function DepartMatinClient({
         toast.error("Erreur: " + res.error)
       }
     } catch {
-      toast.error("Erreur de connexion")
+      // Coupure réseau pendant l'envoi : bascule automatique en file d'attente Hors-Ligne
+      await enregistrerHorsLigne()
     }
     setIsSubmitting(false)
   }
@@ -388,11 +510,11 @@ export function DepartMatinClient({
         </div>
       )}
 
-      {mode === "ARTICLES" && <ArticlesChefPanel articles={articles} />}
+      {mode === "ARTICLES" && <ArticlesChefPanel articles={articlesEffectifs} />}
 
       {mode === "OUTILLAGE" && (
         <div className="animate-in slide-in-from-bottom-2 fade-in">
-          <EmpruntOutillageForm outillages={outillages as never[]} chantiers={chantiers} />
+          <EmpruntOutillageForm outillages={outillagesEffectifs as never[]} chantiers={chantiers} />
         </div>
       )}
 

@@ -2,12 +2,13 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { calculerStocksDepuisAgregats } from "@/lib/stockUtils"
+import { calculerStocksDepuisAgregats, normaliserUnite } from "@/lib/stockUtils"
 import { getSession } from "@/lib/auth"
 import {
   construireIndexCatalogue,
   trouverArticleCatalogue,
 } from "@/lib/article-matching"
+import { parseNombre } from "@/lib/import-articles"
 
 // Les server actions sont appelables directement : le middleware ne suffit pas à les protéger.
 async function exigerSession(gerantSeulement = false) {
@@ -19,9 +20,13 @@ async function exigerSession(gerantSeulement = false) {
 }
 
 export async function getArticles() {
-  return prisma.article.findMany({
+  const articles = await prisma.article.findMany({
     orderBy: { reference: 'asc' }
   })
+  return articles.map(art => ({
+    ...art,
+    unite: normaliserUnite(art.unite),
+  }))
 }
 
 export async function getArticlesWithStocks() {
@@ -41,6 +46,7 @@ export async function getArticlesWithStocks() {
     const stockDepotFinal = art.stockInitial + s.stockDepot
     return {
       ...art,
+      unite: normaliserUnite(art.unite),
       stockInfo: {
         stockInitial: art.stockInitial,
         stockDepot: stockDepotFinal,
@@ -56,10 +62,10 @@ export async function createArticle(formData: FormData) {
   const reference = (formData.get("reference") as string)?.trim()
   const designation = formData.get("designation") as string
   const categorie = formData.get("categorie") as string
-  const unite = formData.get("unite") as string
+  const unite = normaliserUnite(formData.get("unite") as string)
   const stockMinimum = parseInt(formData.get("stockMinimum") as string || "0")
   const stockInitial = parseInt(formData.get("stockInitial") as string || "0")
-  const prixUnitaire = parseFloat(formData.get("prixUnitaire") as string || "0")
+  const prixUnitaire = Math.max(0, parseNombre(formData.get("prixUnitaire")) ?? 0)
   const quantiteParBoite = parseInt(formData.get("quantiteParBoite") as string || "1")
   const retourAttendu = formData.get("retourAttendu") === "on"
   const referenceFournisseur = (formData.get("referenceFournisseur") as string)?.trim() || null
@@ -134,10 +140,10 @@ export async function updateArticle(formData: FormData) {
   const reference = formData.get("reference") as string
   const designation = formData.get("designation") as string
   const categorie = formData.get("categorie") as string
-  const unite = formData.get("unite") as string
+  const unite = normaliserUnite(formData.get("unite") as string)
   const stockMinimum = parseInt(formData.get("stockMinimum") as string || "0")
   const quantiteParBoite = parseInt(formData.get("quantiteParBoite") as string || "1")
-  const prixUnitaire = parseFloat(formData.get("prixUnitaire") as string || "0")
+  const prixUnitaire = Math.max(0, parseNombre(formData.get("prixUnitaire")) ?? 0)
   const referenceFournisseur = (formData.get("referenceFournisseur") as string)?.trim() || null
   const fournisseur = (formData.get("fournisseur") as string)?.trim() || null
   const codeBarre = (formData.get("codeBarre") as string)?.trim() || null

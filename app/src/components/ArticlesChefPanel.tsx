@@ -5,6 +5,7 @@ import { Plus, Minus, Search, ScanBarcode, X, Pencil, PackagePlus, Save, LoaderC
 import { toast } from "sonner"
 import { BarcodeScanner } from "@/components/BarcodeScanner"
 import { creerArticleChef, modifierArticleChef, ajusterStockChef } from "@/app/actions/chef-articles"
+import { enqueueOfflineOperation, generateOfflineId } from "@/lib/offline-sync"
 
 export type ArticleChef = {
   id: string
@@ -257,19 +258,55 @@ function ArticleSheet({
     e.preventDefault()
     setErreur(null)
     setEnCours(true)
-    try {
-      const base = {
-        designation,
-        reference,
-        codeBarre,
-        fournisseur,
-        referenceFournisseur,
-        categorie,
-        unite,
-        stockMinimum: parseInt(stockMinimum) || 0,
-        quantiteParBoite: parseInt(quantiteParBoite) || 1,
-      }
 
+    const base = {
+      designation,
+      reference,
+      codeBarre,
+      fournisseur,
+      referenceFournisseur,
+      categorie,
+      unite,
+      stockMinimum: parseInt(stockMinimum) || 0,
+      quantiteParBoite: parseInt(quantiteParBoite) || 1,
+    }
+
+    const enregistrerHorsLigne = async () => {
+      if (edition) {
+        await enqueueOfflineOperation({
+          type: "MODIFIER_ARTICLE_CHEF",
+          label: `Modification article « ${designation.trim()} »${stockNum !== edition.stockActuel ? ` (Stock → ${stockNum})` : ""}`,
+          payload: {
+            input: { id: edition.id, ...base },
+            nouveauStock: stockNum !== edition.stockActuel ? stockNum : undefined,
+          },
+        })
+        toast.success("📡 Article mis à jour hors-ligne (synchronisation auto au retour du réseau)")
+      } else {
+        const tempId = `offline-art-${generateOfflineId()}`
+        await enqueueOfflineOperation({
+          type: "CREER_ARTICLE_CHEF",
+          label: `Nouvel article « ${designation.trim()} » (Stock initial : ${stockNum})`,
+          payload: {
+            tempId,
+            input: { ...base, stockInitial: stockNum },
+          },
+        })
+        toast.success("📡 Article créé hors-ligne (synchronisation auto au retour du réseau)")
+      }
+      onClose()
+    }
+
+    if (
+      (typeof navigator !== "undefined" && !navigator.onLine) ||
+      (edition && edition.id.startsWith("offline-art-"))
+    ) {
+      await enregistrerHorsLigne()
+      setEnCours(false)
+      return
+    }
+
+    try {
       if (edition) {
         const res = await modifierArticleChef({ id: edition.id, ...base })
         if (!res.success) { setErreur(res.error); return }
@@ -285,7 +322,7 @@ function ArticleSheet({
       }
       onClose()
     } catch {
-      setErreur("Erreur de connexion. Réessayez.")
+      await enregistrerHorsLigne()
     } finally {
       setEnCours(false)
     }

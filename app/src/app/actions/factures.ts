@@ -11,6 +11,7 @@ import {
   indexerArticleDansCatalogue,
   trouverArticleCatalogue,
 } from '@/lib/article-matching'
+import { parseNombre } from '@/lib/import-articles'
 
 export interface SaveFactureOptions {
   entreprise?: string
@@ -128,7 +129,7 @@ export async function saveFactureAndCheckPrices(
         : rapprochement.referenceCanonique || refSaisie || `REF-${Date.now()}`
 
       const qte = parseInt(String(ligne.quantite), 10) || 1
-      let pu = parseFloat(String(ligne.prixUnitaire)) || 0
+      let pu = Math.max(0, parseNombre(ligne.prixUnitaire) ?? 0)
 
       // Protection anti-anomalie tarif /1000m ou /100 (câbles, visserie, etc.)
       const totalHTFacture = options.totalHT || 0

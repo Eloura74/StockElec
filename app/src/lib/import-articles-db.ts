@@ -6,7 +6,7 @@
  */
 import type { PrismaClient, Prisma } from "@prisma/client"
 import { calculerStocksDepuisAgregats } from "./stockUtils"
-import type { LigneImport } from "./import-articles"
+import { parseNombre, type LigneImport } from "./import-articles"
 import { construireIndexCatalogue, trouverArticleCatalogue, cleReference } from "./article-matching"
 
 export type ModeImport = "complet" | "creer_seulement" | "maj_seulement"
@@ -45,8 +45,8 @@ function str(v: unknown, max: number): string | null {
 }
 function num(v: unknown, opts: { entier?: boolean; min?: number } = {}): number | null {
   if (v === null || v === undefined || v === "") return null
-  const n = Number(v)
-  if (!Number.isFinite(n)) return null
+  const n = typeof v === "number" ? v : parseNombre(v)
+  if (n === null || !Number.isFinite(n)) return null
   const r = opts.entier ? Math.round(n) : n
   if (opts.min !== undefined && r < opts.min) return null
   return r

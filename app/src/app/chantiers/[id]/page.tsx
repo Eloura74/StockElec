@@ -1,24 +1,29 @@
 import prisma from "@/lib/prisma"
 import { updateChantier, deleteChantier, cloturerChantier } from "@/app/actions/chantiers"
-import { ArrowLeft, Edit, Save, Trash2, Package, CheckCircle2, TrendingDown } from "lucide-react"
+import { ArrowLeft, Edit, Save, Trash2, Package, CheckCircle2, TrendingDown, MapPin } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { DeleteButton } from "@/components/DeleteButton"
 import { CloturerButton } from "@/components/CloturerButton"
 import { ExportBonLivraisonButton } from "@/components/ExportBonLivraisonButton"
+import { normaliserUnite } from "@/lib/stockUtils"
+import { chargerAdresseChantier } from "@/lib/chantier-adresse"
 
 export default async function ChantierDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const chantier = await prisma.chantier.findUnique({
-    where: { id },
-    include: {
-      mouvements: {
-        include: { article: true },
-        orderBy: { date: 'desc' }
+  const [chantier, adresse] = await Promise.all([
+    prisma.chantier.findUnique({
+      where: { id },
+      include: {
+        mouvements: {
+          include: { article: true },
+          orderBy: { date: 'desc' }
+        }
       }
-    }
-  })
+    }),
+    chargerAdresseChantier(id),
+  ])
 
   if (!chantier) {
     redirect("/chantiers")
@@ -97,6 +102,19 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
               <input name="nom" type="text" defaultValue={chantier.nom} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-emerald-500" />
+                Adresse / Localisation
+              </label>
+              <input
+                name="adresse"
+                type="text"
+                defaultValue={adresse || ""}
+                placeholder="ex: 14 Bd du Cap, 06160 Antibes"
+                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Statut</label>
               <select name="statut" defaultValue={chantier.statut} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option value="Actif">Actif</option>
@@ -167,7 +185,7 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
                           <p className="text-xs text-gray-500 dark:text-zinc-400">{m.article.reference}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-orange-600">{m.quantite} {m.article.unite}</p>
+                          <p className="font-bold text-orange-600">{m.quantite} {normaliserUnite(m.article.unite)}</p>
                           <p className="text-xs text-gray-500 dark:text-zinc-400">Soit {(m.quantite * m.article.prixUnitaire).toFixed(2)} €</p>
                         </div>
                       </div>
