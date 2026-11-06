@@ -379,5 +379,27 @@ button:focus-visible {
   animation: slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ========================================================= */
+/* OPTIMISATIONS RESPONSIVE MOBILE (iOS SAFARI, ANDROID, TABLETTE) */
+/* ========================================================= */
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+/* Empêche le zoom forcé d'iOS Safari lors du focus sur un champ < 16px */
+@media screen and (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+
 
 

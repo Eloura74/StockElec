@@ -106,7 +106,7 @@ export function Sidebar() {
       {/* ========================================================= */}
       {/* DESKTOP SIDEBAR — ÉLÉGANTE, PRESTIGIEUSE & ÉPURÉE         */}
       {/* ========================================================= */}
-      <aside className="hidden md:flex h-dvh w-64 flex-col border-r border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0c1017] shrink-0 select-none transition-colors">
+      <aside className="hidden md:flex h-dvh md:w-56 lg:w-64 flex-col border-r border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0c1017] shrink-0 select-none transition-colors">
         
         {/* Brand Header */}
         <div className="p-4 border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01]">
@@ -263,7 +263,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 bg-slate-900 text-white dark:bg-white dark:text-slate-950 pl-4 pr-5 py-3 rounded-full shadow-lg active:scale-95 transition-all border border-white/10 cursor-pointer"
+          className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-4 z-40 flex items-center gap-2 bg-slate-900 text-white dark:bg-white dark:text-slate-950 pl-4 pr-5 py-3 rounded-full shadow-lg active:scale-95 transition-all border border-white/10 cursor-pointer"
           aria-label="Ouvrir le menu de navigation"
         >
           <Menu className="h-4.5 w-4.5" />
@@ -398,7 +398,7 @@ export function Sidebar() {
           </nav>
 
           {/* Mobile Drawer Footer */}
-          <div className="p-4 border-t border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01] space-y-3">
+          <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01] space-y-3">
             <button
               type="button"
               onClick={() => {

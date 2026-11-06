@@ -34,7 +34,8 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({
@@ -61,8 +62,8 @@ export default async function RootLayout({
             {showSidebar && <Sidebar />}
             
             <main
-              className={`flex-1 overflow-y-auto relative ${
-                showSidebar ? "p-4 sm:p-6 lg:p-8" : "p-0"
+              className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden relative ${
+                showSidebar ? "p-3.5 sm:p-6 lg:p-8 pb-24 md:pb-8" : "p-0"
               }`}
             >
               {/* Fond d'ambiance CédricElec haute définition (filigrane subtil) */}
