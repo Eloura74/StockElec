@@ -799,29 +799,57 @@ export function DepartMatinClient({
           )}
 
           {/* 2. Ajout de Matériel */}
-          <div className={`transition-all duration-500 ${!chantierId ? "opacity-40 pointer-events-none grayscale" : ""}`}>
-            <div className="bg-white dark:bg-zinc-900 p-5 sm:p-6 rounded-3xl border border-slate-100 dark:border-white/5 shadow-sm dark:shadow-xl space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="font-semibold text-slate-900 dark:text-white text-lg flex items-center gap-2">
-                  <Box className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> 2.{" "}
-                  {mode === "RETOUR" ? "Scanner ou ajouter un article" : "Matériel"}
-                </h2>
+          <div className="space-y-4">
+            <div className={`transition-all duration-300 rounded-3xl border border-slate-100 dark:border-white/5 shadow-sm dark:shadow-xl p-5 sm:p-6 space-y-4 ${
+              !chantierId 
+                ? "bg-slate-100/60 dark:bg-zinc-900/40 opacity-70 border-dashed" 
+                : "bg-white dark:bg-zinc-900"
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
+                  <Box className={`w-5 h-5 ${chantierId ? "text-indigo-500 dark:text-indigo-400" : "text-slate-400"}`} />
+                  <h2 className="font-semibold text-slate-900 dark:text-white text-base sm:text-lg">
+                    2. {mode === "RETOUR" ? "Scanner ou ajouter un article" : "Ajouter le matériel"}
+                  </h2>
+                </div>
+
+                {/* Boutons d'action toujours visibles et nets */}
+                <div className="flex items-center gap-2 self-start sm:self-auto">
                   <button
                     type="button"
-                    onClick={() => setIsPhotoScanning(true)}
-                    className="flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 transition-all cursor-pointer"
+                    onClick={() => {
+                      if (!chantierId) {
+                        toast.warning("Veuillez d'abord sélectionner un chantier ci-dessus.");
+                        return;
+                      }
+                      setIsPhotoScanning(true);
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer shadow-sm ${
+                      chantierId
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/20"
+                        : "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60"
+                    }`}
                     title="Prendre une photo du matériel en vrac ou carton"
                   >
                     <Camera className="w-4 h-4" />
-                    <span className="hidden xs:inline">Photo IA</span>
+                    <span>Photo IA</span>
                     <Sparkles className="w-3 h-3 text-amber-300" />
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setIsScanning(true)}
-                    className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 px-3.5 py-2.5 rounded-xl font-semibold text-xs shadow-sm active:scale-95 transition-all cursor-pointer"
+                    onClick={() => {
+                      if (!chantierId) {
+                        toast.warning("Veuillez d'abord sélectionner un chantier ci-dessus.");
+                        return;
+                      }
+                      setIsScanning(true);
+                    }}
+                    className={`flex items-center gap-2 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl font-semibold text-xs transition-all active:scale-95 cursor-pointer shadow-sm ${
+                      chantierId
+                        ? "bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950"
+                        : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    }`}
                   >
                     <ScanBarcode className="w-4 h-4" />
                     <span>Scan rafale</span>
@@ -829,14 +857,22 @@ export function DepartMatinClient({
                 </div>
               </div>
 
+              {!chantierId && (
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
+                  <TriangleAlert className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <span>Sélectionnez d'abord un chantier à l'étape 1 ci-dessus pour activer la saisie.</span>
+                </div>
+              )}
+
               <div className="relative mt-2">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-slate-400 dark:text-zinc-500" />
                 </div>
                 <input
                   type="text"
-                  placeholder="Ou taper un nom..."
-                  className="block w-full pl-12 rounded-2xl border-0 ring-1 ring-inset ring-slate-200 dark:ring-white/10 p-4 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:bg-white dark:focus:bg-zinc-900 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-indigo-500 text-lg transition-all"
+                  placeholder={chantierId ? "Ou taper un nom..." : "Sélectionnez un chantier d'abord..."}
+                  disabled={!chantierId}
+                  className="block w-full pl-12 rounded-2xl border-0 ring-1 ring-inset ring-slate-200 dark:ring-white/10 p-3.5 sm:p-4 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:bg-white dark:focus:bg-zinc-900 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-indigo-500 text-base sm:text-lg transition-all disabled:cursor-not-allowed"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -974,24 +1010,26 @@ export function DepartMatinClient({
           )}
 
           {/* 4. Validation */}
-          <div className="sticky bottom-6 z-10 pt-4 pb-2">
-            <button
-              type="button"
-              onClick={handleValider}
-              disabled={isSubmitting || panier.length === 0 || !chantierId}
-              className={`w-full text-white font-semibold text-lg p-4 rounded-2xl shadow-xl disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2 ${
-                mode === "DEPART"
-                  ? "bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] ring-1 ring-indigo-500"
-                  : "bg-emerald-600 hover:bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)] ring-1 ring-emerald-500"
-              }`}
-            >
-              {isSubmitting
-                ? "Enregistrement en cours..."
-                : mode === "DEPART"
-                  ? "Valider le départ"
-                  : "Valider le pointage chantier"}
-            </button>
-          </div>
+          {panier.length > 0 && (
+            <div className="sticky bottom-6 z-10 pt-4 pb-2">
+              <button
+                type="button"
+                onClick={handleValider}
+                disabled={isSubmitting || panier.length === 0 || !chantierId}
+                className={`w-full text-white font-semibold text-lg p-4 rounded-2xl shadow-xl disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2 ${
+                  mode === "DEPART"
+                    ? "bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] ring-1 ring-indigo-500"
+                    : "bg-emerald-600 hover:bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)] ring-1 ring-emerald-500"
+                }`}
+              >
+                {isSubmitting
+                  ? "Enregistrement en cours..."
+                  : mode === "DEPART"
+                    ? "Valider le départ"
+                    : "Valider le pointage chantier"}
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
