@@ -1,20 +1,31 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { Camera, Sparkles, X, Check, Plus, Minus, AlertCircle, RefreshCw, UploadCloud, Layers } from "lucide-react"
-import { toast } from "sonner"
+import { useState, useRef } from "react";
+import {
+  Camera,
+  Sparkles,
+  X,
+  Check,
+  Plus,
+  Minus,
+  AlertCircle,
+  RefreshCw,
+  UploadCloud,
+  Layers,
+} from "lucide-react";
+import { toast } from "sonner";
 
 export interface PhotoDetectedItem {
-  id: string
-  articleId: string | null
-  reference: string
-  designation: string
-  unite: string
-  quantite: number
-  marque?: string
-  confiance: number
-  remarqueVisuelle?: string
-  estExistant: boolean
+  id: string;
+  articleId: string | null;
+  reference: string;
+  designation: string;
+  unite: string;
+  quantite: number;
+  marque?: string;
+  confiance: number;
+  remarqueVisuelle?: string;
+  estExistant: boolean;
 }
 
 export function PhotoScannerModal({
@@ -23,94 +34,101 @@ export function PhotoScannerModal({
   onValidateItems,
   contexte = "DEPOT",
 }: {
-  isOpen: boolean
-  onClose: () => void
-  onValidateItems: (items: PhotoDetectedItem[]) => void
-  contexte?: "DEPOT" | "CHANTIER" | "INVENTAIRE"
+  isOpen: boolean;
+  onClose: () => void;
+  onValidateItems: (items: PhotoDetectedItem[]) => void;
+  contexte?: "DEPOT" | "CHANTIER" | "INVENTAIRE";
 }) {
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [detectedItems, setDetectedItems] = useState<PhotoDetectedItem[]>([])
-  const [resumeIA, setResumeIA] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [detectedItems, setDetectedItems] = useState<PhotoDetectedItem[]>([]);
+  const [resumeIA, setResumeIA] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const handleCapturePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    if (photoPreview) URL.revokeObjectURL(photoPreview)
-    const previewUrl = URL.createObjectURL(file)
-    setPhotoPreview(previewUrl)
-    analyserPhoto(file)
-  }
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    const previewUrl = URL.createObjectURL(file);
+    setPhotoPreview(previewUrl);
+    analyserPhoto(file);
+  };
 
   const analyserPhoto = async (file: File) => {
-    setIsAnalyzing(true)
-    setDetectedItems([])
-    setResumeIA(null)
+    setIsAnalyzing(true);
+    setDetectedItems([]);
+    setResumeIA(null);
 
     try {
-      const formData = new FormData()
-      formData.append("photo", file)
+      const formData = new FormData();
+      formData.append("photo", file);
 
       const res = await fetch("/api/scan-photo", {
         method: "POST",
         body: formData,
-      })
+      });
 
-      const data = await res.json()
+      const data = await res.json();
 
       if (!res.ok || data.error) {
-        toast.error(data.error || "Échec de l'analyse photo.")
-        setIsAnalyzing(false)
-        return
+        toast.error(data.error || "Échec de l'analyse photo.");
+        setIsAnalyzing(false);
+        return;
       }
 
-      setDetectedItems(data.items || [])
-      setResumeIA(data.resume || "Matériel identifié avec succès.")
+      setDetectedItems(data.items || []);
+      setResumeIA(data.resume || "Matériel identifié avec succès.");
       if (data.items?.length > 0) {
-        toast.success(`✨ ${data.items.length} matériel(s) détecté(s) par l'IA !`)
+        toast.success(
+          `✨ ${data.items.length} matériel(s) détecté(s) par l'IA !`,
+        );
       } else {
-        toast.warning("Aucun équipement électrique net n'a été reconnu. Essayez de vous rapprocher.")
+        toast.warning(
+          "Aucun équipement électrique net n'a été reconnu. Essayez de vous rapprocher.",
+        );
       }
     } catch {
-      toast.error("Erreur de connexion lors de l'analyse visuelle.")
+      toast.error("Erreur de connexion lors de l'analyse visuelle.");
     } finally {
-      setIsAnalyzing(false)
+      setIsAnalyzing(false);
     }
-  }
+  };
 
   const updateQuantity = (id: string, delta: number) => {
     setDetectedItems((prev) =>
       prev
-        .map((item) => (item.id === id ? { ...item, quantite: Math.max(0, item.quantite + delta) } : item))
-        .filter((item) => item.quantite > 0)
-    )
-  }
+        .map((item) =>
+          item.id === id
+            ? { ...item, quantite: Math.max(0, item.quantite + delta) }
+            : item,
+        )
+        .filter((item) => item.quantite > 0),
+    );
+  };
 
   const handleValidate = () => {
     if (detectedItems.length === 0) {
-      toast.warning("Aucun article à ajouter.")
-      return
+      toast.warning("Aucun article à ajouter.");
+      return;
     }
-    onValidateItems(detectedItems)
-    handleClose()
-  }
+    onValidateItems(detectedItems);
+    handleClose();
+  };
 
   const handleClose = () => {
-    if (photoPreview) URL.revokeObjectURL(photoPreview)
-    setPhotoPreview(null)
-    setDetectedItems([])
-    setResumeIA(null)
-    onClose()
-  }
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoPreview(null);
+    setDetectedItems([]);
+    setResumeIA(null);
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white dark:bg-[#111622] border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
-        
         {/* Header Prestige */}
         <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-white/[0.08] bg-slate-50/60 dark:bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -128,7 +146,8 @@ export function PhotoScannerModal({
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                Prenez une photo en vrac : l'IA compte et identifie les matériels automatiquement.
+                Prenez une photo en vrac : l'IA compte et identifie les
+                matériels automatiquement.
               </p>
             </div>
           </div>
@@ -145,7 +164,6 @@ export function PhotoScannerModal({
 
         {/* Corps de la modale */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-          
           {/* Zone de déclenchement photo / upload */}
           <div className="relative">
             <input
@@ -170,7 +188,8 @@ export function PhotoScannerModal({
                   Prendre une photo du matériel
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
-                  Disjoncteurs, boîtes, étiquettes de cartons ou retour camion. L'IA analyse tout en quelques secondes.
+                  Disjoncteurs, boîtes, étiquettes de cartons ou retour camion.
+                  L'IA analyse tout en quelques secondes.
                 </p>
                 <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 text-white font-bold text-xs shadow-sm">
                   <Camera className="w-3.5 h-3.5" />
@@ -208,7 +227,8 @@ export function PhotoScannerModal({
                   Analyse visuelle en cours par l'IA...
                 </p>
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                  Reconnaissance des formes, calibres, marques et comptage automatique.
+                  Reconnaissance des formes, calibres, marques et comptage
+                  automatique.
                 </p>
               </div>
             </div>
@@ -220,7 +240,9 @@ export function PhotoScannerModal({
               {resumeIA && (
                 <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 text-xs text-blue-900 dark:text-blue-300 font-medium flex items-center justify-between">
                   <span>✨ {resumeIA}</span>
-                  <span className="text-[11px] font-bold opacity-75">{detectedItems.length} réf. trouvée(s)</span>
+                  <span className="text-[11px] font-bold opacity-75">
+                    {detectedItems.length} réf. trouvée(s)
+                  </span>
                 </div>
               )}
 
@@ -250,7 +272,9 @@ export function PhotoScannerModal({
                           <span>{item.reference}</span>
                           {item.marque && <span>• {item.marque}</span>}
                           {item.remarqueVisuelle && (
-                            <span className="font-sans italic text-slate-400">({item.remarqueVisuelle})</span>
+                            <span className="font-sans italic text-slate-400">
+                              ({item.remarqueVisuelle})
+                            </span>
                           )}
                         </div>
                       </div>
@@ -303,13 +327,12 @@ export function PhotoScannerModal({
           >
             <Check className="w-4 h-4 text-emerald-500" />
             <span>
-              Valider l'ajout ({detectedItems.reduce((acc, i) => acc + i.quantite, 0)} pièces)
+              Valider l'ajout (
+              {detectedItems.reduce((acc, i) => acc + i.quantite, 0)} pièces)
             </span>
           </button>
         </div>
-
       </div>
     </div>
-  )
+  );
 }
-

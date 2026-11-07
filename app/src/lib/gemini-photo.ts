@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai';
+import { GoogleGenerativeAI, Schema, SchemaType } from "@google/generative-ai";
 
 export interface RecognizedItem {
   reference?: string;
@@ -15,54 +15,59 @@ export interface PhotoRecognitionResult {
 }
 
 const CANDIDATE_MODELS = [
-  'gemini-flash-lite-latest',
-  'gemini-3.5-flash-lite',
-  'gemini-3-flash-preview',
-  'gemini-3.8-flash'
+  "gemini-flash-lite-latest",
+  "gemini-3.5-flash-lite",
+  "gemini-3-flash-preview",
+  "gemini-3.8-flash",
 ];
 
 const photoResponseSchema: Schema = {
   type: SchemaType.OBJECT,
   properties: {
-    resume: { 
-      type: SchemaType.STRING, 
-      description: "Courte phrase résumant ce qui est visible (ex: '4 disjoncteurs et 2 rouleaux de câble détectés')." 
+    resume: {
+      type: SchemaType.STRING,
+      description:
+        "Courte phrase résumant ce qui est visible (ex: '4 disjoncteurs et 2 rouleaux de câble détectés').",
     },
     lignes: {
       type: SchemaType.ARRAY,
       items: {
         type: SchemaType.OBJECT,
         properties: {
-          designation: { 
-            type: SchemaType.STRING, 
-            description: "Désignation électrique claire et précise (ex: 'Disjoncteur 1P+N 16A Courbe C', 'Prise Plexo étanche grise', 'Boîte Batibox 1 poste')." 
+          designation: {
+            type: SchemaType.STRING,
+            description:
+              "Désignation électrique claire et précise (ex: 'Disjoncteur 1P+N 16A Courbe C', 'Prise Plexo étanche grise', 'Boîte Batibox 1 poste').",
           },
-          reference: { 
-            type: SchemaType.STRING, 
-            description: "Référence ou code produit gravé ou imprimé sur le produit / étiquette si visible (ex: '069731', 'DISJ-16A', '080021'). Laisser vide si non discernable." 
+          reference: {
+            type: SchemaType.STRING,
+            description:
+              "Référence ou code produit gravé ou imprimé sur le produit / étiquette si visible (ex: '069731', 'DISJ-16A', '080021'). Laisser vide si non discernable.",
           },
-          marque: { 
-            type: SchemaType.STRING, 
-            description: "Marque du fabricant si visible (Hager, Legrand, Schneider Electric, Nexans, Wago, etc.)." 
+          marque: {
+            type: SchemaType.STRING,
+            description:
+              "Marque du fabricant si visible (Hager, Legrand, Schneider Electric, Nexans, Wago, etc.).",
           },
-          quantite: { 
-            type: SchemaType.NUMBER, 
-            description: "Nombre d'unités visibles distinctes de cet article." 
+          quantite: {
+            type: SchemaType.NUMBER,
+            description: "Nombre d'unités visibles distinctes de cet article.",
           },
-          confiance: { 
-            type: SchemaType.NUMBER, 
-            description: "Niveau de certitude de 1 à 100." 
+          confiance: {
+            type: SchemaType.NUMBER,
+            description: "Niveau de certitude de 1 à 100.",
           },
-          remarqueVisuelle: { 
-            type: SchemaType.STRING, 
-            description: "Détail visuel (ex: 'Neuf en boîte', 'Calibre C16 écrit en blanc', 'Couronne entamée')." 
-          }
+          remarqueVisuelle: {
+            type: SchemaType.STRING,
+            description:
+              "Détail visuel (ex: 'Neuf en boîte', 'Calibre C16 écrit en blanc', 'Couronne entamée').",
+          },
         },
-        required: ['designation', 'quantite'],
-      }
-    }
+        required: ["designation", "quantite"],
+      },
+    },
   },
-  required: ['lignes', 'resume'],
+  required: ["lignes", "resume"],
 };
 
 const PHOTO_PROMPT = `Tu es un expert électricien et gestionnaire de magasinier outillage BTP.
@@ -79,17 +84,19 @@ Ne crée pas d'articles fantaisistes : ne liste que ce qui est réellement visib
 
 export async function recognizePhotoEquipmentWithGemini(
   base64Data: string,
-  mimeType: string = 'image/jpeg'
+  mimeType: string = "image/jpeg",
 ): Promise<PhotoRecognitionResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("Clé GEMINI_API_KEY non configurée dans l'environnement serveur.");
+    throw new Error(
+      "Clé GEMINI_API_KEY non configurée dans l'environnement serveur.",
+    );
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const preferredModel = process.env.GEMINI_MODEL;
-  const modelsToTry = preferredModel 
-    ? [preferredModel, ...CANDIDATE_MODELS.filter(m => m !== preferredModel)]
+  const modelsToTry = preferredModel
+    ? [preferredModel, ...CANDIDATE_MODELS.filter((m) => m !== preferredModel)]
     : CANDIDATE_MODELS;
 
   let lastError: any = null;
@@ -101,25 +108,31 @@ export async function recognizePhotoEquipmentWithGemini(
         generationConfig: {
           responseMimeType: "application/json",
           responseSchema: photoResponseSchema,
-        }
+        },
       });
 
       const result = await model.generateContent([
         {
           inlineData: {
             data: base64Data,
-            mimeType: mimeType || 'image/jpeg'
-          }
+            mimeType: mimeType || "image/jpeg",
+          },
         },
-        PHOTO_PROMPT
+        PHOTO_PROMPT,
       ]);
 
       const responseText = result.response.text();
       let cleanedText = responseText.trim();
-      if (cleanedText.startsWith('```json')) {
-        cleanedText = cleanedText.replace(/^```json/, '').replace(/```$/, '').trim();
-      } else if (cleanedText.startsWith('```')) {
-        cleanedText = cleanedText.replace(/^```/, '').replace(/```$/, '').trim();
+      if (cleanedText.startsWith("```json")) {
+        cleanedText = cleanedText
+          .replace(/^```json/, "")
+          .replace(/```$/, "")
+          .trim();
+      } else if (cleanedText.startsWith("```")) {
+        cleanedText = cleanedText
+          .replace(/^```/, "")
+          .replace(/```$/, "")
+          .trim();
       }
 
       const parsed = JSON.parse(cleanedText);
@@ -132,17 +145,23 @@ export async function recognizePhotoEquipmentWithGemini(
               reference: l.reference ? String(l.reference).trim() : undefined,
               marque: l.marque ? String(l.marque).trim() : undefined,
               quantite: Math.max(1, parseInt(l.quantite, 10) || 1),
-              confiance: typeof l.confiance === 'number' ? l.confiance : 90,
-              remarqueVisuelle: l.remarqueVisuelle ? String(l.remarqueVisuelle).trim() : undefined,
+              confiance: typeof l.confiance === "number" ? l.confiance : 90,
+              remarqueVisuelle: l.remarqueVisuelle
+                ? String(l.remarqueVisuelle).trim()
+                : undefined,
             }))
-          : []
+          : [],
       };
     } catch (err: any) {
-      console.warn(`[Gemini Photo Recognition] Échec modèle ${modelName}:`, err?.message || err);
+      console.warn(
+        `[Gemini Photo Recognition] Échec modèle ${modelName}:`,
+        err?.message || err,
+      );
       lastError = err;
     }
   }
 
-  throw new Error(`Échec de l'analyse photo avec les modèles IA : ${lastError?.message || lastError}`);
+  throw new Error(
+    `Échec de l'analyse photo avec les modèles IA : ${lastError?.message || lastError}`,
+  );
 }
-

@@ -1,32 +1,41 @@
-import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/auth';
-import { recognizePhotoEquipmentWithGemini } from '@/lib/gemini-photo';
-import prisma from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
+import { recognizePhotoEquipmentWithGemini } from "@/lib/gemini-photo";
+import prisma from "@/lib/prisma";
 import {
   construireIndexCatalogue,
   trouverArticleCatalogue,
-} from '@/lib/article-matching';
+} from "@/lib/article-matching";
 
 export async function POST(req: Request) {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json({ error: "Non autorisé. Veuillez vous connecter." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Non autorisé. Veuillez vous connecter." },
+        { status: 401 },
+      );
     }
 
     const formData = await req.formData();
-    const file = formData.get('photo') as File | null;
+    const file = formData.get("photo") as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'Aucune photo fournie.' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Aucune photo fournie." },
+        { status: 400 },
+      );
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const base64Data = Buffer.from(arrayBuffer).toString('base64');
-    const mimeType = file.type || 'image/jpeg';
+    const base64Data = Buffer.from(arrayBuffer).toString("base64");
+    const mimeType = file.type || "image/jpeg";
 
     // 1. Analyse Visuelle Gemini
-    const visionResult = await recognizePhotoEquipmentWithGemini(base64Data, mimeType);
+    const visionResult = await recognizePhotoEquipmentWithGemini(
+      base64Data,
+      mimeType,
+    );
 
     // 2. Matching avec le catalogue local (78 000+ réf)
     const [tousArticles, tousAliases] = await Promise.all([
@@ -64,10 +73,16 @@ export async function POST(req: Request) {
         // Chercher d'abord dans les disjoncteurs / modules courants
         const candidat = tousArticles.find((a) => {
           const desigLower = a.designation.toLowerCase();
-          if (queryLower.includes('disjoncteur') && desigLower.includes('disjoncteur')) {
-            const calibres = ['10a', '16a', '20a', '32a', '2a', '1P+N'];
+          if (
+            queryLower.includes("disjoncteur") &&
+            desigLower.includes("disjoncteur")
+          ) {
+            const calibres = ["10a", "16a", "20a", "32a", "2a", "1P+N"];
             for (const cal of calibres) {
-              if (queryLower.includes(cal.toLowerCase()) && desigLower.includes(cal.toLowerCase())) {
+              if (
+                queryLower.includes(cal.toLowerCase()) &&
+                desigLower.includes(cal.toLowerCase())
+              ) {
                 return true;
               }
             }
@@ -80,12 +95,16 @@ export async function POST(req: Request) {
       return {
         id: Math.random().toString(36).substring(7),
         articleId: match?.id || null,
-        reference: match ? match.reference : (item.reference || "REF-A-CONFIRMER"),
+        reference: match
+          ? match.reference
+          : item.reference || "REF-A-CONFIRMER",
         designation: match ? match.designation : item.designation,
         unite: match?.unite || "u",
         quantite: item.quantite,
         marque: item.marque,
-        confiance: match ? Math.max(item.confiance || 85, 95) : (item.confiance || 80),
+        confiance: match
+          ? Math.max(item.confiance || 85, 95)
+          : item.confiance || 80,
         remarqueVisuelle: item.remarqueVisuelle,
         estExistant: Boolean(match),
       };
@@ -97,11 +116,14 @@ export async function POST(req: Request) {
       items: itemsReconnus,
     });
   } catch (error: any) {
-    console.error('Erreur API scan-photo:', error);
+    console.error("Erreur API scan-photo:", error);
     return NextResponse.json(
-      { error: "Erreur lors de l'analyse photo par l'IA : " + (error?.message || error) },
-      { status: 500 }
+      {
+        error:
+          "Erreur lors de l'analyse photo par l'IA : " +
+          (error?.message || error),
+      },
+      { status: 500 },
     );
   }
 }
-
