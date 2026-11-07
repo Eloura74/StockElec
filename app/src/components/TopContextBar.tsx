@@ -11,7 +11,11 @@ import {
   ScanBarcode,
   Wifi,
   WifiOff,
+  Camera,
+  Sparkles,
 } from "lucide-react"
+import { PhotoScannerModal, type PhotoDetectedItem } from "./PhotoScannerModal"
+import { toast } from "sonner"
 
 const ROUTE_META: Record<string, { section: string; label: string }> = {
   "/": { section: "Pilotage", label: "Tableau de bord" },
@@ -35,6 +39,11 @@ const ROUTE_META: Record<string, { section: string; label: string }> = {
 export function TopContextBar() {
   const pathname = usePathname()
   const [isOnline, setIsOnline] = useState(true)
+  const [isPhotoOpen, setIsPhotoOpen] = useState(false)
+
+  const handlePhotoValidated = (items: PhotoDetectedItem[]) => {
+    toast.success(`📸 ${items.length} article(s) détecté(s). Vous pouvez les retrouver ou les ajuster dans Départs / Mouvements.`)
+  }
 
   useEffect(() => {
     const syncOnline = () => setIsOnline(navigator.onLine)
@@ -84,6 +93,17 @@ export function TopContextBar() {
 
       {/* Actions rapides & Statut Live */}
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setIsPhotoOpen(true)}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-2xs transition-all cursor-pointer"
+          title="Prendre une photo du matériel (Comptage & Détection IA)"
+        >
+          <Camera className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Photo IA</span>
+          <Sparkles className="w-3 h-3 text-amber-300" />
+        </button>
+
         <Link
           href="/inventaire"
           prefetch={false}
@@ -137,6 +157,13 @@ export function TopContextBar() {
           )}
         </div>
       </div>
+
+      <PhotoScannerModal
+        isOpen={isPhotoOpen}
+        onClose={() => setIsPhotoOpen(false)}
+        onValidateItems={handlePhotoValidated}
+        contexte="DEPOT"
+      />
     </div>
   )
 }

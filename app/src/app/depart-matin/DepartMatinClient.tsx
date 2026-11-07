@@ -1,12 +1,13 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Plus, Minus, Search, ScanBarcode, Box, Truck, CheckCircle2, RotateCcw, Trash2, Wrench, PackagePlus, HardHat, TriangleAlert } from "lucide-react"
+import { Plus, Minus, Search, ScanBarcode, Box, Truck, CheckCircle2, RotateCcw, Trash2, Wrench, PackagePlus, HardHat, TriangleAlert, Camera, Sparkles } from "lucide-react"
 import { validerDepartMatin } from "@/app/actions/depart"
 import { validerRetourChantier, type TypeMouvementChantier } from "@/app/actions/retour"
 import { BarcodeScanner } from "@/components/BarcodeScanner"
 import { EmpruntOutillageForm } from "@/components/EmpruntOutillageForm"
 import { ArticlesChefPanel, type ArticleChef } from "@/components/ArticlesChefPanel"
+import { PhotoScannerModal, type PhotoDetectedItem } from "@/components/PhotoScannerModal"
 import {
   appliquerOperationsOptimistes,
   enqueueOfflineOperation,
@@ -63,6 +64,7 @@ export function DepartMatinClient({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
+  const [isPhotoScanning, setIsPhotoScanning] = useState(false)
   const [mode, setMode] = useState<"DEPART" | "VERIF" | "RETOUR" | "OUTILLAGE" | "ARTICLES">("DEPART")
   const [lastAdded, setLastAdded] = useState<string | null>(null)
   const [lastScannedId, setLastScannedId] = useState<string | null>(null)
@@ -219,6 +221,51 @@ export function DepartMatinClient({
       } else {
         toast.error("Code-barres introuvable en stock : " + code)
       }
+    },
+    [upsertLignePanier]
+  )
+
+  const handlePhotoItemsValidated = useCallback(
+    (detectedItems: PhotoDetectedItem[]) => {
+      let countAdded = 0
+      detectedItems.forEach((detected) => {
+        // Recherche dans le catalogue local
+        let found = articlesRef.current.find((a) => a.id === detected.articleId)
+        if (!found && detected.reference) {
+          found = articlesRef.current.find(
+            (a) => a.reference.toLowerCase() === detected.reference.toLowerCase() ||
+                   (a.referenceFournisseur && a.referenceFournisseur.toLowerCase() === detected.reference.toLowerCase())
+          )
+        }
+        if (!found) {
+          found = articlesRef.current.find(
+            (a) => a.designation.toLowerCase() === detected.designation.toLowerCase()
+          )
+        }
+
+        const articleToUse: Article = found || {
+          id: detected.articleId || `temp-${Math.random().toString(36).substring(7)}`,
+          reference: detected.reference || "PHOTO-DETECTION",
+          designation: detected.designation,
+          codeBarre: null,
+          stockMinimum: 0,
+          stockActuel: 0,
+          fournisseur: detected.marque || null,
+          referenceFournisseur: null,
+          categorie: "Matériel",
+          unite: detected.unite || "u",
+          quantiteParBoite: 1,
+        }
+
+        upsertLignePanier(articleToUse, {
+          quantiteFixe: detected.quantite,
+          typeRetour: "Retour",
+          silencieux: true,
+        })
+        countAdded += detected.quantite
+      })
+
+      toast.success(`📸 ${detectedItems.length} article(s) (${countAdded} pcs) ajoutés à la liste via Vision IA !`)
     },
     [upsertLignePanier]
   )
@@ -401,6 +448,14 @@ export function DepartMatinClient({
           }
         />
       )}
+
+      {/* Modale Scan Photo IA */}
+      <PhotoScannerModal
+        isOpen={isPhotoScanning}
+        onClose={() => setIsPhotoScanning(false)}
+        onValidateItems={handlePhotoItemsValidated}
+        contexte={mode === "RETOUR" ? "CHANTIER" : "DEPOT"}
+      />
 
       {/* Sélecteur de Mode Prestige (5 onglets tactiles avec badge compteur panier) */}
       <div className="grid grid-cols-5 gap-1.5 bg-white dark:bg-[#111622] p-1.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-2xs sticky top-2 z-20">
@@ -751,13 +806,27 @@ export function DepartMatinClient({
                   <Box className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> 2.{" "}
                   {mode === "RETOUR" ? "Scanner ou ajouter un article" : "Matériel"}
                 </h2>
-                <button
-                  type="button"
-                  onClick={() => setIsScanning(true)}
-                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-md shadow-indigo-600/20 active:scale-95 transition-all"
-                >
-                  <ScanBarcode className="w-5 h-5" /> Scan rafale
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsPhotoScanning(true)}
+                    className="flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 transition-all cursor-pointer"
+                    title="Prendre une photo du matériel en vrac ou carton"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span className="hidden xs:inline">Photo IA</span>
+                    <Sparkles className="w-3 h-3 text-amber-300" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsScanning(true)}
+                    className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 px-3.5 py-2.5 rounded-xl font-semibold text-xs shadow-sm active:scale-95 transition-all cursor-pointer"
+                  >
+                    <ScanBarcode className="w-4 h-4" />
+                    <span>Scan rafale</span>
+                  </button>
+                </div>
               </div>
 
               <div className="relative mt-2">
