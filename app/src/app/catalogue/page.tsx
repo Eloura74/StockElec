@@ -11,6 +11,7 @@ import { ExportPDFButton } from "@/components/ExportPDFButton"
 import { CatalogueFilters } from "./CatalogueFilters"
 import { CopyReferenceButton } from "@/components/CopyReferenceButton"
 import { SupplierBadge } from "@/components/SupplierBadge"
+import { ArticleThumbnail } from "@/components/ArticleThumbnail"
 
 export default async function CataloguePage({ 
   searchParams 
@@ -521,39 +522,47 @@ export default async function CataloguePage({
                           key={article.id} 
                           className="hover:bg-slate-50/70 dark:hover:bg-white/[0.02] transition-colors group"
                         >
-                          {/* 1. Article & Catégorie */}
+                          {/* 1. Article & Catégorie avec Vignette Visuelle */}
                           <td className="px-4 py-3.5">
-                            <div className="space-y-1">
-                              <div className="flex flex-wrap items-center gap-1.5">
-                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${catColor}`}>
-                                  {cat}
-                                </span>
-                                {article.marque && (
-                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40">
-                                    {article.marque}
+                            <div className="flex items-center gap-3">
+                              <ArticleThumbnail
+                                designation={article.designation}
+                                categorie={article.categorie}
+                                marque={article.marque}
+                                size="md"
+                              />
+                              <div className="space-y-1 min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${catColor}`}>
+                                    {cat}
                                   </span>
-                                )}
-                                {article.emplacement && (
-                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40">
-                                    📍 {article.emplacement}
-                                  </span>
-                                )}
-                                {article.prixUnitaire > 0 && (
-                                  <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tabular-nums">
-                                    {article.prixUnitaire.toFixed(2)} € HT
-                                  </span>
-                                )}
-                              </div>
+                                  {article.marque && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40">
+                                      {article.marque}
+                                    </span>
+                                  )}
+                                  {article.emplacement && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40">
+                                      📍 {article.emplacement}
+                                    </span>
+                                  )}
+                                  {article.prixUnitaire > 0 && (
+                                    <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tabular-nums">
+                                      {article.prixUnitaire.toFixed(2)} € HT
+                                    </span>
+                                  )}
+                                </div>
 
-                              <Link 
-                                href={`/catalogue/${article.id}`} 
-                                className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors block line-clamp-1"
-                              >
-                                {article.designation}
-                              </Link>
+                                <Link 
+                                  href={`/catalogue/${article.id}`} 
+                                  className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors block line-clamp-1"
+                                >
+                                  {article.designation}
+                                </Link>
 
-                              <div className="flex items-center gap-1.5 pt-0.5">
-                                <CopyReferenceButton text={article.reference} />
+                                <div className="flex items-center gap-1.5 pt-0.5">
+                                  <CopyReferenceButton text={article.reference} />
+                                </div>
                               </div>
                             </div>
                           </td>
@@ -736,40 +745,48 @@ export default async function CataloguePage({
 
                   return (
                     <div key={article.id} className="p-4 space-y-3">
-                      <div className="flex justify-between items-start gap-2">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                              {article.categorie || "Matériel"}
-                            </span>
-                            {article.marque && (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                                {article.marque}
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex items-start gap-3 min-w-0 flex-1">
+                          <ArticleThumbnail
+                            designation={article.designation}
+                            categorie={article.categorie}
+                            marque={article.marque}
+                            size="md"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                {article.categorie || "Matériel"}
                               </span>
-                            )}
-                            {article.emplacement && (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                                📍 {article.emplacement}
-                              </span>
-                            )}
-                          </div>
-                          <Link 
-                            href={`/catalogue/${article.id}`} 
-                            className="font-bold text-slate-900 dark:text-white hover:text-blue-600 block mt-1 text-sm"
-                          >
-                            {article.designation}
-                          </Link>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <CopyReferenceButton text={article.reference} />
-                            {article.referenceFournisseur && (
-                              <span className="text-[11px] text-slate-400 font-mono">
-                                • {article.referenceFournisseur}
-                              </span>
-                            )}
+                              {article.marque && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                                  {article.marque}
+                                </span>
+                              )}
+                              {article.emplacement && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                                  📍 {article.emplacement}
+                                </span>
+                              )}
+                            </div>
+                            <Link 
+                              href={`/catalogue/${article.id}`} 
+                              className="font-bold text-slate-900 dark:text-white hover:text-blue-600 block mt-1 text-sm line-clamp-2"
+                            >
+                              {article.designation}
+                            </Link>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <CopyReferenceButton text={article.reference} />
+                              {article.referenceFournisseur && (
+                                <span className="text-[11px] text-slate-400 font-mono">
+                                  • {article.referenceFournisseur}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         {article.prixUnitaire > 0 && (
-                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tabular-nums">
+                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tabular-nums shrink-0">
                             {article.prixUnitaire.toFixed(2)} €
                           </span>
                         )}

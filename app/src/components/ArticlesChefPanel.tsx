@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { BarcodeScanner } from "@/components/BarcodeScanner"
 import { creerArticleChef, modifierArticleChef, ajusterStockChef } from "@/app/actions/chef-articles"
 import { enqueueOfflineOperation, generateOfflineId } from "@/lib/offline-sync"
+import { ArticleThumbnail } from "@/components/ArticleThumbnail"
 
 export type ArticleChef = {
   id: string
@@ -162,8 +163,13 @@ export function ArticlesChefPanel({ articles }: { articles: ArticleChef[] }) {
                 key={a.id}
                 type="button"
                 onClick={() => setSheet({ type: "edit", article: a })}
-                className="w-full text-left p-4 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-white/5 shadow-sm rounded-2xl flex items-center gap-3 active:scale-[0.99] hover:border-indigo-500/30 transition-all"
+                className="w-full text-left p-3.5 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-white/5 shadow-sm rounded-2xl flex items-center gap-3 active:scale-[0.99] hover:border-indigo-500/30 transition-all"
               >
+                <ArticleThumbnail
+                  designation={a.designation}
+                  categorie={a.categorie}
+                  size="md"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-slate-900 dark:text-white leading-snug break-words">{a.designation}</div>
                   <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 truncate">

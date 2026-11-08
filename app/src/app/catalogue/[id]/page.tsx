@@ -21,6 +21,7 @@ import { ScannerInput } from "@/components/ScannerInput"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { DeleteButton } from "@/components/DeleteButton"
+import { ArticleThumbnail } from "@/components/ArticleThumbnail"
 
 export default async function ArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -71,11 +72,18 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
         <div className="flex items-start gap-3.5">
           <Link
             href="/catalogue"
-            className="mt-1 p-2 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 shadow-2xs transition-colors"
+            className="mt-1 p-2 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 shadow-2xs transition-colors shrink-0"
             title="Retour au catalogue"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
+          <ArticleThumbnail
+            designation={article.designation}
+            categorie={article.categorie}
+            marque={article.marque}
+            size="lg"
+            className="mt-0.5"
+          />
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40">

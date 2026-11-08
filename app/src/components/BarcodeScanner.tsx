@@ -61,8 +61,11 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
         const oscillator = audioCtx.createOscillator()
         const gainNode = audioCtx.createGain()
         oscillator.type = 'sine'
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime)
-        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime)
+        // Double bip court pro électricien (880Hz puis 1320Hz)
+        oscillator.frequency.setValueAtTime(920, audioCtx.currentTime)
+        oscillator.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.08)
+        gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1)
         oscillator.connect(gainNode)
         gainNode.connect(audioCtx.destination)
         oscillator.start()
@@ -70,8 +73,13 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
       } catch (e) {
         console.warn("AudioContext not supported", e)
       }
-      if (navigator.vibrate) {
-        navigator.vibrate(150)
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        // Double impulsion haptique nette sur mobile (vibre 40ms, pause 30ms, vibre 40ms)
+        try {
+          navigator.vibrate([40, 30, 40])
+        } catch {
+          // Ignore si non supporté
+        }
       }
     }
 
