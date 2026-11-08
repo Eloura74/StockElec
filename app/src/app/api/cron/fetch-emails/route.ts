@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { syncMailboxNow } from '@/app/actions/config-mail';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
   // Vérification optionnelle pour Cron Vercel
   const authHeader = req.headers.get('authorization');
