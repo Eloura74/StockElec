@@ -8,6 +8,13 @@ import { BarcodeScanner } from "@/components/BarcodeScanner"
 import { EmpruntOutillageForm } from "@/components/EmpruntOutillageForm"
 import { ArticlesChefPanel, type ArticleChef } from "@/components/ArticlesChefPanel"
 import { PhotoScannerModal, type PhotoDetectedItem } from "@/components/PhotoScannerModal"
+import { GpsNavigationButtons } from "@/components/GpsNavigationButtons"
+import { VoiceAssistantButton } from "@/components/VoiceAssistantButton"
+import { BonLivraisonModal } from "@/components/BonLivraisonModal"
+import { AuditCamionModal } from "@/components/AuditCamionModal"
+import { type BonLivraisonData } from "@/lib/generateBonLivraisonPdf"
+import { notifierDepartValide } from "@/lib/web-notifications"
+import { ClipboardCheck, FileText } from "lucide-react"
 import {
   appliquerOperationsOptimistes,
   enqueueOfflineOperation,
@@ -65,6 +72,9 @@ export function DepartMatinClient({
   const [success, setSuccess] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
   const [isPhotoScanning, setIsPhotoScanning] = useState(false)
+  const [isBonLivraisonOpen, setIsBonLivraisonOpen] = useState(false)
+  const [bonLivraisonData, setBonLivraisonData] = useState<BonLivraisonData | null>(null)
+  const [isAuditCamionOpen, setIsAuditCamionOpen] = useState(false)
   const [mode, setMode] = useState<"DEPART" | "VERIF" | "RETOUR" | "OUTILLAGE" | "ARTICLES">("DEPART")
   const [lastAdded, setLastAdded] = useState<string | null>(null)
   const [lastScannedId, setLastScannedId] = useState<string | null>(null)
@@ -270,6 +280,33 @@ export function DepartMatinClient({
     [upsertLignePanier]
   )
 
+  const handleVoiceItem = useCallback(
+    (query: string, quantite: number) => {
+      const q = query.toLowerCase().trim()
+      if (!q) return
+
+      // Recherche dans la liste des articles effectifs
+      const words = q.split(/\s+/).filter(Boolean)
+      const match = articlesEffectifs.find((a) => {
+        const full = `${a.designation} ${a.reference} ${a.categorie || ""} ${a.fournisseur || ""}`.toLowerCase()
+        return words.every((w) => full.includes(w))
+      }) || articlesEffectifs.find((a) => a.designation.toLowerCase().includes(q))
+
+      if (match) {
+        upsertLignePanier(match, {
+          quantiteFixe: quantite,
+          typeRetour: "Retour",
+        })
+        setLastAdded(`🎙️ ${quantite}x ${match.designation}`)
+        toast.success(`🎙️ Ajouté au départ : ${quantite}x ${match.designation}`)
+      } else {
+        setSearch(query)
+        toast.info(`Aucun article exact trouvé. Recherche filtrée sur : « ${query} »`)
+      }
+    },
+    [articlesEffectifs, upsertLignePanier]
+  )
+
   const remove = (id: string) => setPanier((prev) => prev.filter((p) => p.article.id !== id))
 
   const updateQty = (id: string, qty: number) => {
@@ -388,6 +425,25 @@ export function DepartMatinClient({
 
       if (res.success) {
         setSuccess(true)
+        const blData: BonLivraisonData = {
+          chantierNom,
+          date: new Date(),
+          utilisateur: username,
+          observation,
+          lignes: panier.map((item) => ({
+            reference: item.article.reference,
+            designation: item.article.designation,
+            quantite: item.quantite,
+            unite: item.article.unite,
+            categorie: item.article.categorie,
+          })),
+        }
+        setBonLivraisonData(blData)
+        if (mode === "DEPART") {
+          setIsBonLivraisonOpen(true)
+          notifierDepartValide(chantierNom, panier.length, nbUnites)
+        }
+
         setPanier([])
         setChantierId("")
         setObservation("")
@@ -457,6 +513,37 @@ export function DepartMatinClient({
         contexte={mode === "RETOUR" ? "CHANTIER" : "DEPOT"}
       />
 
+      {/* Modale Bon de Livraison / Sortie */}
+      {bonLivraisonData && (
+        <BonLivraisonModal
+          isOpen={isBonLivraisonOpen}
+          onClose={() => setIsBonLivraisonOpen(false)}
+          data={bonLivraisonData}
+        />
+      )}
+
+      {/* Modale Audit Coffre Camion */}
+      <AuditCamionModal
+        isOpen={isAuditCamionOpen}
+        onClose={() => setIsAuditCamionOpen(false)}
+        username={username}
+      />
+
+      {/* Barre d'accès rapide Audit Camion */}
+      <div className="flex items-center justify-between gap-2 px-1">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          Module Terrain
+        </span>
+        <button
+          type="button"
+          onClick={() => setIsAuditCamionOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-200/60 dark:border-indigo-800/40 transition-all active:scale-95 cursor-pointer"
+        >
+          <ClipboardCheck className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+          <span>Audit Coffre Camion (3 min)</span>
+        </button>
+      </div>
+
       {/* Sélecteur de Mode Prestige (5 onglets tactiles avec badge compteur panier) */}
       <div className="grid grid-cols-5 gap-1.5 bg-white dark:bg-[#111622] p-1.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-2xs sticky top-2 z-20">
         {([
@@ -501,9 +588,21 @@ export function DepartMatinClient({
       )}
 
       {success && (mode === "DEPART" || mode === "RETOUR") && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl flex items-center gap-3 font-medium shadow-lg animate-in slide-in-from-top-4 fade-in duration-300">
-          <CheckCircle2 className="w-6 h-6 shrink-0 text-emerald-400" />
-          Tout est enregistré ! Bon courage sur le chantier {username} !
+        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-medium shadow-lg animate-in slide-in-from-top-4 fade-in duration-300">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-6 h-6 shrink-0 text-emerald-400" />
+            <span>Tout est enregistré ! Bon courage sur le chantier {username} !</span>
+          </div>
+          {bonLivraisonData && (
+            <button
+              type="button"
+              onClick={() => setIsBonLivraisonOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs self-start sm:self-auto transition-all active:scale-95 cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Voir le Bon de Sortie (BL)</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -685,16 +784,26 @@ export function DepartMatinClient({
                   )}
                 </>
               ) : (
-                <div className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 rounded-2xl">
-                  <div className="font-semibold text-indigo-900 dark:text-indigo-100 text-lg">
-                    {chantiers.find((c) => c.id === chantierId)?.nom}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 rounded-2xl gap-3">
+                  <div className="space-y-1.5">
+                    <div className="font-bold text-indigo-950 dark:text-indigo-100 text-lg">
+                      {chantiers.find((c) => c.id === chantierId)?.nom}
+                    </div>
+                    {/* Lancement GPS 1-Clic Waze / Google Maps */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400">GPS :</span>
+                      <GpsNavigationButtons
+                        destination={chantiers.find((c) => c.id === chantierId)?.nom || ""}
+                        size="sm"
+                      />
+                    </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setChantierId("")}
-                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-bold text-sm px-3 py-2 bg-white dark:bg-zinc-800 rounded-lg shadow-sm"
+                    className="self-start sm:self-auto text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-bold text-xs px-3.5 py-2 bg-white dark:bg-zinc-800 border border-indigo-200/60 dark:border-indigo-800/40 rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer"
                   >
-                    Changer
+                    Changer de chantier
                   </button>
                 </div>
               )}
@@ -872,6 +981,12 @@ export function DepartMatinClient({
                     <span>Photo</span>
                     <Sparkles className="w-3 h-3 text-amber-500" />
                   </button>
+
+                  {/* Assistant vocal mains occupées */}
+                  <VoiceAssistantButton
+                    onVoiceResult={handleVoiceItem}
+                    disabled={!chantierId}
+                  />
                 </div>
               </div>
 

@@ -15,6 +15,7 @@ import { useTheme } from "next-themes";
 import { useCyberTheme, CYBER_THEMES, CyberThemeId } from "@/components/CyberThemeProvider";
 import { toast } from "sonner";
 import Link from "next/link";
+import { NotificationSettingsCard } from "@/components/NotificationSettingsCard";
 
 interface ParametresClientProps {
   user: {
@@ -311,7 +312,21 @@ export function ParametresClient({ user }: ParametresClientProps) {
         </div>
       </div>
 
-      {/* SECTION 4 : SYSTÈME & INFOS */}
+      {/* SECTION 4 : NOTIFICATIONS PWA */}
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-white">
+            Alertes & Notifications Push
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Configurez les alertes directes sur votre smartphone ou votre poste de travail.
+          </p>
+        </div>
+
+        <NotificationSettingsCard />
+      </div>
+
+      {/* SECTION 5 : SYSTÈME & INFOS */}
       <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] text-xs">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>

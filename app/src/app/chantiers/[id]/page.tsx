@@ -16,6 +16,7 @@ import { redirect } from "next/navigation"
 import { DeleteButton } from "@/components/DeleteButton"
 import { CloturerButton } from "@/components/CloturerButton"
 import { ExportBonLivraisonButton } from "@/components/ExportBonLivraisonButton"
+import { GpsNavigationButtons } from "@/components/GpsNavigationButtons"
 import { normaliserUnite } from "@/lib/stockUtils"
 import { chargerAdresseChantier } from "@/lib/chantier-adresse"
 
@@ -114,9 +115,15 @@ export default async function ChantierDetailPage({ params }: { params: Promise<{
                 </a>
               )}
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-              {chantier.nom}
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                {chantier.nom}
+              </h1>
+              <GpsNavigationButtons
+                destination={adresse || chantier.nom}
+                size="sm"
+              />
+            </div>
           </div>
         </div>
 
