@@ -45,21 +45,10 @@ export function VoiceAssistantButton({
   const [transcript, setTranscript] = useState("")
   const [detectedQty, setDetectedQty] = useState(1)
   const [detectedQuery, setDetectedQuery] = useState("")
-  const [supported, setSupported] = useState(true)
   const [permissionError, setPermissionError] = useState(false)
 
   const recognitionRef = useRef<any>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const SpeechRecognition =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-      if (!SpeechRecognition) {
-        setSupported(false)
-      }
-    }
-  }, [])
 
   // Analyse intelligente de la phrase dictée avec préservation des calibres électriques
   const analyserPhrase = useCallback((texte: string) => {
@@ -133,7 +122,6 @@ export function VoiceAssistantButton({
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
 
     if (!SpeechRecognition) {
-      setSupported(false)
       toast.info("Speech API non disponible. Utilisez la saisie ou le micro de votre clavier.")
       inputRef.current?.focus()
       return
