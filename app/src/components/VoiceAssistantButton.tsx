@@ -273,14 +273,14 @@ export function VoiceAssistantButton({
                   arreterEcoute()
                   setIsOpenModal(false)
                 }}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/6 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Zone d'écoute animée */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06] text-center space-y-3">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/2 border border-slate-200/60 dark:border-white/6 text-center space-y-3">
               <button
                 type="button"
                 onClick={isListening ? arreterEcoute : demarrerEcoute}
@@ -345,7 +345,7 @@ export function VoiceAssistantButton({
                     key={ex}
                     type="button"
                     onClick={() => analyserPhrase(ex)}
-                    className="text-[10px] px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-medium transition-colors cursor-pointer"
+                    className="text-[10px] px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/4 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-medium transition-colors cursor-pointer"
                   >
                     {ex}
                   </button>
@@ -368,7 +368,7 @@ export function VoiceAssistantButton({
                   arreterEcoute()
                   setIsOpenModal(false)
                 }}
-                className="w-1/2 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+                className="w-1/2 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/6 transition-colors"
               >
                 Annuler
               </button>

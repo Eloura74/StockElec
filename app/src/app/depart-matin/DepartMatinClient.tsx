@@ -545,7 +545,7 @@ export function DepartMatinClient({
       </div>
 
       {/* Sélecteur de Mode Prestige (5 onglets tactiles avec badge compteur panier) */}
-      <div className="grid grid-cols-5 gap-1.5 bg-white dark:bg-[#111622] p-1.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-2xs sticky top-2 z-20">
+      <div className="grid grid-cols-5 gap-1.5 bg-white dark:bg-[#111622] p-1.5 rounded-2xl border border-slate-200/80 dark:border-white/8 shadow-2xs sticky top-2 z-20">
         {([
           { id: "DEPART", label: "Départ", Icon: Truck },
           { id: "RETOUR", label: "Retour", Icon: RotateCcw },
@@ -565,7 +565,7 @@ export function DepartMatinClient({
               className={`relative flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 min-h-14 sm:min-h-12 py-2 text-[11px] sm:text-xs font-bold rounded-xl transition-all duration-150 cursor-pointer ${
                 isCurrent
                   ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-xs"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.04]"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/4"
               }`}
             >
               <Icon className="w-4.5 h-4.5" />
@@ -856,7 +856,7 @@ export function DepartMatinClient({
                       >
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base break-words">
+                            <span className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base wrap-break-word">
                               {article.designation}
                             </span>
                             {ligneActive && (
@@ -1047,7 +1047,7 @@ export function DepartMatinClient({
                     <div key={item.article.id} className="p-4 bg-white dark:bg-zinc-800 space-y-3">
                       <div className="flex justify-between items-start gap-2">
                         <div className="flex-1 min-w-0 pr-2">
-                          <div className="font-semibold text-slate-900 dark:text-white text-sm break-words">
+                          <div className="font-semibold text-slate-900 dark:text-white text-sm wrap-break-word">
                             {item.article.designation}
                           </div>
                           <div className="text-xs text-slate-500 dark:text-zinc-400">{item.article.reference}</div>
