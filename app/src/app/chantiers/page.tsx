@@ -71,7 +71,7 @@ export default async function ChantiersPage() {
 
         {/* Badges d'état rapide */}
         <div className="flex items-center gap-2">
-          <div className="px-3.5 py-2 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs flex items-center gap-2">
+          <div className="px-3.5 py-2 rounded-2xl border border-slate-200/80 dark:border-white/8 bg-white dark:bg-[#111622] shadow-2xs flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500 live-dot"></span>
             <span className="text-xs font-semibold text-slate-900 dark:text-white">
               {chantiersActifsCount} Actif{chantiersActifsCount > 1 ? "s" : ""}
@@ -86,7 +86,7 @@ export default async function ChantiersPage() {
 
       {/* 2. Cartes de synthèse express (KPIs) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-        <div className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs flex items-center justify-between">
+        <div className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/8 bg-white dark:bg-[#111622] shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
               Chantiers Déployés
@@ -103,7 +103,7 @@ export default async function ChantiersPage() {
           </div>
         </div>
 
-        <div className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs flex items-center justify-between">
+        <div className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/8 bg-white dark:bg-[#111622] shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
               Matériel sur Site
@@ -120,7 +120,7 @@ export default async function ChantiersPage() {
           </div>
         </div>
 
-        <div className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs flex items-center justify-between">
+        <div className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-white/8 bg-white dark:bg-[#111622] shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
               Capital Mobilisé
@@ -142,8 +142,8 @@ export default async function ChantiersPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Formulaire d'ajout élégant */}
         <div className="lg:col-span-1">
-          <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs overflow-hidden sticky top-6">
-            <div className="p-4.5 border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02] flex items-center gap-2">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-white/8 bg-white dark:bg-[#111622] shadow-2xs overflow-hidden sticky top-6">
+            <div className="p-4.5 border-b border-slate-100 dark:border-white/6 bg-slate-50/50 dark:bg-white/2 flex items-center gap-2">
               <div className="h-7 w-7 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-slate-800 dark:text-emerald-400 flex items-center justify-center">
                 <Plus className="w-4 h-4" />
               </div>
@@ -168,7 +168,7 @@ export default async function ChantiersPage() {
                     required 
                     name="nom" 
                     type="text" 
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#161d2d] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-medium transition-all" 
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/8 text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#161d2d] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-medium transition-all" 
                     placeholder="ex: Rénovation Villa Cap d'Antibes" 
                   />
                 </div>
@@ -185,7 +185,7 @@ export default async function ChantiersPage() {
                   <input 
                     name="adresse" 
                     type="text" 
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#161d2d] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-medium transition-all" 
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/8 text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#161d2d] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-medium transition-all" 
                     placeholder="ex: 14 Bd du Cap, 06160 Antibes" 
                   />
                 </div>
@@ -204,11 +204,11 @@ export default async function ChantiersPage() {
 
         {/* Liste des chantiers */}
         <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs overflow-hidden">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-white/8 bg-white dark:bg-[#111622] shadow-2xs overflow-hidden">
             {/* Vue Desktop : Tableau */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-100 dark:divide-white/[0.06] text-xs">
-                <thead className="bg-slate-50/75 dark:bg-white/[0.02]">
+              <table className="min-w-full divide-y divide-slate-100 dark:divide-white/6 text-xs">
+                <thead className="bg-slate-50/75 dark:bg-white/2">
                   <tr>
                     <th className="px-4 py-3.5 text-left font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[10px]">Nom du Chantier</th>
                     <th className="px-4 py-3.5 text-left font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[10px]">Localisation</th>
@@ -217,7 +217,7 @@ export default async function ChantiersPage() {
                     <th className="px-4 py-3.5 text-right font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[10px]">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
+                <tbody className="divide-y divide-slate-100 dark:divide-white/4">
                   {chantiersCalcules.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-4 py-12 text-center text-slate-400 dark:text-slate-500">
@@ -229,7 +229,7 @@ export default async function ChantiersPage() {
                     chantiersCalcules.map((chantier: any) => (
                       <tr 
                         key={chantier.id} 
-                        className="hover:bg-slate-50/70 dark:hover:bg-white/[0.02] transition-colors group"
+                        className="hover:bg-slate-50/70 dark:hover:bg-white/2 transition-colors group"
                       >
                         {/* 1. Nom */}
                         <td className="px-4 py-3.5 font-medium">
@@ -262,7 +262,7 @@ export default async function ChantiersPage() {
                               title="Ouvrir dans Google Maps"
                             >
                               <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                              <span className="truncate max-w-[220px] underline decoration-dotted underline-offset-2">{chantier.adresse}</span>
+                              <span className="truncate max-w-55 underline decoration-dotted underline-offset-2">{chantier.adresse}</span>
                             </a>
                           ) : (
                             <Link
@@ -271,7 +271,7 @@ export default async function ChantiersPage() {
                               title="Cliquer pour renseigner l'adresse du chantier"
                             >
                               <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                              <span className="truncate max-w-[180px] italic">+ Ajouter une adresse</span>
+                              <span className="truncate max-w-45 italic">+ Ajouter une adresse</span>
                             </Link>
                           )}
                         </td>
@@ -281,7 +281,7 @@ export default async function ChantiersPage() {
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                             chantier.statut === 'Actif' 
                               ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40' 
-                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200/60 dark:border-white/[0.06]'
+                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200/60 dark:border-white/6'
                           }`}>
                             {chantier.statut === 'Actif' && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 live-dot"></span>}
                             <span>{chantier.statut}</span>
@@ -323,7 +323,7 @@ export default async function ChantiersPage() {
             </div>
 
             {/* Vue Mobile (Cartes soignées) */}
-            <div className="md:hidden divide-y divide-slate-100 dark:divide-white/[0.06]">
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-white/6">
               {chantiersCalcules.length === 0 ? (
                 <div className="p-8 text-center text-slate-400 dark:text-slate-500 text-xs">
                   Aucun chantier enregistré.
@@ -356,7 +356,7 @@ export default async function ChantiersPage() {
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-white/[0.04]">
+                    <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-white/4">
                       <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Matériel engagé</div>
                       <div className="text-right">
                         <div className="font-bold text-slate-900 dark:text-white text-xs">{chantier.materielDeploye} unités</div>
