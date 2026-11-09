@@ -8,6 +8,8 @@ import { ThemeToggle } from "@/components/ThemeToggle"
 import { getOutillages } from "@/app/actions/outillage"
 import { calculerStocksDepuisAgregats, normaliserUnite } from "@/lib/stockUtils"
 
+export const dynamic = 'force-dynamic'
+
 export default async function DepartMatinPage() {
   const session = await getSession()
   if (!session) redirect('/login')
@@ -113,7 +115,8 @@ export default async function DepartMatinPage() {
         </div>
       </header>
 
-      <main className="flex-1 p-4 sm:p-6 lg:max-w-4xl lg:mx-auto w-full selection:bg-indigo-500/30">
+      {/* Contenu principal (div neutre pour éviter l'imbrication de balises <main> avec layout.tsx) */}
+      <div className="flex-1 p-4 sm:p-6 lg:max-w-4xl lg:mx-auto w-full selection:bg-indigo-500/30">
         <DepartMatinClient
           chantiers={chantiers}
           articles={articlesWithStock}
@@ -121,7 +124,7 @@ export default async function DepartMatinPage() {
           deployeParChantier={deployeParChantier}
           username={session.username}
         />
-      </main>
+      </div>
     </div>
   )
 }

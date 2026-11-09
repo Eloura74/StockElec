@@ -40,7 +40,6 @@ export function VoiceAssistantButton({
   disabled = false,
   className = "",
 }: VoiceAssistantButtonProps) {
-  const [mounted, setMounted] = useState(false)
   const [isOpenModal, setIsOpenModal] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState("")
@@ -50,10 +49,9 @@ export function VoiceAssistantButton({
   const [permissionError, setPermissionError] = useState(false)
 
   const recognitionRef = useRef<any>(null)
-  const finalTranscriptRef = useRef<string>("")
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
-    setMounted(true)
     if (typeof window !== "undefined") {
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -87,10 +85,10 @@ export function VoiceAssistantButton({
     setDetectedQuery(query || texte)
   }, [])
 
+  // Lancement de l'écoute synchrone sur geste utilisateur
   const demarrerEcoute = () => {
     setPermissionError(false)
     setTranscript("")
-    finalTranscriptRef.current = ""
 
     if (typeof window === "undefined") return
 
@@ -100,10 +98,10 @@ export function VoiceAssistantButton({
     if (!SpeechRecognition) {
       setSupported(false)
       toast.info("Speech API non disponible. Utilisez la saisie ou le micro de votre clavier.")
+      inputRef.current?.focus()
       return
     }
 
-    // Arrêter toute instance précédente
     if (recognitionRef.current) {
       try {
         recognitionRef.current.abort()
@@ -124,18 +122,13 @@ export function VoiceAssistantButton({
       }
 
       recognition.onresult = (event: any) => {
-        let interim = ""
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const res = event.results[i]
-          if (res.isFinal) {
-            finalTranscriptRef.current += res[0].transcript + " "
-          } else {
-            interim += res[0].transcript
-          }
+        let currentText = ""
+        for (let i = 0; i < event.results.length; i++) {
+          currentText += event.results[i][0].transcript + " "
         }
-        const full = (finalTranscriptRef.current + " " + interim).trim()
-        setTranscript(full)
-        analyserPhrase(full)
+        const cleaned = currentText.trim()
+        setTranscript(cleaned)
+        analyserPhrase(cleaned)
       }
 
       recognition.onerror = (event: any) => {
@@ -151,17 +144,15 @@ export function VoiceAssistantButton({
 
       recognition.onend = () => {
         setIsListening(false)
-        const finalTxt = finalTranscriptRef.current.trim() || transcript.trim()
-        if (finalTxt) {
-          analyserPhrase(finalTxt)
-        }
       }
 
       recognitionRef.current = recognition
+      // Appel direct et synchrone
       recognition.start()
     } catch (e) {
-      console.error(e)
+      console.error("SpeechRecognition start error:", e)
       setIsListening(false)
+      toast.error("Impossible de lancer la reconnaissance vocale.")
     }
   }
 
@@ -176,13 +167,11 @@ export function VoiceAssistantButton({
     setIsListening(false)
   }
 
-  const ouvrirModal = () => {
+  const handleBoutonPrincipal = () => {
     if (disabled) return
     setIsOpenModal(true)
-    // Lancer automatiquement l'écoute à l'ouverture
-    setTimeout(() => {
-      demarrerEcoute()
-    }, 200)
+    // Démarrage synchrone au clic utilisateur pour respecter les exigences de sécurité mobile
+    demarrerEcoute()
   }
 
   const validerAjout = () => {
@@ -196,25 +185,12 @@ export function VoiceAssistantButton({
     arreterEcoute()
   }
 
-  if (!mounted) {
-    return (
-      <button
-        type="button"
-        disabled={disabled}
-        className={`inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-semibold text-xs bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-white/[0.08] ${className}`}
-      >
-        <Mic className="w-4 h-4 text-indigo-500" />
-        <span className="hidden sm:inline">Vocal</span>
-      </button>
-    )
-  }
-
   return (
     <>
       {/* Bouton Vocal dans la barre d'action */}
       <button
         type="button"
-        onClick={ouvrirModal}
+        onClick={handleBoutonPrincipal}
         disabled={disabled}
         title="Assistant vocal mains occupées : dicter un article et sa quantité"
         className={`inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-semibold text-xs transition-all active:scale-95 cursor-pointer tactile-btn ${
@@ -309,9 +285,16 @@ export function VoiceAssistantButton({
                 />
 
                 <input
+                  ref={inputRef}
                   type="text"
                   value={detectedQuery}
                   onChange={(e) => setDetectedQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      validerAjout()
+                    }
+                  }}
                   placeholder="Ou tapez / utilisez le micro du clavier..."
                   className="flex-1 text-sm p-3 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/10 text-slate-900 dark:text-white font-medium placeholder:text-slate-400"
                 />
