@@ -61,28 +61,65 @@ export function VoiceAssistantButton({
     }
   }, [])
 
-  // Analyse intelligente de la phrase dictée
+  // Analyse intelligente de la phrase dictée avec préservation des calibres électriques
   const analyserPhrase = useCallback((texte: string) => {
     if (!texte || !texte.trim()) return
 
-    const tokens = texte.toLowerCase().split(/\s+/)
-    let quantite = 1
-    const motsRestants: string[] = []
+    // 1. Normalisation électrique (calibres, ampérages, sections, formats)
+    let clean = texte
+      .toLowerCase()
+      .replace(/,/g, ".")
+      .trim()
 
-    for (let i = 0; i < tokens.length; i++) {
-      const t = tokens[i]
-      if (/^\d+$/.test(t)) {
-        quantite = parseInt(t, 10)
-      } else if (NOMBRES_FR[t] !== undefined) {
-        quantite = NOMBRES_FR[t]
-      } else if (!["de", "du", "des", "le", "la", "les", "un", "une", "d'"].includes(t)) {
-        motsRestants.push(t)
+    // 16 A -> 16A, 16 ampères -> 16A
+    clean = clean.replace(/(\d+)\s*(?:a|ampères?|amperes?)(?!\w)/gi, (_m, g1) => `${g1}A`)
+    // 30 ma -> 30mA, 300 ma -> 300mA
+    clean = clean.replace(/(\d+)\s*(?:ma|milliampères?|milliamperes?)(?!\w)/gi, (_m, g1) => `${g1}mA`)
+    // 3 g 1.5 -> 3G1.5, 3 g 2.5 -> 3G2.5
+    clean = clean.replace(/(\d+)\s*g\s*(\d+(?:\.\d+)?)/gi, (_m, g1, g2) => `${g1}G${g2}`)
+    // 230 v -> 230V, 400 v -> 400V
+    clean = clean.replace(/(\d+)\s*(?:v|volts?)(?!\w)/gi, (_m, g1) => `${g1}V`)
+    // 2 postes -> 2P, 3 postes -> 3P
+    clean = clean.replace(/(\d+)\s*postes?/gi, (_m, g1) => `${g1}P`)
+
+    const tokens = clean.split(/\s+/).filter(Boolean)
+    if (tokens.length === 0) return
+
+    let quantite = 1
+    let indexDebutMateriel = 0
+
+    // Détection de la quantité UNIQUEMENT au début de la phrase
+    const premierToken = tokens[0]
+    if (/^\d+$/.test(premierToken)) {
+      const n = parseInt(premierToken, 10)
+      if (n > 0) {
+        quantite = n
+        indexDebutMateriel = 1
       }
+    } else if (NOMBRES_FR[premierToken] !== undefined) {
+      quantite = NOMBRES_FR[premierToken]
+      indexDebutMateriel = 1
     }
 
-    const query = motsRestants.join(" ").trim()
+    // Gestion des connecteurs facultatifs après la quantité ("3 fois...", "3 x...", "3 de...")
+    if (tokens[indexDebutMateriel] && ["fois", "x", "*", "de", "d'"].includes(tokens[indexDebutMateriel])) {
+      indexDebutMateriel++
+    }
+
+    // Construction du libellé matériel (tous les calibres et nombres suivants sont conservés !)
+    const motsMateriel: string[] = []
+    for (let i = indexDebutMateriel; i < tokens.length; i++) {
+      const mot = tokens[i]
+      // Éviter les articles au début du libellé matériel
+      if (motsMateriel.length === 0 && ["de", "du", "des", "le", "la", "les", "un", "une", "d'"].includes(mot)) {
+        continue
+      }
+      motsMateriel.push(mot)
+    }
+
+    const query = motsMateriel.join(" ").trim()
     setDetectedQty(quantite > 0 ? quantite : 1)
-    setDetectedQuery(query || texte)
+    setDetectedQuery(query || clean)
   }, [])
 
   // Lancement de l'écoute synchrone sur geste utilisateur
