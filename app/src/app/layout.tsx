@@ -9,6 +9,7 @@ import { ThemeSettingsModal } from "@/components/ThemeSettingsModal";
 import { CommandPalette } from "@/components/CommandPalette";
 import { OfflineSyncBanner } from "@/components/OfflineSyncBanner";
 import { TopContextBar } from "@/components/TopContextBar";
+import { PwaRegister } from "@/components/PwaRegister";
 import { Toaster } from "sonner";
 
 const inter = Inter({ 
@@ -85,6 +86,9 @@ export default async function RootLayout({
 
             {/* Palette de commandes globales (Ctrl + K) */}
             <CommandPalette />
+
+            {/* Enregistrement PWA & Invite d'installation Android/PC */}
+            <PwaRegister />
 
             <Toaster 
               position="bottom-right" 
