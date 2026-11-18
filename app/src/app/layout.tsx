@@ -72,7 +72,7 @@ export default async function RootLayout({
                 className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center bg-no-repeat opacity-[0.04] dark:opacity-[0.09] transition-opacity duration-500"
                 style={{ backgroundImage: `url('/images/cedricelec_bg.jpg')` }}
               />
-              <div className="relative z-10">
+              <div className="relative z-10 w-full min-w-0 max-w-full">
                 {showSidebar && <TopContextBar />}
                 <div className={showSidebar ? "" : "px-3 pt-3 sm:px-6"}>
                   <OfflineSyncBanner />

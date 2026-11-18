@@ -32,6 +32,7 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
   const onScanRef = useRef(onScan)
   const continuousRef = useRef(continuous)
   const lastDecodedRef = useRef<{ code: string; at: number }>({ code: '', at: 0 })
+  const isStartingRef = useRef(false)
 
   useEffect(() => {
     onScanRef.current = onScan
@@ -41,138 +42,192 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
     continuousRef.current = continuous
   }, [continuous])
 
-  useEffect(() => {
-    const html5QrCode = new Html5Qrcode("reader", {
-      verbose: false,
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.QR_CODE
-      ],
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true
-      }
-    })
-    scannerRef.current = html5QrCode
-
-    const playBeep = () => {
-      try {
-        const audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
-        const oscillator = audioCtx.createOscillator()
-        const gainNode = audioCtx.createGain()
-        oscillator.type = 'sine'
-        // Double bip court pro électricien (880Hz puis 1320Hz)
-        oscillator.frequency.setValueAtTime(920, audioCtx.currentTime)
-        oscillator.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.08)
-        gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime)
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1)
-        oscillator.connect(gainNode)
-        gainNode.connect(audioCtx.destination)
-        oscillator.start()
-        oscillator.stop(audioCtx.currentTime + 0.1)
-      } catch (e) {
-        console.warn("AudioContext not supported", e)
-      }
-      if (typeof navigator !== "undefined" && navigator.vibrate) {
-        // Double impulsion haptique nette sur mobile (vibre 40ms, pause 30ms, vibre 40ms)
-        try {
-          navigator.vibrate([40, 30, 40])
-        } catch {
-          // Ignore si non supporté
-        }
-      }
+  const playBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+      const oscillator = audioCtx.createOscillator()
+      const gainNode = audioCtx.createGain()
+      oscillator.type = 'sine'
+      // Double bip court pro électricien (880Hz puis 1320Hz)
+      oscillator.frequency.setValueAtTime(920, audioCtx.currentTime)
+      oscillator.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.08)
+      gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1)
+      oscillator.connect(gainNode)
+      gainNode.connect(audioCtx.destination)
+      oscillator.start()
+      oscillator.stop(audioCtx.currentTime + 0.1)
+    } catch (e) {
+      console.warn("AudioContext not supported", e)
     }
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate([40, 30, 40])
+      } catch {}
+    }
+  }
 
-    const startScanner = async () => {
-      const handleDecoded = (decodedText: string) => {
-        if (!scannerRef.current?.isScanning) return
+  const handleDecoded = (decodedText: string) => {
+    if (!scannerRef.current?.isScanning) return
 
-        const now = Date.now()
-        if (
-          continuousRef.current &&
-          lastDecodedRef.current.code === decodedText &&
-          now - lastDecodedRef.current.at < 1400
-        ) {
-          return
-        }
-        lastDecodedRef.current = { code: decodedText, at: now }
+    const now = Date.now()
+    if (
+      continuousRef.current &&
+      lastDecodedRef.current.code === decodedText &&
+      now - lastDecodedRef.current.at < 1400
+    ) {
+      return
+    }
+    lastDecodedRef.current = { code: decodedText, at: now }
 
-        playBeep()
+    playBeep()
 
-        if (continuousRef.current) {
-          setFlash(true)
-          setTimeout(() => setFlash(false), 260)
-          onScanRef.current(decodedText)
-        } else {
-          scannerRef.current.stop().then(() => {
-            onScanRef.current(decodedText)
-          }).catch(err => console.error(err))
+    if (continuousRef.current) {
+      setFlash(true)
+      setTimeout(() => setFlash(false), 260)
+      onScanRef.current(decodedText)
+    } else {
+      scannerRef.current.stop().then(() => {
+        onScanRef.current(decodedText)
+      }).catch(err => console.error(err))
+    }
+  }
+
+  const launchCamera = async () => {
+    if (isStartingRef.current) return
+    isStartingRef.current = true
+    setError(null)
+    setErrorReason(null)
+
+    try {
+      // 1. Demande de permission native explicite via getUserMedia (déclenche la pop-up système)
+      if (typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia) {
+        try {
+          const testStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" } }
+          })
+          testStream.getTracks().forEach((t) => t.stop())
+        } catch (permErr: unknown) {
+          const pObj = permErr as { name?: string }
+          if (pObj?.name === "NotAllowedError" || pObj?.name === "PermissionDeniedError") {
+            throw permErr
+          }
+          // Si caméra arrière indisponible (ex: PC sans caméra arrière), tester n'importe quelle caméra
+          try {
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true })
+            fallbackStream.getTracks().forEach((t) => t.stop())
+          } catch (fallbackErr) {
+            throw fallbackErr
+          }
         }
       }
 
-      try {
-        setError(null)
-        setErrorReason(null)
+      // 2. Nettoyer toute instance précédente si existante
+      if (scannerRef.current) {
+        try {
+          if (scannerRef.current.isScanning) {
+            await scannerRef.current.stop()
+          }
+          scannerRef.current.clear()
+        } catch {}
+      }
 
-        const scanConfig = {
-          fps: 20,
-          disableFlip: false
+      // 3. Créer une nouvelle instance saine
+      const html5QrCode = new Html5Qrcode("reader", {
+        verbose: false,
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.QR_CODE
+        ],
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
         }
+      })
+      scannerRef.current = html5QrCode
 
+      const scanConfig = {
+        fps: 20,
+        disableFlip: false
+      }
+
+      // 4. Démarrer avec la caméra arrière (syntaxe stricte 'environment' string)
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          scanConfig,
+          handleDecoded,
+          () => {}
+        )
+      } catch (envErr) {
+        console.warn("[BarcodeScanner] Caméra arrière non disponible, essai caméra standard...", envErr)
         try {
           await html5QrCode.start(
-            { facingMode: { ideal: "environment" } },
+            { facingMode: "user" },
             scanConfig,
             handleDecoded,
             () => {}
           )
-        } catch (firstErr) {
-          console.warn("[BarcodeScanner] Échec contrainte ideal: environment, recherche par getCameras()...", firstErr)
+        } catch (userErr) {
           const cameras = await Html5Qrcode.getCameras().catch(() => [])
-          const chosenCamera = cameras.find(c => /back|rear|arrière|environment/i.test(c.label)) || cameras[0]
-          if (chosenCamera) {
+          if (cameras.length > 0) {
             await html5QrCode.start(
-              chosenCamera.id,
+              cameras[0].id,
               scanConfig,
               handleDecoded,
               () => {}
             )
           } else {
-            throw firstErr
+            throw userErr
           }
         }
-      } catch (err: unknown) {
-        console.error("Erreur de démarrage du scanner", err)
-        const errorObj = err as { name?: string; message?: string }
-        const name = errorObj?.name || ""
-        const msg = String(errorObj?.message || err || "")
-
-        if (name === "NotAllowedError" || name === "PermissionDeniedError" || msg.includes("Permission") || msg.includes("denied")) {
-          setErrorReason("PERMISSION")
-          setError("L'accès à l'appareil photo a été refusé ou n'a pas encore été autorisé.")
-        } else if (name === "NotFoundError" || name === "DevicesNotFoundError" || msg.includes("not found") || msg.includes("Requested device")) {
-          setErrorReason("NOT_FOUND")
-          setError("Aucune caméra n'a été détectée sur cet appareil (ex: ordinateur sans webcam).")
-        } else if (name === "NotReadableError" || msg.includes("busy") || msg.includes("in use") || msg.includes("Could not start")) {
-          setErrorReason("BUSY")
-          setError("L'appareil photo est actuellement occupé par une autre application (Zoom, Teams, etc.).")
-        } else {
-          setErrorReason("GENERIC")
-          setError("Impossible de démarrer la caméra.")
-        }
-      } finally {
-        setIsRetrying(false)
       }
-    }
+    } catch (err: unknown) {
+      console.error("[BarcodeScanner] Erreur globale caméra :", err)
+      const errorObj = err as { name?: string; message?: string }
+      const name = errorObj?.name || ""
+      const msg = String(errorObj?.message || err || "")
 
-    startScanner()
+      if (name === "NotAllowedError" || name === "PermissionDeniedError" || msg.includes("Permission") || msg.includes("denied")) {
+        setErrorReason("PERMISSION")
+        setError("L'accès à l'appareil photo a été refusé ou bloqué.")
+      } else if (name === "NotFoundError" || name === "DevicesNotFoundError" || msg.includes("not found") || msg.includes("Requested device")) {
+        setErrorReason("NOT_FOUND")
+        setError("Aucune caméra détectée sur cet appareil (ex: ordinateur sans webcam).")
+      } else if (name === "NotReadableError" || msg.includes("busy") || msg.includes("in use") || msg.includes("Could not start")) {
+        setErrorReason("BUSY")
+        setError("L'appareil photo est actuellement occupé par une autre application.")
+      } else {
+        setErrorReason("GENERIC")
+        setError("Impossible d'initialiser l'appareil photo.")
+      }
+    } finally {
+      isStartingRef.current = false
+      setIsRetrying(false)
+    }
+  }
+
+  useEffect(() => {
+    // Petit délai de 100ms pour garantir que le DOM <div id="reader" /> est monté et a des dimensions
+    const timer = setTimeout(() => {
+      launchCamera()
+    }, 120)
 
     return () => {
-      if (scannerRef.current?.isScanning) {
-        scannerRef.current.stop().catch(err => console.error(err))
+      clearTimeout(timer)
+      if (scannerRef.current) {
+        try {
+          if (scannerRef.current.isScanning) {
+            scannerRef.current.stop().then(() => {
+              scannerRef.current?.clear()
+            }).catch(() => {})
+          } else {
+            scannerRef.current.clear()
+          }
+        } catch {}
       }
     }
   }, [])
@@ -188,43 +243,17 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
     setIsRetrying(true)
     setError(null)
     setErrorReason(null)
-
-    // Forcer une demande de permission explicite par user-gesture
-    if (typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-        // Arrêter le flux temporaire
-        stream.getTracks().forEach((t) => t.stop())
-      } catch (err) {
-        console.warn("Échec getUserMedia direct:", err)
-      }
-    }
-
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.start(
-          { facingMode: { ideal: "environment" } },
-          { fps: 20, disableFlip: false },
-          (decodedText) => onScanRef.current(decodedText),
-          () => {}
-        )
-        setError(null)
-        setErrorReason(null)
-      } catch (err) {
-        console.error("Échec lors du réessai:", err)
-        setErrorReason("PERMISSION")
-        setError("L'accès à la caméra n'a pas pu être activé. Vérifiez vos autorisations de navigateur.")
-      } finally {
-        setIsRetrying(false)
-      }
-    }
+    // Léger délai pour s'assurer que #reader est réaffiché dans le DOM par React
+    setTimeout(() => {
+      launchCamera()
+    }, 60)
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4">
       <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[94dvh]">
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b border-slate-100 dark:border-white/10">
+        <div className="flex justify-between items-center p-4 border-b border-slate-100 dark:border-white/10 shrink-0">
           <div className="flex items-center gap-2 min-w-0">
             <h3 className="font-bold text-slate-900 dark:text-zinc-50 truncate">
               {continuous ? "Scan en rafale" : "Scanner un article"}
@@ -239,17 +268,24 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
             type="button"
             onClick={onClose}
             aria-label="Fermer le scanner"
-            className="p-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 rounded-full hover:bg-slate-200 active:scale-95"
+            className="p-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 rounded-full hover:bg-slate-200 active:scale-95 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Scanner Area */}
-        <div className="relative w-full bg-slate-950 flex flex-col items-center justify-center min-h-[300px]">
-          {error ? (
-            <div className="p-5 sm:p-6 w-full max-w-sm mx-auto text-center space-y-4 animate-in fade-in duration-200">
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto shadow-sm">
+        <div className="relative w-full bg-slate-950 flex flex-col items-center justify-center min-h-[320px] overflow-hidden">
+          {/* Le conteneur #reader reste TOUJOURS dans le DOM pour que l'API html5-qrcode ne perde jamais sa référence parente */}
+          <div
+            id="reader"
+            className={`w-full min-h-[320px] ${error ? "hidden" : "block"}`}
+          />
+
+          {/* Affichage d'erreur et saisie de secours en overlay */}
+          {error && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-5 sm:p-6 text-center space-y-4 bg-slate-950/95 animate-in fade-in duration-200 overflow-y-auto">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto shadow-sm shrink-0">
                 <Camera className="w-6 h-6" />
               </div>
 
@@ -257,19 +293,19 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
                 <p className="text-xs sm:text-sm font-bold text-white leading-snug">
                   {error}
                 </p>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-[11px] text-slate-400 leading-relaxed max-w-xs mx-auto">
                   {errorReason === "NOT_FOUND" ? (
-                    "Cet appareil ne possède pas d'appareil photo. Utilisez la saisie manuelle ci-dessous."
+                    "Aucun capteur vidéo détecté sur cet appareil. Utilisez la saisie manuelle ci-dessous."
                   ) : errorReason === "PERMISSION" ? (
-                    "Pour autoriser : cliquez sur l'icône de réglages / caméra à gauche de l'adresse web (ou dans Réglages > Safari sur iPhone)."
+                    "Autorisez la caméra via l'icône de cadenas/réglages de l'adresse web ou dans Réglages > Safari sur iPhone."
                   ) : (
-                    "Fermez les autres applications utilisant la caméra ou saisissez le code ci-dessous."
+                    "Vérifiez que la caméra n'est pas utilisée par une autre application."
                   )}
                 </p>
               </div>
 
               {/* Bouton de réessai avec geste utilisateur direct */}
-              <div className="pt-1">
+              <div className="pt-1 w-full max-w-xs">
                 <button
                   type="button"
                   onClick={handleRetry}
@@ -282,7 +318,7 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
               </div>
 
               {/* Saisie manuelle de secours immédiate */}
-              <div className="pt-3 border-t border-white/10 space-y-2">
+              <div className="pt-3 border-t border-white/10 w-full max-w-xs space-y-2">
                 <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
                   Ou saisie directe du code :
                 </span>
@@ -291,7 +327,7 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
                     type="text"
                     value={manualCode}
                     onChange={(e) => setManualCode(e.target.value)}
-                    placeholder="Ex: 3245060697314"
+                    placeholder="Ex: CM0031 ou 324506..."
                     className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-white/15 text-white placeholder:text-slate-500 text-xs font-mono focus:border-blue-500 focus:outline-none"
                     autoFocus
                   />
@@ -305,9 +341,8 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
                 </form>
               </div>
             </div>
-          ) : (
-            <div id="reader" className="w-full h-full"></div>
           )}
+
           {flash && (
             <div className="pointer-events-none absolute inset-0 ring-4 ring-inset ring-emerald-400 bg-emerald-400/15 transition-opacity" />
           )}
