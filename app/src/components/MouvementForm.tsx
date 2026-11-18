@@ -105,24 +105,24 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs overflow-hidden sticky top-6">
-      <div className="p-4.5 border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-lg bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400 flex items-center justify-center">
+    <div className="w-full max-w-full rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111622] shadow-2xs overflow-hidden sticky top-6">
+      <div className="p-4 sm:p-4.5 border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="h-7 w-7 rounded-lg bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400 flex items-center justify-center shrink-0">
             <ArrowRightLeft className="w-4 h-4" />
           </div>
-          <div>
-            <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+          <div className="min-w-0">
+            <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider truncate">
               Nouveau Mouvement
             </h2>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500">Enregistrement d'un flux de stock</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">Enregistrement d'un flux de stock</p>
           </div>
         </div>
 
         <button 
           type="button" 
           onClick={() => setIsScanning(true)}
-          className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs active:scale-95"
+          className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
         >
           <Camera className="w-3.5 h-3.5" />
           <span>Scanner</span>
@@ -181,9 +181,19 @@ export function MouvementForm({ articles, chantiers }: { articles: any[], chanti
                   }}
                   onFocus={() => setShowDropdown(true)}
                   onBlur={() => setTimeout(() => setShowDropdown(false), 250)}
-                  className="block w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#161d2d] focus:border-blue-500 font-medium transition-all"
+                  className="block w-full pl-9 pr-20 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161d2d] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white dark:focus:bg-[#161d2d] focus:border-blue-500 font-medium transition-all text-xs"
                   placeholder="Rechercher par référence, désignation..."
                 />
+
+                <button
+                  type="button"
+                  onClick={() => setIsScanning(true)}
+                  className="absolute inset-y-1 right-1 px-2.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/80 text-blue-600 dark:text-blue-400 flex items-center gap-1 font-semibold text-[11px] transition-all cursor-pointer"
+                  title="Scanner le code-barres"
+                >
+                  <Camera className="h-3.5 w-3.5" />
+                  <span>Scan</span>
+                </button>
                 
                 {showDropdown && (
                   <div className="absolute z-20 w-full mt-1.5 bg-white dark:bg-[#111622] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl max-h-56 overflow-y-auto divide-y divide-slate-100 dark:divide-white/[0.04]">

@@ -1,7 +1,8 @@
 import { getMouvements, annulerMouvement } from "@/app/actions/mouvements"
 import { getArticlesActifsAvecStocks } from "@/app/actions/articles"
 import { getChantiers } from "@/app/actions/chantiers"
-import { ArrowRightLeft, ArrowUpRight, ArrowDownLeft, ShoppingCart, User, MapPin, Activity } from "lucide-react"
+import Link from "next/link"
+import { ArrowRightLeft, ArrowUpRight, ArrowDownLeft, ShoppingCart, User, MapPin, Activity, Truck, ScanBarcode } from "lucide-react"
 import { DeleteButton } from "@/components/DeleteButton"
 import { MouvementForm } from "@/components/MouvementForm"
 import { MouvementsFilters } from "./MouvementsFilters"
@@ -95,6 +96,30 @@ export default async function MouvementsPage({ searchParams }: { searchParams: P
         </div>
 
         <MouvementsFilters />
+      </div>
+
+      {/* 2. Bannière d'accès direct au mode Terrain / Scan Camion */}
+      <div className="rounded-2xl p-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md border border-white/10">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2.5 rounded-xl bg-white/15 text-white shrink-0">
+            <Truck className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="font-bold text-sm text-white">
+              Vous préparez un départ chantier ou chargez le camion ?
+            </div>
+            <p className="text-xs text-blue-100 truncate sm:whitespace-normal">
+              Utilisez l&apos;écran Départ Chantier Express avec scan caméra rapide et mode hors-ligne.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/depart-matin"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-blue-50 text-blue-900 font-bold text-xs shadow-sm transition-all shrink-0 active:scale-95 cursor-pointer"
+        >
+          <ScanBarcode className="w-4 h-4 text-blue-600" />
+          <span>Ouvrir Scan Chantier Camion</span>
+        </Link>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

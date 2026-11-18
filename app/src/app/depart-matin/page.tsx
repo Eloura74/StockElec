@@ -1,8 +1,9 @@
 import { getSession } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import Link from "next/link"
 import prisma from "@/lib/prisma"
 import { DepartMatinClient } from "./DepartMatinClient"
-import { LogOut } from "lucide-react"
+import { LogOut, Home } from "lucide-react"
 import { logout } from "@/app/actions/auth"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { getOutillages } from "@/app/actions/outillage"
@@ -102,6 +103,16 @@ export default async function DepartMatinPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {session.role === 'GERANT' && (
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 transition-all shadow-2xs"
+              title="Retour au Tableau de bord Bureau"
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Tableau de bord</span>
+            </Link>
+          )}
           <ThemeToggle />
           <form action={logout}>
             <button 

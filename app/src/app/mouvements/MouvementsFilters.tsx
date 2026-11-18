@@ -27,31 +27,33 @@ export function MouvementsFilters() {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-zinc-900 p-3 rounded-xl border dark:border-zinc-800 shadow-sm text-sm">
-      <div className="flex items-center gap-2">
-        <label className="text-gray-500 dark:text-zinc-400 font-medium">Du</label>
-        <input 
-          type="date" 
-          value={start}
-          onChange={(e) => handleFilterChange('start', e.target.value)}
-          className="bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 text-gray-900 dark:text-white rounded-md p-1 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <div className="flex items-center gap-2">
-        <label className="text-gray-500 dark:text-zinc-400 font-medium">Au</label>
-        <input 
-          type="date" 
-          value={end}
-          onChange={(e) => handleFilterChange('end', e.target.value)}
-          className="bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 text-gray-900 dark:text-white rounded-md p-1 focus:ring-blue-500 focus:border-blue-500"
-        />
+    <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 bg-white dark:bg-[#111622] p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-2xs text-xs">
+      <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0 bg-slate-50 dark:bg-[#161d2d] px-2.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/[0.06]">
+          <label className="text-slate-400 dark:text-slate-500 font-semibold text-[11px] shrink-0">Du</label>
+          <input 
+            type="date" 
+            value={start}
+            onChange={(e) => handleFilterChange('start', e.target.value)}
+            className="w-full bg-transparent border-0 text-slate-900 dark:text-white p-0 text-xs focus:ring-0 font-medium"
+          />
+        </div>
+        <div className="flex items-center gap-1.5 min-w-0 bg-slate-50 dark:bg-[#161d2d] px-2.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-white/[0.06]">
+          <label className="text-slate-400 dark:text-slate-500 font-semibold text-[11px] shrink-0">Au</label>
+          <input 
+            type="date" 
+            value={end}
+            onChange={(e) => handleFilterChange('end', e.target.value)}
+            className="w-full bg-transparent border-0 text-slate-900 dark:text-white p-0 text-xs focus:ring-0 font-medium"
+          />
+        </div>
       </div>
       {(start || end) && (
         <button 
           onClick={clearFilters}
-          className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 px-2 py-1 rounded-md transition-colors"
+          className="text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 px-2.5 py-1.5 rounded-xl font-bold transition-colors text-center shrink-0 cursor-pointer text-xs"
         >
-          Effacer
+          Effacer filtre
         </button>
       )}
     </div>

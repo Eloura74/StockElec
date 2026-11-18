@@ -20,7 +20,8 @@ import {
   Shield,
   Zap,
   Palette,
-  Search
+  Search,
+  Truck
 } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { ThemeToggle } from "./ThemeToggle";
@@ -83,6 +84,7 @@ export function Sidebar() {
     {
       title: "Logistique & Flux",
       links: [
+        { href: "/depart-matin", label: "Départ Chantier & Scan", icon: Truck },
         { href: "/reception-magique", label: "Réception Factures", icon: Wand2 },
         { href: "/mouvements", label: "Mouvements", icon: FileText },
         { href: "/reassort", label: "Réassort", icon: ArrowRightLeft },
@@ -328,14 +330,29 @@ export function Sidebar() {
           </div>
 
           {/* Recherche rapide mobile */}
-          <div className="px-3.5 pt-3 pb-1">
+          <div className="px-3.5 pt-3 pb-1 space-y-2">
+            <Link
+              href="/depart-matin"
+              prefetch={false}
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-sm transition-all"
+            >
+              <div className="flex items-center gap-2.5">
+                <Truck className="h-4 w-4 text-white" />
+                <span>Départ Chantier &amp; Scan</span>
+              </div>
+              <span className="px-1.5 py-0.5 text-[10px] font-extrabold uppercase rounded bg-white/20 text-white">
+                Terrain
+              </span>
+            </Link>
+
             <button
               type="button"
               onClick={() => {
                 setIsOpen(false);
                 window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }));
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100/80 dark:bg-white/4 hover:bg-slate-200/70 dark:hover:bg-white/8 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-white/6 transition-all cursor-pointer group shadow-2xs tactile-btn"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100/80 dark:bg-white/4 hover:bg-slate-200/70 dark:hover:bg-white/8 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-white/6 transition-all cursor-pointer group shadow-2xs tactile-btn"
             >
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 text-slate-400 group-hover:text-blue-500 transition-colors" />

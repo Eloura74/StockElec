@@ -84,46 +84,63 @@ export function BarcodeScanner({ onScan, onClose, continuous = false, burstSumma
     }
 
     const startScanner = async () => {
+      const handleDecoded = (decodedText: string) => {
+        if (!scannerRef.current?.isScanning) return
+
+        const now = Date.now()
+        if (
+          continuousRef.current &&
+          lastDecodedRef.current.code === decodedText &&
+          now - lastDecodedRef.current.at < 1400
+        ) {
+          return
+        }
+        lastDecodedRef.current = { code: decodedText, at: now }
+
+        playBeep()
+
+        if (continuousRef.current) {
+          setFlash(true)
+          setTimeout(() => setFlash(false), 260)
+          onScanRef.current(decodedText)
+        } else {
+          scannerRef.current.stop().then(() => {
+            onScanRef.current(decodedText)
+          }).catch(err => console.error(err))
+        }
+      }
+
       try {
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          {
-            fps: 30,
-            aspectRatio: 1.0,
-            disableFlip: false
-          },
-          (decodedText) => {
-            if (!scannerRef.current?.isScanning) return
+        const scanConfig = {
+          fps: 20,
+          disableFlip: false
+        }
 
-            const now = Date.now()
-            if (
-              continuousRef.current &&
-              lastDecodedRef.current.code === decodedText &&
-              now - lastDecodedRef.current.at < 1400
-            ) {
-              return
-            }
-            lastDecodedRef.current = { code: decodedText, at: now }
-
-            playBeep()
-
-            if (continuousRef.current) {
-              setFlash(true)
-              setTimeout(() => setFlash(false), 260)
-              onScanRef.current(decodedText)
-            } else {
-              scannerRef.current.stop().then(() => {
-                onScanRef.current(decodedText)
-              }).catch(err => console.error(err))
-            }
-          },
-          () => {
-            // Erreurs de trame normales quand aucun code n'est visible
+        try {
+          await html5QrCode.start(
+            { facingMode: { ideal: "environment" } },
+            scanConfig,
+            handleDecoded,
+            () => {}
+          )
+        } catch (firstErr) {
+          console.warn("[BarcodeScanner] Échec contrainte ideal: environment, recherche par getCameras()...", firstErr)
+          const cameras = await Html5Qrcode.getCameras().catch(() => [])
+          const chosenCamera = cameras.find(c => /back|rear|arrière|environment/i.test(c.label)) || cameras[0]
+          if (chosenCamera) {
+            await html5QrCode.start(
+              chosenCamera.id,
+              scanConfig,
+              handleDecoded,
+              () => {}
+            )
+          } else {
+            throw firstErr
           }
-        )
+        }
       } catch (err) {
         console.error("Erreur de démarrage du scanner", err)
-        setError("Impossible d'accéder à la caméra. Vérifiez les autorisations de votre navigateur.")
+        setError("Impossible d'accéder à la caméra. Vérifiez les autorisations de votre navigateur (Réglages > Safari > Appareil photo).")
       }
     }
 
