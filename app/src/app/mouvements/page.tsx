@@ -25,7 +25,7 @@ export default async function MouvementsPage({ searchParams }: { searchParams: P
   ])
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto pb-8 animate-in fade-in duration-200">
+    <div className="w-full min-w-0 max-w-full space-y-4 sm:space-y-6 max-w-7xl mx-auto pb-8 animate-in fade-in duration-200">
       {/* 1. Header Prestige */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
