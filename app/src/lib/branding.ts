@@ -13,3 +13,4 @@ export const BRANDING = {
   emailContact: "",
   adresseSiege: "",
 } as const;
+
