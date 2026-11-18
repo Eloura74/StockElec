@@ -5,6 +5,14 @@ import { revalidatePath } from "next/cache"
 import { calculerStocksDepuisAgregats } from "@/lib/stockUtils"
 import { getSession } from "@/lib/auth"
 
+async function exigerSession() {
+  const session = await getSession()
+  if (!session) {
+    throw new Error("Non autorisé : vous devez être connecté.")
+  }
+  return session
+}
+
 export async function getMouvements(options?: { startDate?: Date, endDate?: Date }) {
   const where: any = {}
   if (options?.startDate || options?.endDate) {
@@ -25,17 +33,14 @@ export async function getMouvements(options?: { startDate?: Date, endDate?: Date
 }
 
 export async function createMouvement(formData: FormData) {
+  const session = await exigerSession()
   const articleId = formData.get("articleId") as string
   const type = formData.get("type") as string
   const quantite = parseInt(formData.get("quantite") as string)
   const chantierId = formData.get("chantierId") as string || null
-  const utilisateur = formData.get("utilisateur") as string || "Anonyme"
+  const utilisateur = (formData.get("utilisateur") as string) || session.username || "Gérant"
   const observation = formData.get("observation") as string || ""
 
-  // Transaction pour créer le mouvement ET mettre à jour le stock
-  // Dans une V3 complète, on aurait un StockEmplacement, 
-  // mais ici on garde l'approche simple : on ne trace que Mouvement
-  
   await prisma.mouvement.create({
     data: {
       articleId,
@@ -53,7 +58,7 @@ export async function createMouvement(formData: FormData) {
 }
 
 export async function deleteMouvement(id: string) {
-  // Not used anymore directly by the UI to avoid data loss. Kept for admin use.
+  await exigerSession()
   await prisma.mouvement.delete({
     where: { id }
   })
@@ -64,6 +69,7 @@ export async function deleteMouvement(id: string) {
 }
 
 export async function annulerMouvement(id: string) {
+  const session = await exigerSession()
   const mvt = await prisma.mouvement.findUnique({ where: { id } })
   if (!mvt) return;
 
@@ -80,7 +86,7 @@ export async function annulerMouvement(id: string) {
       quantite: mvt.quantite,
       articleId: mvt.articleId,
       chantierId: mvt.chantierId,
-      utilisateur: "Système",
+      utilisateur: session.username || "Système",
       observation: `Annulation du mouvement ${mvt.type} du ${mvt.date.toLocaleDateString("fr-FR")}`
     }
   });
@@ -92,13 +98,14 @@ export async function annulerMouvement(id: string) {
 }
 
 export async function entrerStock(articleId: string, quantite: number) {
+  const session = await exigerSession()
   await prisma.mouvement.create({
     data: {
       type: "Achat",
       quantite,
       articleId,
       observation: "Mise à jour rapide du stock",
-      utilisateur: "Système"
+      utilisateur: session.username || "Gérant"
     }
   })
   revalidatePath("/catalogue")
@@ -107,6 +114,7 @@ export async function entrerStock(articleId: string, quantite: number) {
 }
 
 export async function entrerStockRapide(formData: FormData) {
+  await exigerSession()
   const articleId = formData.get("articleId") as string
   const quantite = parseInt(formData.get("quantite") as string || "1")
   
@@ -117,13 +125,13 @@ export async function entrerStockRapide(formData: FormData) {
 }
 
 export async function ajusterStockDirect(formData: FormData) {
+  const session = await exigerSession()
   const articleId = formData.get("articleId") as string
   const mode = (formData.get("mode") as string) || "entree"
   const valeur = parseInt(formData.get("quantite") as string || "0", 10)
   if (!articleId || Number.isNaN(valeur)) return
 
-  const session = await getSession()
-  const auteur = session?.username || "Gérant"
+  const auteur = session.username || "Gérant"
 
   if (mode === "entree" && valeur > 0) {
     await prisma.mouvement.create({

@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Copy, Check, ShoppingCart, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 import { SupplierBadge } from "./SupplierBadge"
+import { BRANDING } from "@/lib/branding"
 
 type OrderItem = {
   articleId: string
@@ -52,7 +53,7 @@ export function CommandeFournisseurCard({
       }
     })
 
-    text += `\nMerci d'avance,\nQuentin Elec`
+    text += `\nMerci d'avance,\n${BRANDING.signatureEmail}`
     return text
   }
 

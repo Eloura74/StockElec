@@ -33,31 +33,52 @@ export interface WebNotificationOptions {
   data?: any;
 }
 
-export function sendWebNotification(
+/**
+ * Envoie une notification système compatible :
+ * - iOS Safari 16.4+ (PWA écran d'accueil via registration.showNotification)
+ * - Android Chrome PWA
+ * - Navigateurs desktop (Mac / Windows / Linux)
+ */
+export async function sendWebNotification(
   title: string,
   options: WebNotificationOptions = {},
-): boolean {
+): Promise<boolean> {
   if (!isNotificationSupported()) return false;
 
   if (Notification.permission !== "granted") {
     return false;
   }
 
+  const notifOptions: NotificationOptions = {
+    body: options.body || "Notification StockElec",
+    icon: options.icon || "/icon-192x192.png",
+    badge: options.badge || "/icon-192x192.png",
+    tag: options.tag || "stockelec-general",
+    data: options.data,
+  };
+
+  // 1. Privilégier le Service Worker (obligatoire pour iOS PWA et recommandé sur mobile)
+  if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      if (reg && typeof reg.showNotification === "function") {
+        await reg.showNotification(title, notifOptions);
+        return true;
+      }
+    } catch (swErr) {
+      console.warn("Échec notification Service Worker, tentative repli classique:", swErr);
+    }
+  }
+
+  // 2. Repli constructeur Notification direct (Desktop classique)
   try {
-    const n = new Notification(title, {
-      body: options.body || "Notification StockElec",
-      icon: options.icon || "/favicon.ico",
-      tag: options.tag || "stockelec-general",
-      ...options,
-    });
+    const n = new Notification(title, notifOptions);
 
     // Fermeture automatique après 6 secondes si non cliquée
     setTimeout(() => {
       try {
         n.close();
-      } catch {
-        // ignore
-      }
+      } catch {}
     }, 6000);
 
     return true;
@@ -70,12 +91,12 @@ export function sendWebNotification(
 /**
  * Notifie un départ chantier validé avec succès
  */
-export function notifierDepartValide(
+export async function notifierDepartValide(
   chantierNom: string,
   nbArticles: number,
   nbPieces: number,
 ) {
-  sendWebNotification("🚚 Départ Chantier Validé", {
+  return sendWebNotification("🚚 Départ Chantier Validé", {
     body: `${chantierNom} : ${nbArticles} référence(s) (${nbPieces} pièces) embarquées.`,
     tag: "depart-chantier",
   });
@@ -84,12 +105,12 @@ export function notifierDepartValide(
 /**
  * Notifie un emprunt ou retour d'outillage
  */
-export function notifierMouvementOutillage(
+export async function notifierMouvementOutillage(
   nomMachine: string,
   type: "Emprunt" | "Retour",
   utilisateur: string,
 ) {
-  sendWebNotification(
+  return sendWebNotification(
     type === "Emprunt" ? "🔧 Machine Empruntée" : "✅ Machine Restituée",
     {
       body: `${nomMachine} par ${utilisateur}.`,
@@ -101,12 +122,12 @@ export function notifierMouvementOutillage(
 /**
  * Notifie une alerte de stock critique
  */
-export function notifierAlerteStock(
+export async function notifierAlerteStock(
   designation: string,
   stockRestant: number,
   unite: string = "u",
 ) {
-  sendWebNotification("⚠️ Alerte Stock Minimum", {
+  return sendWebNotification("⚠️ Alerte Stock Minimum", {
     body: `Attention : « ${designation} » est à ${stockRestant} ${unite} en dépôt.`,
     tag: `stock-${designation.slice(0, 10)}`,
   });

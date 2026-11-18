@@ -28,7 +28,7 @@ export default async function ReceptionMagiquePage() {
         </div>
       </div>
 
-      <ReceptionClient knownReferences={[]} />
+      <ReceptionClient />
     </div>
   )
 }

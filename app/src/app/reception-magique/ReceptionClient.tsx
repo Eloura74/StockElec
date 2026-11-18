@@ -16,7 +16,7 @@ type ParsedRow = ReceptionItem & {
   selected: boolean
 }
 
-export function ReceptionClient({ knownReferences }: { knownReferences: string[] }) {
+export function ReceptionClient({ knownReferences = [] }: { knownReferences?: string[] }) {
   const [rows, setRows] = useState<ParsedRow[]>([])
   const [isParsing, setIsParsing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)

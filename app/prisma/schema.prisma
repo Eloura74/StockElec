@@ -39,6 +39,7 @@ model Chantier {
   id                  String      @id @default(cuid())
   nom                 String      @unique
   statut              String      @default("Actif") // Actif, Terminé
+  adresse             String?     // Adresse postale pour géolocalisation et navigation GPS (Maps / Waze)
   
   mouvements          Mouvement[]
   outillages          Outillage[]

@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { getSession } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
+    const session = await getSession()
+    if (!session || session.role !== 'GERANT') {
+      return NextResponse.json({ error: 'Accès réservé au gérant' }, { status: 403 })
+    }
+
     const lignes = await prisma.ligneFactureFournisseur.findMany({
       orderBy: { facture: { dateFacture: 'asc' } },
       include: { facture: true }

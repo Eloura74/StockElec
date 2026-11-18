@@ -116,8 +116,8 @@ export default async function Home() {
       id: chantier.id,
       nom: chantier.nom,
       statut: chantier.statut,
-      adresse: (chantier as any).adresse || null,
-      client: (chantier as any).client || null,
+      adresse: chantier.adresse || null,
+      client: null,
       materielCount,
       valeurSurSite,
       materielDetails

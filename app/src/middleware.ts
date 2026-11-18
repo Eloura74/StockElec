@@ -7,13 +7,16 @@ const protectedRoutes = [
   '/', 
   '/catalogue', 
   '/chantiers', 
+  '/mouvements',
+  '/outillage',
   '/reassort', 
   '/inventaire', 
   '/equipe', 
   '/fournisseurs', 
   '/rentabilite', 
   '/reception-magique', 
-  '/journal'
+  '/journal',
+  '/parametres'
 ]
 const chefRoutes = ['/depart-matin']
 

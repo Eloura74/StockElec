@@ -26,19 +26,31 @@ async function assurerColonneAdresse(): Promise<boolean> {
  */
 export async function chargerAdressesChantiers(): Promise<Map<string, string>> {
   const map = new Map<string, string>()
-  const ok = await assurerColonneAdresse()
-  if (!ok) return map
   try {
-    const rows = await prisma.$queryRawUnsafe<{ id: string; adresse: string | null }[]>(
-      `SELECT "id", "adresse" FROM "Chantier" WHERE "adresse" IS NOT NULL`
-    )
-    for (const r of rows) {
-      if (r.id && r.adresse && r.adresse.trim()) {
-        map.set(r.id, r.adresse.trim())
+    const chantiers = await prisma.chantier.findMany({
+      where: { adresse: { not: null } },
+      select: { id: true, adresse: true }
+    })
+    for (const c of chantiers) {
+      if (c.id && c.adresse && c.adresse.trim()) {
+        map.set(c.id, c.adresse.trim())
       }
     }
-  } catch (err) {
-    console.warn("Info: lecture adresses chantiers ignorée:", err)
+  } catch {
+    // Repli raw SQL en cas de divergence de schéma temporaire
+    try {
+      await assurerColonneAdresse()
+      const rows = await prisma.$queryRawUnsafe<{ id: string; adresse: string | null }[]>(
+        `SELECT "id", "adresse" FROM "Chantier" WHERE "adresse" IS NOT NULL`
+      )
+      for (const r of rows) {
+        if (r.id && r.adresse && r.adresse.trim()) {
+          map.set(r.id, r.adresse.trim())
+        }
+      }
+    } catch (rawErr) {
+      console.warn("Info: lecture adresses chantiers ignorée:", rawErr)
+    }
   }
   return map
 }
@@ -47,16 +59,22 @@ export async function chargerAdressesChantiers(): Promise<Map<string, string>> {
  * Récupère l'adresse d'un chantier spécifique.
  */
 export async function chargerAdresseChantier(id: string): Promise<string | null> {
-  const ok = await assurerColonneAdresse()
-  if (!ok) return null
   try {
-    const rows = await prisma.$queryRaw<{ adresse: string | null }[]>`
-      SELECT "adresse" FROM "Chantier" WHERE "id" = ${id} LIMIT 1
-    `
-    const adr = rows[0]?.adresse?.trim()
-    return adr || null
+    const chantier = await prisma.chantier.findUnique({
+      where: { id },
+      select: { adresse: true }
+    })
+    return chantier?.adresse?.trim() || null
   } catch {
-    return null
+    try {
+      await assurerColonneAdresse()
+      const rows = await prisma.$queryRaw<{ adresse: string | null }[]>`
+        SELECT "adresse" FROM "Chantier" WHERE "id" = ${id} LIMIT 1
+      `
+      return rows[0]?.adresse?.trim() || null
+    } catch {
+      return null
+    }
   }
 }
 
@@ -67,15 +85,21 @@ export async function sauvegarderAdresseChantier(
   id: string,
   adresse: string | null | undefined
 ): Promise<void> {
-  const ok = await assurerColonneAdresse()
-  if (!ok) return
   const propre = adresse?.trim() || null
   try {
-    await prisma.$executeRaw`
-      UPDATE "Chantier" SET "adresse" = ${propre} WHERE "id" = ${id}
-    `
-  } catch (err) {
-    console.warn("Info: sauvegarde adresse chantier ignorée:", err)
+    await prisma.chantier.update({
+      where: { id },
+      data: { adresse: propre }
+    })
+  } catch {
+    try {
+      await assurerColonneAdresse()
+      await prisma.$executeRaw`
+        UPDATE "Chantier" SET "adresse" = ${propre} WHERE "id" = ${id}
+      `
+    } catch (err) {
+      console.warn("Info: sauvegarde adresse chantier ignorée:", err)
+    }
   }
 }
 
